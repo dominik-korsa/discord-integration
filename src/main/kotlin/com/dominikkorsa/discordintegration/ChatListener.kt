@@ -1,17 +1,22 @@
 package com.dominikkorsa.discordintegration
 
+import com.dominikkorsa.discordintegration.AvatarService.*
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.AsyncPlayerChatEvent
-import kotlin.random.Random
 
 class ChatListener(private val plugin: DiscordIntegration) : Listener {
+    private val avatarService = AvatarService()
+
     @EventHandler
     suspend fun onPlayerChat(event: AsyncPlayerChatEvent) {
-        val avatar = when (plugin.configManager.charRenderHead) {
-            true -> "https://crafatar.com/renders/head/${event.player.uniqueId}?overlay"
-            false -> "https://crafatar.com/avatars/${event.player.uniqueId}?overlay"
-        }
+        val avatar = avatarService.getAvatarUrl(
+            event.player,
+            when (plugin.configManager.charRenderHead) {
+                true -> AvatarType.Head
+                false -> AvatarType.Face
+            }
+        )
         plugin.client.sendChatMessage(
             event.player.displayName,
             avatar,
