@@ -1,5 +1,6 @@
-package com.dominikkorsa.discordintegration
+package com.dominikkorsa.discordintegration.listener
 
+import com.dominikkorsa.discordintegration.DiscordIntegration
 import kotlinx.coroutines.delay
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener

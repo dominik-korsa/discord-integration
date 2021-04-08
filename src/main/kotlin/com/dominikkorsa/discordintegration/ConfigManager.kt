@@ -20,4 +20,6 @@ class ConfigManager(private val plugin: DiscordIntegration) {
     val minecraftTooltipMessage get() = getString("messages.minecraft.tooltip")
     val discordJoinMessage get() = getString("messages.discord.join")
     val discordQuitMessage get() = getString("messages.discord.quit")
+    val discordDeathMessage get() = getString("messages.discord.death")
+    val discordDeathFallbackMessage get() = getString("messages.discord.death-fallback")
 }

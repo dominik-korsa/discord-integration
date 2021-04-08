@@ -1,6 +1,8 @@
-package com.dominikkorsa.discordintegration
+package com.dominikkorsa.discordintegration.listener
 
+import com.dominikkorsa.discordintegration.AvatarService
 import com.dominikkorsa.discordintegration.AvatarService.*
+import com.dominikkorsa.discordintegration.DiscordIntegration
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.AsyncPlayerChatEvent

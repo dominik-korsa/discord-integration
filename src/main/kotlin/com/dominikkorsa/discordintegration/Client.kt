@@ -134,4 +134,8 @@ class Client(private val plugin: DiscordIntegration) {
     suspend fun disconnect() {
         gateway?.logout()?.awaitFirstOrNull()
     }
+
+    suspend fun sendDeathInfo(deathMessage: String) {
+        sendMessage { it.setContent(deathMessage) }
+    }
 }

@@ -1,5 +1,8 @@
 package com.dominikkorsa.discordintegration
 
+import com.dominikkorsa.discordintegration.listener.ChatListener
+import com.dominikkorsa.discordintegration.listener.DeathListener
+import com.dominikkorsa.discordintegration.listener.PlayerCountListener
 import com.github.shynixn.mccoroutine.launchAsync
 import com.github.shynixn.mccoroutine.registerSuspendingEvents
 import discord4j.core.`object`.entity.Message
@@ -10,11 +13,9 @@ import kotlinx.coroutines.runBlocking
 import net.md_5.bungee.api.chat.ComponentBuilder
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
-import net.md_5.bungee.api.chat.hover.content.Content
 import org.bukkit.Bukkit
+import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class DiscordIntegration: JavaPlugin() {
     lateinit var client: Client
@@ -27,14 +28,9 @@ class DiscordIntegration: JavaPlugin() {
         client = Client(this)
         this.launchAsync {
             client.main()
-            server.pluginManager.registerSuspendingEvents(
-                PlayerCountListener(this@DiscordIntegration),
-                this@DiscordIntegration
-            )
-            server.pluginManager.registerSuspendingEvents(
-                ChatListener(this@DiscordIntegration),
-                this@DiscordIntegration
-            )
+            registerSuspendingEvents(PlayerCountListener(this@DiscordIntegration))
+            registerSuspendingEvents(ChatListener(this@DiscordIntegration))
+            registerSuspendingEvents(DeathListener(this@DiscordIntegration))
             this@DiscordIntegration.launchAsync {
                 client.initListeners()
             }
@@ -85,5 +81,9 @@ class DiscordIntegration: JavaPlugin() {
             )).create()
         )
         server.spigot().broadcast(messageComponent)
+    }
+
+    private fun registerSuspendingEvents(listener: Listener) {
+        server.pluginManager.registerSuspendingEvents(listener, this)
     }
 }

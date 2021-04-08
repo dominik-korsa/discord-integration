@@ -13,6 +13,8 @@ messages:
   discord:
     join: '**%player% joined the server**'
     quit: '**%player% left the server**'
+    death: '**%death-message%**'
+    death-fallback: '**%player% died**'
   minecraft:
     message: '§2%nickname% §7in #%channel-name%§7 » §r%content%'
     tooltip: |
