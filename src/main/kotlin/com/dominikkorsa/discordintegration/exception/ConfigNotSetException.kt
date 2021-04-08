@@ -1,3 +1,3 @@
 package com.dominikkorsa.discordintegration.exception
 
-class ConfigNotSetException(field: String) : Exception("Field $field not set in config")
+class ConfigNotSetException(path: String) : Exception("Field $path not set in config")

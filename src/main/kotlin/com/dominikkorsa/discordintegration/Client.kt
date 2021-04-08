@@ -3,7 +3,6 @@ package com.dominikkorsa.discordintegration
 import discord4j.common.util.Snowflake
 import discord4j.core.DiscordClient
 import discord4j.core.GatewayDiscordClient
-import discord4j.core.`object`.entity.channel.GuildMessageChannel
 import discord4j.core.`object`.entity.channel.TextChannel
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.spec.MessageCreateSpec
@@ -12,7 +11,6 @@ import discord4j.discordjson.json.gateway.ImmutableStatusUpdate
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.bukkit.Bukkit
@@ -48,7 +46,7 @@ class Client(private val plugin: DiscordIntegration) {
     suspend fun updatePlayerCount() {
         gateway?.let {
             val players = Bukkit.getOnlinePlayers()
-            var message = plugin.configManager.activityMessage
+            var message = plugin.configManager.discordActivityMessage
                 .replace("%online%", players.size.toString())
                 .replace("%max%", Bukkit.getMaxPlayers().toString())
 
@@ -122,13 +120,13 @@ class Client(private val plugin: DiscordIntegration) {
     }
 
     suspend fun sendJoinInfo(player: Player) {
-        val content = plugin.configManager.chatDiscordJoin
+        val content = plugin.configManager.discordJoinMessage
             .replace("%player%", player.name)
         sendMessage { it.setContent(content) }
     }
 
     suspend fun sendQuitInfo(player: Player) {
-        val content = plugin.configManager.chatDiscordQuit
+        val content = plugin.configManager.discordQuitMessage
             .replace("%player%", player.name)
         sendMessage { it.setContent(content) }
     }

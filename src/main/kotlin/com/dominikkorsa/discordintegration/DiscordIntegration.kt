@@ -38,7 +38,7 @@ class DiscordIntegration: JavaPlugin() {
             this@DiscordIntegration.launchAsync {
                 client.initListeners()
             }
-            Bukkit.broadcastMessage("§9§lDiscord Integration connected")
+            Bukkit.broadcastMessage(configManager.connectedMessage)
         }
     }
 
@@ -72,14 +72,14 @@ class DiscordIntegration: JavaPlugin() {
         val channel = message.channel.awaitFirstOrNull()
         if (channel == null || channel !is GuildMessageChannel) return
         val messageComponent = TextComponent(formatMessage(
-            configManager.chatMinecraftMessage,
+            configManager.minecraftMessageMessage,
             message,
             channel
         ))
         messageComponent.hoverEvent = HoverEvent(
             HoverEvent.Action.SHOW_TEXT,
             ComponentBuilder(formatMessage(
-                configManager.chatMinecraftTooltip,
+                configManager.minecraftTooltipMessage,
                 message,
                 channel
             )).create()

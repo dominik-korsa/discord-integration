@@ -5,13 +5,19 @@ import com.dominikkorsa.discordintegration.exception.ConfigNotSetException
 class ConfigManager(private val plugin: DiscordIntegration) {
     private val config get() = plugin.config
 
+    private fun getString(path: String): String {
+        return config.getString(path) ?: throw ConfigNotSetException(path)
+    }
+
     val discordToken get() = config.getString("discord-token") ?: throw ConfigNotSetException("discord-token")
-    val activityMessage get() = config.getString("activity.message") ?: throw ConfigNotSetException("activity.message")
     val chatChannels: List<String> get() = config.getStringList("chat.channels")
     val chatWebhooks: List<String> get() = config.getStringList("chat.webhooks")
-    val chatMinecraftMessage get() = config.getString("chat.minecraft-message") ?: throw ConfigNotSetException("chat.minecraft-message")
-    val chatMinecraftTooltip get() = config.getString("chat.minecraft-tooltip") ?: throw ConfigNotSetException("chat.minecraft-tooltip")
-    val chatDiscordJoin get() = config.getString("chat.discord-join") ?: throw ConfigNotSetException("chat.discord-join")
-    val chatDiscordQuit get() = config.getString("chat.discord-quit") ?: throw ConfigNotSetException("chat.discord-quit")
     val charRenderHead get() = config.getBoolean("chat.render-head")
+
+    val connectedMessage get() = getString("messages.connected")
+    val discordActivityMessage get() = getString("messages.discord-activity")
+    val minecraftMessageMessage get() = getString("messages.minecraft.message")
+    val minecraftTooltipMessage get() = getString("messages.minecraft.tooltip")
+    val discordJoinMessage get() = getString("messages.discord.join")
+    val discordQuitMessage get() = getString("messages.discord.quit")
 }

@@ -8,7 +8,6 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.utils.io.jvm.javaio.*
 import org.bukkit.entity.Player
-import java.net.URL
 
 class AvatarService {
     private val uuids = HashMap<String, String>()
@@ -38,7 +37,7 @@ class AvatarService {
     }
 
     suspend fun getAvatarUrl(player: Player, type: AvatarType): String {
-        val uuid =  getNicknameUUID(player) ?: player.uniqueId.toString()
+        val uuid = getNicknameUUID(player) ?: player.uniqueId.toString()
         return when(type) {
             AvatarType.Face -> "https://crafatar.com/avatars/${uuid}?overlay"
             AvatarType.Head -> "https://crafatar.com/renders/head/${uuid}?overlay"
