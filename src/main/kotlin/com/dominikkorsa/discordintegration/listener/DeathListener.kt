@@ -17,6 +17,9 @@ class DeathListener(private val plugin: DiscordIntegration) : Listener {
         } ?: plugin.configManager.discordDeathFallbackMessage
         deathMessage = deathMessage
             .replace("%player%", event.entity.displayName)
+            .replace("%pos-x%", event.entity.location.blockX.toString())
+            .replace("%pos-y%", event.entity.location.blockY.toString())
+            .replace("%pos-z%", event.entity.location.blockZ.toString())
         plugin.client.sendDeathInfo(deathMessage)
     }
 }
