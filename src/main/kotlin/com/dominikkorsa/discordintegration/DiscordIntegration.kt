@@ -23,8 +23,8 @@ class DiscordIntegration: JavaPlugin() {
 
     override fun onEnable() {
         super.onEnable()
-        saveDefaultConfig()
         configManager = ConfigManager(this)
+        configManager.init()
         client = Client(this)
         this.launchAsync {
             client.main()

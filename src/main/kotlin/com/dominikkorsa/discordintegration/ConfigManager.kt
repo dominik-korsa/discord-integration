@@ -5,6 +5,10 @@ import com.dominikkorsa.discordintegration.exception.ConfigNotSetException
 class ConfigManager(private val plugin: DiscordIntegration) {
     private val config get() = plugin.config
 
+    fun init() {
+        plugin.saveDefaultConfig()
+    }
+
     private fun getString(path: String): String {
         return config.getString(path) ?: throw ConfigNotSetException(path)
     }
