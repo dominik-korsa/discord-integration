@@ -12,7 +12,8 @@ class ConfigManager(private val plugin: DiscordIntegration) {
     val discordToken get() = config.getString("discord-token") ?: throw ConfigNotSetException("discord-token")
     val chatChannels: List<String> get() = config.getStringList("chat.channels")
     val chatWebhooks: List<String> get() = config.getStringList("chat.webhooks")
-    val charRenderHead get() = config.getBoolean("chat.render-head")
+    val avatarOfflineMode get() = config.getBoolean("chat.avatar.offline-mode")
+    val avatarUrl get() = getString("chat.avatar.url")
 
     val connectedMessage get() = getString("messages.connected")
     val discordActivityMessage get() = getString("messages.discord-activity")

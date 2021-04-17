@@ -9,14 +9,9 @@ import io.ktor.client.statement.*
 import io.ktor.utils.io.jvm.javaio.*
 import org.bukkit.entity.Player
 
-class AvatarService {
+class AvatarService(private val plugin: DiscordIntegration) {
     private val uuids = HashMap<String, String>()
     private val client = HttpClient(CIO)
-
-    enum class AvatarType {
-        Face,
-        Head,
-    }
 
     private suspend fun updateNicknameUUID(player: Player) {
         try {
@@ -36,11 +31,11 @@ class AvatarService {
         return uuids[player.name]
     }
 
-    suspend fun getAvatarUrl(player: Player, type: AvatarType): String {
-        val uuid = getNicknameUUID(player) ?: player.uniqueId.toString()
-        return when(type) {
-            AvatarType.Face -> "https://crafatar.com/avatars/${uuid}?overlay"
-            AvatarType.Head -> "https://crafatar.com/renders/head/${uuid}?overlay"
-        }
+    suspend fun getAvatarUrl(player: Player): String {
+        var uuid = player.uniqueId.toString()
+        if (plugin.configManager.avatarOfflineMode) getNicknameUUID(player)?.let { uuid = it }
+        return plugin.configManager.avatarUrl
+            .replace("%player%", player.name)
+            .replace("%uuid%", uuid)
     }
 }

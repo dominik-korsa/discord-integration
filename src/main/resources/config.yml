@@ -6,6 +6,21 @@ chat:
   webhooks:
 #    - https://discord.com/api/webhooks/...
   render-head: false
+  avatar:
+#    Set to true on cracked servers,
+#    for premium player heads to work:
+    offline-mode: false
+
+#    URL of player's avatar, which will be used on Discord
+#
+#    %player% is replaced by the player username
+#    %uuid% is replaced by the player UUID,
+#    if offline-mode is set to true, the plugin will use
+#    the Mojang's API to get the correct UUID
+#
+#    Use this url to show faces instead of heads:
+#    https://crafatar.com/avatars/%uuid%?overlay
+    url: https://crafatar.com/renders/head/%uuid%?overlay
 
 messages:
   connected: '§9§lDiscord Integration connected'
