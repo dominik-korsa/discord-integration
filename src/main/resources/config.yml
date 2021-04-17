@@ -5,7 +5,6 @@ chat:
 #    - 01248163264128256
   webhooks:
 #    - https://discord.com/api/webhooks/...
-  render-head: false
   avatar:
 #    Set to true on cracked servers,
 #    for premium player heads to work:
