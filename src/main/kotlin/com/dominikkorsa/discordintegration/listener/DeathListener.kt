@@ -1,18 +1,18 @@
 package com.dominikkorsa.discordintegration.listener
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
+import org.bukkit.ChatColor
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.PlayerDeathEvent
-import org.bukkit.ChatColor
 
 class DeathListener(private val plugin: DiscordIntegration) : Listener {
     @EventHandler
     suspend fun onDeath(event: PlayerDeathEvent) {
         var deathMessage = event.deathMessage?.let {
-            plugin.configManager.discordDeathMessage
+            plugin.messageManager.discordDeath
                 .replace("%death-message%", it)
-        } ?: plugin.configManager.discordDeathFallbackMessage
+        } ?: plugin.messageManager.discordDeathFallback
         deathMessage = ChatColor.stripColor(deathMessage) as String
         deathMessage = deathMessage
             .replace("%player%", event.entity.name)

@@ -15,7 +15,6 @@ import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
-import java.lang.Exception
 
 class Client(private val plugin: DiscordIntegration) {
     private lateinit var client: DiscordClient
@@ -46,7 +45,7 @@ class Client(private val plugin: DiscordIntegration) {
     suspend fun updatePlayerCount() {
         gateway?.let {
             val players = Bukkit.getOnlinePlayers()
-            var message = plugin.configManager.discordActivityMessage
+            var message = plugin.messageManager.discordActivity
                 .replace("%online%", players.size.toString())
                 .replace("%max%", Bukkit.getMaxPlayers().toString())
 
@@ -120,13 +119,13 @@ class Client(private val plugin: DiscordIntegration) {
     }
 
     suspend fun sendJoinInfo(player: Player) {
-        val content = plugin.configManager.discordJoinMessage
+        val content = plugin.messageManager.discordJoin
             .replace("%player%", player.name)
         sendMessage { it.setContent(content) }
     }
 
     suspend fun sendQuitInfo(player: Player) {
-        val content = plugin.configManager.discordQuitMessage
+        val content = plugin.messageManager.discordQuit
             .replace("%player%", player.name)
         sendMessage { it.setContent(content) }
     }

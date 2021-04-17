@@ -1,0 +1,14 @@
+connected: '§9§lDiscord Integration connected'
+discord-activity: 'Players online: %online%/%max%'
+discord:
+  join: '**%player% joined the server**'
+  quit: '**%player% left the server**'
+  death: '**%death-message%**'
+  death-fallback: '**%player% died**'
+minecraft:
+  message: '§2%nickname% §7in #%channel-name%§7 » §r%content%'
+  tooltip: |
+    §9§lDiscord Integration§r
+    §6Channel: §r#%channel-name% §7(%channel-id%)§r
+    §6User: §r%user-tag%§r
+    §6Server: §r%guild-name%§r

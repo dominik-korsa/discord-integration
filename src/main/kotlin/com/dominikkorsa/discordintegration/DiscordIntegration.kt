@@ -20,11 +20,12 @@ import org.bukkit.plugin.java.JavaPlugin
 class DiscordIntegration: JavaPlugin() {
     lateinit var client: Client
     lateinit var configManager: ConfigManager
+    lateinit var messageManager: MessageManager
 
     override fun onEnable() {
         super.onEnable()
         configManager = ConfigManager(this)
-        configManager.init()
+        messageManager = MessageManager(this)
         client = Client(this)
         this.launchAsync {
             client.main()
@@ -34,7 +35,7 @@ class DiscordIntegration: JavaPlugin() {
             this@DiscordIntegration.launchAsync {
                 client.initListeners()
             }
-            Bukkit.broadcastMessage(configManager.connectedMessage)
+            Bukkit.broadcastMessage(messageManager.connected)
         }
     }
 
@@ -68,14 +69,14 @@ class DiscordIntegration: JavaPlugin() {
         val channel = message.channel.awaitFirstOrNull()
         if (channel == null || channel !is GuildMessageChannel) return
         val messageComponent = TextComponent(formatMessage(
-            configManager.minecraftMessageMessage,
+            messageManager.minecraftMessage,
             message,
             channel
         ))
         messageComponent.hoverEvent = HoverEvent(
             HoverEvent.Action.SHOW_TEXT,
             ComponentBuilder(formatMessage(
-                configManager.minecraftTooltipMessage,
+                messageManager.minecraftTooltip,
                 message,
                 channel
             )).create()

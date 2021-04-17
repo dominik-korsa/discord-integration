@@ -15,7 +15,9 @@ class AvatarService(private val plugin: DiscordIntegration) {
 
     private suspend fun updateNicknameUUID(player: Player) {
         try {
-            val response: HttpResponse = client.get("https://api.mojang.com/users/profiles/minecraft/${player.name}")
+            val response: HttpResponse = client.get(
+                "https://api.mojang.com/users/profiles/minecraft/${player.name}"
+            )
             val reader = response.content.toInputStream().reader(Charsets.UTF_8)
             val responseData = Gson().fromJson(reader, NameToUUIDResponse::class.java)
             uuids[player.name] = responseData.id
