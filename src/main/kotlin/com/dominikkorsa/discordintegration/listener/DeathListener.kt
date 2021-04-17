@@ -1,12 +1,10 @@
 package com.dominikkorsa.discordintegration.listener
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
-import kotlinx.coroutines.delay
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.PlayerDeathEvent
-import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.ChatColor
 
 class DeathListener(private val plugin: DiscordIntegration) : Listener {
     @EventHandler
@@ -15,6 +13,7 @@ class DeathListener(private val plugin: DiscordIntegration) : Listener {
             plugin.configManager.discordDeathMessage
                 .replace("%death-message%", it)
         } ?: plugin.configManager.discordDeathFallbackMessage
+        deathMessage = ChatColor.stripColor(deathMessage) as String
         deathMessage = deathMessage
             .replace("%player%", event.entity.name)
             .replace("%pos-x%", event.entity.location.blockX.toString())
