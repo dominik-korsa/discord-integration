@@ -16,6 +16,7 @@ class MessageManager(plugin: DiscordIntegration) {
 
     val connected get() = getString("connected")
     val discordActivity get() = getString("discord-activity")
+    val discordActivityEmpty get() = getString("discord-activity-empty")
     val minecraftMessage get() = getString("minecraft.message")
     val minecraftTooltip get() = getString("minecraft.tooltip")
     val discordJoin get() = getString("discord.join")

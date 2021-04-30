@@ -1,5 +1,6 @@
 connected: '§9§lDiscord Integration connected'
-discord-activity: 'Players online: %online%/%max%'
+discord-activity: '%online%/%max% players online: %player-list%'
+discord-activity-empty: 'No players online'
 discord:
   join: '**%player% joined the server**'
   quit: '**%player% left the server**'

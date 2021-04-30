@@ -45,16 +45,15 @@ class Client(private val plugin: DiscordIntegration) {
     suspend fun updatePlayerCount() {
         gateway?.let {
             val players = Bukkit.getOnlinePlayers()
-            var message = plugin.messageManager.discordActivity
-                .replace("%online%", players.size.toString())
-                .replace("%max%", Bukkit.getMaxPlayers().toString())
-
-            if (players.isNotEmpty()) {
-                message += ": "
-                message += players
-                    .map { it.name }
-                    .sorted()
-                    .joinToString(", ")
+            val message = when {
+                players.isNotEmpty() -> plugin.messageManager.discordActivity
+                    .replace("%online%", players.size.toString())
+                    .replace("%max%", Bukkit.getMaxPlayers().toString())
+                    .replace("%player-list%", players
+                        .map { it.name }
+                        .sorted()
+                        .joinToString(", "))
+                else -> plugin.messageManager.discordActivityEmpty
             }
 
             val statusUpdateBuilder = ImmutableStatusUpdate.builder()
