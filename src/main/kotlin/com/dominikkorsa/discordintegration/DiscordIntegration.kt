@@ -31,7 +31,7 @@ class DiscordIntegration: JavaPlugin() {
     val minecraftFormatter = MinecraftFormatter(this)
     lateinit var configManager: ConfigManager
     lateinit var messageManager: MessageManager
-    var activityJob: Job? = null
+    private var activityJob: Job? = null
 
     override fun onEnable() {
         super.onEnable()
