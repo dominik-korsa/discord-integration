@@ -13,9 +13,14 @@ class ConfigManager(private val plugin: DiscordIntegration) {
         return config.getString(path) ?: throw ConfigNotSetException(path)
     }
 
+    private fun getInt(path: String): Int {
+        return config.getInt(path)
+    }
+
     val discordToken get() = config.getString("discord-token") ?: throw ConfigNotSetException("discord-token")
     val chatChannels: List<String> get() = config.getStringList("chat.channels")
     val chatWebhooks: List<String> get() = config.getStringList("chat.webhooks")
     val avatarOfflineMode get() = config.getBoolean("chat.avatar.offline-mode")
     val avatarUrl get() = getString("chat.avatar.url")
+    val activityUpdateInterval get() = getInt("activity.update-interval")
 }

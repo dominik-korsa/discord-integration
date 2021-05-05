@@ -7,6 +7,7 @@ import com.github.shynixn.mccoroutine.launchAsync
 import com.github.shynixn.mccoroutine.registerSuspendingEvents
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.channel.GuildMessageChannel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.runBlocking
@@ -34,6 +35,12 @@ class DiscordIntegration: JavaPlugin() {
             registerSuspendingEvents(DeathListener(this@DiscordIntegration))
             this@DiscordIntegration.launchAsync {
                 client.initListeners()
+            }
+            this@DiscordIntegration.launchAsync {
+                while (true) {
+                    client.updatePlayerCount()
+                    delay(configManager.activityUpdateInterval.toLong() * 1000)
+                }
             }
             Bukkit.broadcastMessage(messageManager.connected)
         }

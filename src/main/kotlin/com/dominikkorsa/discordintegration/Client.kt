@@ -1,5 +1,6 @@
 package com.dominikkorsa.discordintegration
 
+import com.dominikkorsa.discordintegration.tps.TpsService
 import discord4j.common.util.Snowflake
 import discord4j.core.DiscordClient
 import discord4j.core.GatewayDiscordClient
@@ -15,15 +16,16 @@ import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import java.text.DecimalFormat
 
 class Client(private val plugin: DiscordIntegration) {
     private lateinit var client: DiscordClient
     private var gateway: GatewayDiscordClient? = null
+    private val tpsService = TpsService()
 
     suspend fun main() {
         client = DiscordClient.create(plugin.configManager.discordToken)
         gateway = client.login().awaitFirstOrNull() ?: throw Exception("Failed to connect to Discord")
-        updatePlayerCount()
     }
 
     suspend fun initListeners() {
@@ -43,18 +45,24 @@ class Client(private val plugin: DiscordIntegration) {
     }
 
     suspend fun updatePlayerCount() {
-        gateway?.let {
+        gateway?.apply {
             val players = Bukkit.getOnlinePlayers()
-            val message = when {
+            val messageTemplate = when {
                 players.isNotEmpty() -> plugin.messageManager.discordActivity
-                    .replace("%online%", players.size.toString())
-                    .replace("%max%", Bukkit.getMaxPlayers().toString())
-                    .replace("%player-list%", players
-                        .map { it.name }
-                        .sorted()
-                        .joinToString(", "))
                 else -> plugin.messageManager.discordActivityEmpty
             }
+            val tps = tpsService.getRecentTps()
+            val df = DecimalFormat("#0.00")
+            val message = messageTemplate
+                .replace("%online%", players.size.toString())
+                .replace("%max%", Bukkit.getMaxPlayers().toString())
+                .replace("%player-list%", players
+                    .map { player -> player.name }
+                    .sorted()
+                    .joinToString(", "))
+                .replace("%tps-1m%", df.format(tps.of1min))
+                .replace("%tps-5m%", df.format(tps.of5min))
+                .replace("%tps-15m%", df.format(tps.of15min))
 
             val statusUpdateBuilder = ImmutableStatusUpdate.builder()
             statusUpdateBuilder.afk(false)
@@ -63,8 +71,7 @@ class Client(private val plugin: DiscordIntegration) {
             activityUpdateBuilder.name(message)
             statusUpdateBuilder.activities(listOf(activityUpdateBuilder.build()))
             statusUpdateBuilder.status("available")
-            it.updatePresence(statusUpdateBuilder.build()).awaitFirstOrNull()
-            plugin.logger.info("Updated player count")
+            updatePresence(statusUpdateBuilder.build()).awaitFirstOrNull()
         }
     }
 

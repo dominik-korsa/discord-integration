@@ -20,3 +20,7 @@ chat:
 #    Use this url to show faces instead of heads:
 #    https://crafatar.com/avatars/%uuid%?overlay
     url: https://crafatar.com/renders/head/%uuid%?overlay
+activity:
+#  Interval (in seconds) of Discord activity updates
+#  Activity is also updated every time a player enters or leaves the server
+  update-interval: 60
