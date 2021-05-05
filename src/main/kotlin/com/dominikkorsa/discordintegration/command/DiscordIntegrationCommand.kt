@@ -1,4 +1,4 @@
-package com.dominikkorsa.discordintegration.commands
+package com.dominikkorsa.discordintegration.command
 
 import co.aikar.commands.BaseCommand
 import co.aikar.commands.annotation.CatchUnknown
@@ -24,10 +24,7 @@ class DiscordIntegrationCommand(val plugin: DiscordIntegration): BaseCommand() {
     @Subcommand("help")
     @Default
     fun onHelp(sender: CommandSender) {
-        sender.sendMessage(
-            plugin.messageManager.commandsHelpHeader
-                .replace("%plugin-version%", plugin.description.version)
-        )
+        sender.sendMessage(plugin.minecraftFormatter.formatHelpHeader())
         sendHelpCommandItem(sender, "/di help", "help")
         sendHelpCommandItem(sender, "/di reload", "reload")
     }
@@ -42,10 +39,6 @@ class DiscordIntegrationCommand(val plugin: DiscordIntegration): BaseCommand() {
         command: String,
         code: String
     ) {
-        sender.sendMessage(
-            plugin.messageManager.commandsHelpCommand
-                .replace("%command%", command)
-                .replace("%description%", plugin.messageManager.getCommandDescription(code))
-        )
+        sender.sendMessage(plugin.minecraftFormatter.formatHelpCommand(command, code))
     }
 }

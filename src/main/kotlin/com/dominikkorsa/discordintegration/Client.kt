@@ -4,6 +4,7 @@ import com.dominikkorsa.discordintegration.tps.TpsService
 import discord4j.common.util.Snowflake
 import discord4j.core.DiscordClient
 import discord4j.core.GatewayDiscordClient
+import discord4j.core.`object`.entity.Webhook
 import discord4j.core.`object`.entity.channel.TextChannel
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.spec.MessageCreateSpec
@@ -15,8 +16,6 @@ import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.bukkit.Bukkit
-import org.bukkit.entity.Player
-import java.text.DecimalFormat
 
 class Client(private val plugin: DiscordIntegration) {
     private var gateway: GatewayDiscordClient? = null
@@ -45,38 +44,31 @@ class Client(private val plugin: DiscordIntegration) {
                 .filter { it.message.author.isPresent }
                 .filterNot { it.message.author.get().isBot }
                 .collect {
-                    plugin.sendDiscordMessage(it.message)
+                    plugin.broadcastDiscordMessage(it.message)
                 }
         }
     }
 
-    suspend fun updatePlayerCount() {
+    suspend fun updateActivity() {
         gateway?.apply {
             val players = Bukkit.getOnlinePlayers()
-            val messageTemplate = when {
-                players.isNotEmpty() -> plugin.messageManager.discordActivity
-                else -> plugin.messageManager.discordActivityEmpty
-            }
             val tps = tpsService.getRecentTps()
-            val df = DecimalFormat("#0.00")
-            val message = messageTemplate
-                .replace("%online%", players.size.toString())
-                .replace("%max%", Bukkit.getMaxPlayers().toString())
-                .replace("%player-list%", players
-                    .map { player -> player.name }
-                    .sorted()
-                    .joinToString(", "))
-                .replace("%tps-1m%", df.format(tps.of1min))
-                .replace("%tps-5m%", df.format(tps.of5min))
-                .replace("%tps-15m%", df.format(tps.of15min))
+            val message = plugin.discordFormatter.formatActivity(
+                players,
+                Bukkit.getMaxPlayers(),
+                tps
+            )
 
             val statusUpdateBuilder = ImmutableStatusUpdate.builder()
             statusUpdateBuilder.afk(false)
+
             val activityUpdateBuilder = ImmutableActivityUpdateRequest.builder()
             activityUpdateBuilder.type(0)
             activityUpdateBuilder.name(message)
+
             statusUpdateBuilder.activities(listOf(activityUpdateBuilder.build()))
             statusUpdateBuilder.status("available")
+
             updatePresence(statusUpdateBuilder.build()).awaitFirstOrNull()
         }
     }
@@ -93,7 +85,7 @@ class Client(private val plugin: DiscordIntegration) {
         return getChatChannel(Snowflake.of(id))
     }
 
-    private suspend fun sendMessage(function: (spec: MessageCreateSpec) -> Unit) {
+    private suspend fun sendBotMessage(function: (spec: MessageCreateSpec) -> Unit) {
         if (gateway == null) return
         plugin.configManager.chatChannels
             .map { getChatChannel(it) }
@@ -104,12 +96,12 @@ class Client(private val plugin: DiscordIntegration) {
             }
     }
 
-    suspend fun sendChatMessage(
-        playerName: String,
-        avatarUrl: String,
-        content: String
-    ) {
-        gateway?.let { gateway ->
+    suspend fun sendBotMessage(content: String) {
+        sendBotMessage { it.setContent(content) }
+    }
+
+    private suspend fun getWebhooks(): Collection<Webhook>? {
+        return gateway?.let { gateway ->
             plugin.configManager.chatWebhooks
                 .mapNotNull {
                     Regex("/api/webhooks/([^/]+)/([^/]+)\$").find(it)?.let { result ->
@@ -121,29 +113,20 @@ class Client(private val plugin: DiscordIntegration) {
                             .awaitFirstOrNull()
                     }
                 }
-                .forEach {
-                    it.execute { spec ->
-                        spec.setUsername(playerName)
-                        spec.setAvatarUrl(avatarUrl)
-                        spec.setContent(content)
-                    }.awaitFirstOrNull()
-                }
         }
     }
 
-    suspend fun sendJoinInfo(player: Player) {
-        val content = plugin.messageManager.discordJoin
-            .replace("%player%", player.name)
-        sendMessage { it.setContent(content) }
-    }
-
-    suspend fun sendQuitInfo(player: Player) {
-        val content = plugin.messageManager.discordQuit
-            .replace("%player%", player.name)
-        sendMessage { it.setContent(content) }
-    }
-
-    suspend fun sendDeathInfo(deathMessage: String) {
-        sendMessage { it.setContent(deathMessage) }
+    suspend fun sendChatMessage(
+        playerName: String,
+        avatarUrl: String,
+        content: String
+    ) {
+        getWebhooks()?.forEach {
+            it.execute { spec ->
+                spec.setUsername(playerName)
+                spec.setAvatarUrl(avatarUrl)
+                spec.setContent(content)
+            }.awaitFirstOrNull()
+        }
     }
 }

@@ -1,9 +1,11 @@
 package com.dominikkorsa.discordintegration
 
 import co.aikar.commands.PaperCommandManager
-import com.dominikkorsa.discordintegration.commands.DiscordIntegrationCommand
+import com.dominikkorsa.discordintegration.command.DiscordIntegrationCommand
 import com.dominikkorsa.discordintegration.config.ConfigManager
 import com.dominikkorsa.discordintegration.config.MessageManager
+import com.dominikkorsa.discordintegration.formatter.DiscordFormatter
+import com.dominikkorsa.discordintegration.formatter.MinecraftFormatter
 import com.dominikkorsa.discordintegration.listener.ChatListener
 import com.dominikkorsa.discordintegration.listener.DeathListener
 import com.dominikkorsa.discordintegration.listener.PlayerCountListener
@@ -14,7 +16,6 @@ import discord4j.core.`object`.entity.channel.GuildMessageChannel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.runBlocking
 import net.md_5.bungee.api.chat.ComponentBuilder
@@ -26,6 +27,8 @@ import org.bukkit.plugin.java.JavaPlugin
 
 class DiscordIntegration: JavaPlugin() {
     val client = Client(this)
+    val discordFormatter = DiscordFormatter(this)
+    val minecraftFormatter = MinecraftFormatter(this)
     lateinit var configManager: ConfigManager
     lateinit var messageManager: MessageManager
     var activityJob: Job? = null
@@ -56,7 +59,7 @@ class DiscordIntegration: JavaPlugin() {
             }
             activityJob = this@DiscordIntegration.launchAsync {
                 while (isActive) {
-                    client.updatePlayerCount()
+                    client.updateActivity()
                     delay(configManager.activityUpdateInterval.toLong() * 1000)
                 }
             }
@@ -78,36 +81,17 @@ class DiscordIntegration: JavaPlugin() {
         manager.registerCommand(DiscordIntegrationCommand(this))
     }
 
-    private suspend fun formatMessage(
-        template: String,
-        message: Message,
-        channel: GuildMessageChannel
-    ): String {
-        val author = message.author.get()
-        val nickname = message.authorAsMember.awaitFirstOrNull()?.displayName
-            ?: author.username
-        return template
-            .replace("%username%", author.username)
-            .replace("%user-tag%", author.tag)
-            .replace("%nickname%", nickname)
-            .replace("%channel-name%", channel.name)
-            .replace("%channel-id%", channel.id.asString())
-            .replace("%guild-name%", channel.guild.awaitFirst().name)
-            .replace("%content%", message.content)
-            .trimEnd()
-    }
-
-    suspend fun sendDiscordMessage(message: Message) {
+    suspend fun broadcastDiscordMessage(message: Message) {
         val channel = message.channel.awaitFirstOrNull()
         if (channel == null || channel !is GuildMessageChannel) return
-        val messageComponent = TextComponent(formatMessage(
+        val messageComponent = TextComponent(minecraftFormatter.formatDiscordMessage(
             messageManager.minecraftMessage,
             message,
             channel
         ))
         messageComponent.hoverEvent = HoverEvent(
             HoverEvent.Action.SHOW_TEXT,
-            ComponentBuilder(formatMessage(
+            ComponentBuilder(minecraftFormatter.formatDiscordMessage(
                 messageManager.minecraftTooltip,
                 message,
                 channel

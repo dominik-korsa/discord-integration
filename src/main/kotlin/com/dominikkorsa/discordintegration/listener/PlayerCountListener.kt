@@ -10,15 +10,17 @@ import org.bukkit.event.player.PlayerQuitEvent
 class PlayerCountListener(private val plugin: DiscordIntegration) : Listener {
     @EventHandler
     suspend fun onPlayerJoin(event: PlayerJoinEvent) {
-        plugin.client.sendJoinInfo(event.player)
+        val content = plugin.discordFormatter.formatJoinInfo(event.player)
+        plugin.client.sendBotMessage(content)
         delay(500)
-        plugin.client.updatePlayerCount()
+        plugin.client.updateActivity()
     }
 
     @EventHandler
     suspend fun onPlayerQuit(event: PlayerQuitEvent) {
-        plugin.client.sendQuitInfo(event.player)
+        val content = plugin.discordFormatter.formatQuitInfo(event.player)
+        plugin.client.sendBotMessage(content)
         delay(500)
-        plugin.client.updatePlayerCount()
+        plugin.client.updateActivity()
     }
 }
