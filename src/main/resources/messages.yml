@@ -1,4 +1,5 @@
 connected: '§9§lDiscord Integration connected'
+connection-failed: '§c§lDiscord Integration failed to connect'
 discord-activity: '%online%/%max% players online: %player-list%'
 discord-activity-empty: 'No players online'
 discord:
@@ -13,3 +14,13 @@ minecraft:
     §6Channel: §r#%channel-name% §7(%channel-id%)§r
     §6User: §r%user-tag%§r
     §6Server: §r%guild-name%§r
+commands:
+  help:
+    header: |
+      §9§lDiscord Integration help§r
+      §9Version: §l%plugin-version%§r
+    command: §9> §r%command% §9- %description%§r
+  unknown: §cUnknown command. See avaliable commands using §r/di help
+  descriptions:
+    help: Show list of plugin commands
+    reload: Reload plugin configuration and reconnect

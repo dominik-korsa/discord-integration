@@ -1,5 +1,6 @@
-package com.dominikkorsa.discordintegration
+package com.dominikkorsa.discordintegration.config
 
+import com.dominikkorsa.discordintegration.DiscordIntegration
 import com.dominikkorsa.discordintegration.exception.MessageNotSetException
 
 class MessageManager(plugin: DiscordIntegration) {
@@ -10,11 +11,20 @@ class MessageManager(plugin: DiscordIntegration) {
         configAccessor.saveDefaultConfig()
     }
 
+    fun reload() {
+        configAccessor.reloadConfig()
+    }
+
     private fun getString(path: String): String {
         return config.getString(path) ?: throw MessageNotSetException(path)
     }
 
+    fun getCommandDescription(code: String): String {
+        return getString("commands.descriptions.$code")
+    }
+
     val connected get() = getString("connected")
+    val failedToConnect get() = getString("failed-to-connect")
     val discordActivity get() = getString("discord-activity")
     val discordActivityEmpty get() = getString("discord-activity-empty")
     val minecraftMessage get() = getString("minecraft.message")
@@ -23,4 +33,7 @@ class MessageManager(plugin: DiscordIntegration) {
     val discordQuit get() = getString("discord.quit")
     val discordDeath get() = getString("discord.death")
     val discordDeathFallback get() = getString("discord.death-fallback")
+    val commandsHelpHeader get() = getString("commands.help.header")
+    val commandsHelpCommand get() = getString("commands.help.command")
+    val commandsUnknown get() = getString("commands.unknown")
 }

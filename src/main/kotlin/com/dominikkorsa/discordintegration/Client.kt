@@ -19,18 +19,24 @@ import org.bukkit.entity.Player
 import java.text.DecimalFormat
 
 class Client(private val plugin: DiscordIntegration) {
-    private lateinit var client: DiscordClient
     private var gateway: GatewayDiscordClient? = null
     private val tpsService = TpsService()
 
-    suspend fun main() {
-        client = DiscordClient.create(plugin.configManager.discordToken)
+    suspend fun connect() {
+        val client = DiscordClient.create(plugin.configManager.discordToken)
         gateway = client.login().awaitFirstOrNull() ?: throw Exception("Failed to connect to Discord")
     }
 
+    suspend fun disconnect() {
+        gateway?.apply {
+            logout().awaitFirstOrNull()
+            eventDispatcher.shutdown()
+        }
+        gateway = null
+    }
+
     suspend fun initListeners() {
-        gateway.apply {
-            if (this == null) throw Exception("Gateway is null")
+        gateway?.apply {
             eventDispatcher
                 .on(MessageCreateEvent::class.java)
                 .asFlow()
@@ -88,6 +94,7 @@ class Client(private val plugin: DiscordIntegration) {
     }
 
     private suspend fun sendMessage(function: (spec: MessageCreateSpec) -> Unit) {
+        if (gateway == null) return
         plugin.configManager.chatChannels
             .map { getChatChannel(it) }
             .forEach {
@@ -134,10 +141,6 @@ class Client(private val plugin: DiscordIntegration) {
         val content = plugin.messageManager.discordQuit
             .replace("%player%", player.name)
         sendMessage { it.setContent(content) }
-    }
-
-    suspend fun disconnect() {
-        gateway?.logout()?.awaitFirstOrNull()
     }
 
     suspend fun sendDeathInfo(deathMessage: String) {

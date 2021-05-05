@@ -1,5 +1,6 @@
-package com.dominikkorsa.discordintegration
+package com.dominikkorsa.discordintegration.config
 
+import com.dominikkorsa.discordintegration.DiscordIntegration
 import com.dominikkorsa.discordintegration.exception.ConfigNotSetException
 
 class ConfigManager(private val plugin: DiscordIntegration) {
@@ -7,6 +8,10 @@ class ConfigManager(private val plugin: DiscordIntegration) {
 
     init {
         plugin.saveDefaultConfig()
+    }
+
+    fun reload() {
+        plugin.reloadConfig()
     }
 
     private fun getString(path: String): String {

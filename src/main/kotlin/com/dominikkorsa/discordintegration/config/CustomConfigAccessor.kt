@@ -1,4 +1,4 @@
-package com.dominikkorsa.discordintegration
+package com.dominikkorsa.discordintegration.config
 
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration

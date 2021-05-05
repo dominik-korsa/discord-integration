@@ -3,3 +3,14 @@ version: 1.8.0
 author: Dominik Korsa
 main: com.dominikkorsa.discordintegration.DiscordIntegration
 api-version: 1.16
+
+permissions:
+  discordintegration.command.reload:
+    default: false
+    description: Allow users to reload the configuration
+
+#commands:
+#  discordintegration reload:
+#    description: Reload Discord Integration plugin configuration and reconnect
+#    usage: /<command>
+##    permission: discordintegration.command.reload
