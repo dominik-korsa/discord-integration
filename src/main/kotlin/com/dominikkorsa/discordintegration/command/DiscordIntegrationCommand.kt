@@ -12,10 +12,9 @@ class DiscordIntegrationCommand(val plugin: DiscordIntegration): BaseCommand() {
     @CommandPermission("discordintegration.command.reload")
     fun onReload() {
         plugin.launchAsync {
-            plugin.disconnect()
             plugin.configManager.reload()
             plugin.messageManager.reload()
-            plugin.connect()
+            plugin.reconnect()
         }
     }
 

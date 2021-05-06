@@ -18,6 +18,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.md_5.bungee.api.chat.ComponentBuilder
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
@@ -32,28 +34,29 @@ class DiscordIntegration: JavaPlugin() {
     lateinit var configManager: ConfigManager
     lateinit var messageManager: MessageManager
     private var activityJob: Job? = null
+    private val connectionLock = Mutex()
 
     override fun onEnable() {
         super.onEnable()
         configManager = ConfigManager(this)
         messageManager = MessageManager(this)
         initCommands()
-        this.launchAsync { connect() }
+        registerEvents()
+        this.launchAsync { connect(true) }
     }
 
     override fun onDisable() {
         super.onDisable()
         runBlocking {
-            disconnect()
+            disconnect(true)
         }
     }
 
-    suspend fun connect() {
+    private suspend fun connect(withLock: Boolean) {
+        if (withLock) return connectionLock.withLock { connect(false) }
+
         try {
             client.connect()
-            registerSuspendingEvents(PlayerCountListener(this@DiscordIntegration))
-            registerSuspendingEvents(ChatListener(this@DiscordIntegration))
-            registerSuspendingEvents(DeathListener(this@DiscordIntegration))
             this@DiscordIntegration.launchAsync {
                 client.initListeners()
             }
@@ -70,15 +73,30 @@ class DiscordIntegration: JavaPlugin() {
         }
     }
 
-    suspend fun disconnect() {
+    private suspend fun disconnect(withLock: Boolean) {
+        if (withLock) return connectionLock.withLock { disconnect(false) }
+
         activityJob?.cancel()
         activityJob = null
         client.disconnect()
     }
 
+    suspend fun reconnect() {
+        connectionLock.withLock {
+            disconnect(false)
+            connect(false)
+        }
+    }
+
     private fun initCommands() {
         val manager = PaperCommandManager(this)
         manager.registerCommand(DiscordIntegrationCommand(this))
+    }
+
+    private fun registerEvents() {
+        registerSuspendingEvents(PlayerCountListener(this@DiscordIntegration))
+        registerSuspendingEvents(ChatListener(this@DiscordIntegration))
+        registerSuspendingEvents(DeathListener(this@DiscordIntegration))
     }
 
     suspend fun broadcastDiscordMessage(message: Message) {
