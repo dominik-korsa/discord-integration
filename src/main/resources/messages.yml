@@ -19,8 +19,8 @@ commands:
     header: |
       §9§lDiscord Integration help§r
       §9Version: §l%plugin-version%§r
-    command: §9> §r%command% §9- %description%§r
-  unknown: §cUnknown command. See avaliable commands using §r/di help
+    command: '§9> §r%command% §9- %description%§r'
+  unknown: '§cUnknown command. See avaliable commands using §r/di help'
   descriptions:
-    help: Show list of plugin commands
-    reload: Reload plugin configuration and reconnect
+    help: 'Show list of plugin commands'
+    reload: 'Reload plugin configuration and reconnect'
