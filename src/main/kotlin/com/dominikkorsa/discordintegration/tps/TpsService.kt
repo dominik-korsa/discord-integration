@@ -1,6 +1,6 @@
 package com.dominikkorsa.discordintegration.tps
 
-import net.minecraft.server.v1_16_R3.MinecraftServer
+import net.minecraft.server.MinecraftServer
 import kotlin.math.min
 
 class TpsService {
