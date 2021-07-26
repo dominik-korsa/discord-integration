@@ -10,6 +10,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.spec.MessageCreateSpec
 import discord4j.discordjson.json.ImmutableActivityUpdateRequest
 import discord4j.discordjson.json.gateway.ImmutableStatusUpdate
+import discord4j.rest.util.AllowedMentions
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
@@ -18,6 +19,10 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.bukkit.Bukkit
 
 class Client(private val plugin: DiscordIntegration) {
+    companion object {
+        private val allowedMentionsNone = AllowedMentions.builder().build()
+    }
+
     private var gateway: GatewayDiscordClient? = null
     private val tpsService = TpsService()
 
@@ -126,6 +131,7 @@ class Client(private val plugin: DiscordIntegration) {
                 spec.setUsername(playerName)
                 spec.setAvatarUrl(avatarUrl)
                 spec.setContent(content)
+                spec.setAllowedMentions(allowedMentionsNone)
             }.awaitFirstOrNull()
         }
     }
