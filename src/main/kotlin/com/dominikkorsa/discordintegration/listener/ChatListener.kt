@@ -12,7 +12,7 @@ class ChatListener(private val plugin: DiscordIntegration) : Listener {
     @EventHandler
     suspend fun onPlayerChat(event: AsyncPlayerChatEvent) {
         plugin.client.sendChatMessage(
-            event.player.displayName,
+            event.player.name,
             avatarService.getAvatarUrl(event.player),
             event.message,
         )
