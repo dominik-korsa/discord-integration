@@ -2,6 +2,7 @@ package com.dominikkorsa.discordintegration.formatter
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
 import com.dominikkorsa.discordintegration.tps.Tps
+import com.dominikkorsa.discordintegration.utils.floorBy
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.PlayerDeathEvent
@@ -25,14 +26,25 @@ class DiscordFormatter(val plugin: DiscordIntegration) {
     fun formatActivity(
         players: Collection<Player>,
         maxPlayers: Int,
-        tps: Tps
+        tps: Tps,
+        time: Long
     ): String {
         val messageTemplate = when {
             players.isNotEmpty() -> plugin.messageManager.discordActivity
             else -> plugin.messageManager.discordActivityEmpty
         }
 
-        val df = DecimalFormat("#0.00")
+        val timeOfDay = ((time + 6000).mod((24000).toLong()) * 60 / 1000)
+            .floorBy(plugin.configManager.activityTimeRound.toLong())
+        val hour = timeOfDay / 60
+        val minute = timeOfDay.mod(60)
+        val pm = hour >= 12
+        val minuteDisplay = DecimalFormat("00").format(minute)
+        val timeDisplay =
+            if (plugin.configManager.activityTime24h) "$hour:$minuteDisplay"
+            else "${(hour - 1).mod(12) + 1}:$minuteDisplay ${if (pm) "PM" else "AM"}"
+
+        val tpsFormat = DecimalFormat("#0.00")
         return messageTemplate
             .replace("%online%", players.size.toString())
             .replace("%max%", maxPlayers.toString())
@@ -40,9 +52,10 @@ class DiscordFormatter(val plugin: DiscordIntegration) {
                 .map { player -> player.name }
                 .sorted()
                 .joinToString(", "))
-            .replace("%tps-1m%", df.format(tps.of1min))
-            .replace("%tps-5m%", df.format(tps.of5min))
-            .replace("%tps-15m%", df.format(tps.of15min))
+            .replace("%tps-1m%", tpsFormat.format(tps.of1min))
+            .replace("%tps-5m%", tpsFormat.format(tps.of5min))
+            .replace("%tps-15m%", tpsFormat.format(tps.of15min))
+            .replace("%time%", timeDisplay)
     }
 
     fun formatJoinInfo(player: Player): String {

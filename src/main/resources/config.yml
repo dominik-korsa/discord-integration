@@ -1,26 +1,37 @@
 discord-token: # YOUR DISCORD TOKEN HERE
 chat:
   channels:
-#    - 0123456789
-#    - 01248163264128256
+  # - 0123456789
+  # - 01248163264128256
   webhooks:
-#    - https://discord.com/api/webhooks/...
+  # - https://discord.com/api/webhooks/...
   avatar:
-#    Set to true on cracked servers,
-#    for premium player heads to work:
+    # Set to true on cracked servers,
+    # for premium player heads to work:
     offline-mode: false
 
-#    URL of player's avatar, which will be used on Discord
-#
-#    %player% is replaced by the player username
-#    %uuid% is replaced by the player UUID,
-#    if offline-mode is set to true, the plugin will use
-#    the Mojang's API to get the correct UUID
-#
-#    Use this url to show faces instead of heads:
-#    https://crafatar.com/avatars/%uuid%?overlay
+    # URL of player's avatar, which will be used on Discord
+    #
+    # %player% is replaced by the player username
+    # %uuid% is replaced by the player UUID,
+    # if offline-mode is set to true, the plugin will use
+    # the Mojang's API to get the correct UUID
+    #
+    # Use this url to show faces instead of heads:
+    # https://crafatar.com/avatars/%uuid%?overlay
     url: https://crafatar.com/renders/head/%uuid%?overlay
 activity:
-#  Interval (in seconds) of Discord activity updates
-#  Activity is also updated every time a player enters or leaves the server
+  # Interval (in seconds) of Discord activity updates
+  # Activity is also updated every time a player enters or leaves the server
+  # Please note that Discord allows up to 5 updates per 20 seconds
   update-interval: 60
+  # Settings for %time% template
+  time:
+    world: world
+    # Time is rounded down to the nearest multiple of this value
+    # For example setting this to 15 will round the time to:
+    # 10:00, 10:15, 10:30, 10:45, 11:00, 11:15 etc.
+    # If the number doesn't divide an hour (60) the results might be unexpected
+    round: 1
+    # Whether to use 24-hour clock (true) or 12-hour clock (false)
+    24h: true

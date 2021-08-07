@@ -61,7 +61,8 @@ class Client(private val plugin: DiscordIntegration) {
             val message = plugin.discordFormatter.formatActivity(
                 players,
                 Bukkit.getMaxPlayers(),
-                tps
+                tps,
+                (Bukkit.getWorld(plugin.configManager.activityTimeWorld) ?: Bukkit.getWorlds()[0]).time
             )
 
             val statusUpdateBuilder = ImmutableStatusUpdate.builder()
