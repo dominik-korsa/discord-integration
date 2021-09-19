@@ -24,7 +24,7 @@ class MessageManager(plugin: DiscordIntegration) {
     }
 
     val connected get() = getString("connected")
-    val failedToConnect get() = getString("failed-to-connect")
+    val connectionFailed get() = getString("connection-failed")
     val discordActivity get() = getString("discord-activity")
     val discordActivityEmpty get() = getString("discord-activity-empty")
     val minecraftMessage get() = getString("minecraft.message")
