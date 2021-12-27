@@ -14,6 +14,7 @@ chat:
   death-embed:
     enabled: true
     color: 0xffd166
+  player-as-status-author: false
   avatar:
     # Set to true on cracked servers,
     # for premium player heads to work:

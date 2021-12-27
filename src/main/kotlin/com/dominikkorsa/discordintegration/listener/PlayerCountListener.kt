@@ -16,18 +16,22 @@ class PlayerCountListener(private val plugin: DiscordIntegration) : Listener {
         player: Player,
         embedConfig: EmbedConfig
     ) {
+        val webhookBuilder =
+            if (plugin.configManager.playerAsStatusAuthor) plugin.client.getPlayerWebhookBuilder(player)
+            else plugin.client.getWebhookBuilder()
         if (embedConfig.enabled) {
             plugin.client.sendWebhook(
-                plugin.client.getPlayerWebhookBuilder(player)
-                    .addEmbed(EmbedCreateSpec.builder()
-                        .title(content)
-                        .color(embedConfig.color)
-                        .build()
+                webhookBuilder
+                    .addEmbed(
+                        EmbedCreateSpec.builder()
+                            .title(content)
+                            .color(embedConfig.color)
+                            .build()
                     )
                     .build()
             )
         } else plugin.client.sendWebhook(
-            plugin.client.getWebhookBuilder()
+            webhookBuilder
                 .content(content)
                 .build()
         )

@@ -33,6 +33,7 @@ class ConfigManager(private val plugin: DiscordIntegration) {
     val discordToken get() = getString("discord-token")
     val chatChannels: List<String> get() = config.getStringList("chat.channels")
     val chatWebhooks: List<String> get() = config.getStringList("chat.webhooks")
+    val playerAsStatusAuthor get() = config.getBoolean("chat.player-as-status-author")
     val avatarOfflineMode get() = config.getBoolean("chat.avatar.offline-mode")
     val avatarUrl get() = getString("chat.avatar.url")
     val activityUpdateInterval get() = getInt("activity.update-interval")
