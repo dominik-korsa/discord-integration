@@ -44,6 +44,6 @@ class PlayerCountListener(private val plugin: DiscordIntegration) : Listener {
     @EventHandler
     suspend fun onPlayerQuit(event: PlayerQuitEvent) {
         val content = plugin.discordFormatter.formatQuitInfo(event.player)
-        sendStatus(content, event.player, plugin.configManager.deathEmbed)
+        sendStatus(content, event.player, plugin.configManager.quitEmbed)
     }
 }

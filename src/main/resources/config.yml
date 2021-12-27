@@ -7,13 +7,13 @@ chat:
   # - https://discord.com/api/webhooks/...
   join-embed:
     enabled: true
-    color: 0xff0000
+    color: 0x06d6a0
   quit-embed:
     enabled: true
-    color: 0x00ff00
+    color: 0xffd166
   death-embed:
     enabled: true
-    color: 0x0000ff
+    color: 0xef476f
   avatar:
     # Set to true on cracked servers,
     # for premium player heads to work:
