@@ -2,6 +2,7 @@ package com.dominikkorsa.discordintegration.listener
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
 import com.dominikkorsa.discordintegration.config.EmbedConfig
+import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.delay
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -16,15 +17,20 @@ class PlayerCountListener(private val plugin: DiscordIntegration) : Listener {
         embedConfig: EmbedConfig
     ) {
         if (embedConfig.enabled) {
-            val avatarUrl = plugin.avatarService.getAvatarUrl(player)
-            plugin.client.sendWebhook {
-                it.addEmbed { embed ->
-                    embed.setTitle(content)
-                    embed.setThumbnail(avatarUrl)
-                    embed.setColor(embedConfig.color)
-                }
-            }
-        } else plugin.client.sendWebhook(content)
+            plugin.client.sendWebhook(
+                plugin.client.getPlayerWebhookBuilder(player)
+                    .addEmbed(EmbedCreateSpec.builder()
+                        .title(content)
+                        .color(embedConfig.color)
+                        .build()
+                    )
+                    .build()
+            )
+        } else plugin.client.sendWebhook(
+            plugin.client.getWebhookBuilder()
+                .content(content)
+                .build()
+        )
         delay(500)
         plugin.client.updateActivity()
     }

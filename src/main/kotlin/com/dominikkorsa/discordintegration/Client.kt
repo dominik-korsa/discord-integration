@@ -9,7 +9,7 @@ import discord4j.core.`object`.entity.channel.TextChannel
 import discord4j.core.`object`.presence.ClientActivity
 import discord4j.core.`object`.presence.ClientPresence
 import discord4j.core.event.domain.message.MessageCreateEvent
-import discord4j.core.spec.legacy.LegacyWebhookExecuteSpec
+import discord4j.core.spec.WebhookExecuteSpec
 import discord4j.rest.util.AllowedMentions
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.bukkit.Bukkit
+import org.bukkit.entity.Player
 
 class Client(private val plugin: DiscordIntegration) {
     companion object {
@@ -97,28 +98,20 @@ class Client(private val plugin: DiscordIntegration) {
         }
     }
 
-    suspend fun sendWebhook(function: (spec: LegacyWebhookExecuteSpec) -> Unit) {
+    fun getWebhookBuilder(): WebhookExecuteSpec.Builder {
+        return WebhookExecuteSpec.builder()
+            .allowedMentions(allowedMentionsNone)
+    }
+
+    suspend fun getPlayerWebhookBuilder(player: Player): WebhookExecuteSpec.Builder {
+        return getWebhookBuilder()
+            .username(player.name)
+            .avatarUrl(plugin.avatarService.getAvatarUrl(player))
+    }
+
+    suspend fun sendWebhook(spec: WebhookExecuteSpec) {
         getWebhooks()?.forEach {
-            it.execute { spec ->
-                function(spec)
-                spec.setAllowedMentions(allowedMentionsNone)
-            }.awaitFirstOrNull()
-        }
-    }
-
-    suspend fun sendWebhook(content: String) {
-        sendWebhook { it.setContent(content) }
-    }
-
-    suspend fun sendChatMessage(
-        playerName: String,
-        avatarUrl: String,
-        content: String
-    ) {
-        sendWebhook {
-            it.setUsername(playerName)
-            it.setAvatarUrl(avatarUrl)
-            it.setContent(content)
+            it.execute(spec).awaitFirstOrNull()
         }
     }
 }
