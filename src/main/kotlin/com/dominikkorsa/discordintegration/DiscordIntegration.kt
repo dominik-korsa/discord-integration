@@ -14,18 +14,20 @@ import com.github.shynixn.mccoroutine.registerSuspendingEvents
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.channel.GuildMessageChannel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.time.delay
+import kotlinx.coroutines.time.withTimeout
 import net.md_5.bungee.api.chat.ComponentBuilder
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Bukkit
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
+import java.time.Duration
 
 class DiscordIntegration: JavaPlugin() {
     val client = Client(this)
@@ -49,7 +51,9 @@ class DiscordIntegration: JavaPlugin() {
     override fun onDisable() {
         super.onDisable()
         runBlocking {
-            disconnect(true)
+            withTimeout(Duration.ofSeconds(5)) {
+                disconnect(true)
+            }
         }
     }
 
@@ -64,7 +68,7 @@ class DiscordIntegration: JavaPlugin() {
             activityJob = this@DiscordIntegration.launchAsync {
                 while (isActive) {
                     client.updateActivity()
-                    delay(configManager.activityUpdateInterval.toLong() * 1000)
+                    delay(Duration.ofSeconds(configManager.activityUpdateInterval.toLong()))
                 }
             }
             Bukkit.broadcastMessage(messageManager.connected)
