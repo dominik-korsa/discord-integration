@@ -31,6 +31,7 @@ class DiscordIntegration: JavaPlugin() {
     val client = Client(this)
     val discordFormatter = DiscordFormatter(this)
     val minecraftFormatter = MinecraftFormatter(this)
+    val avatarService = AvatarService(this)
     lateinit var configManager: ConfigManager
     lateinit var messageManager: MessageManager
     private var activityJob: Job? = null
@@ -68,7 +69,7 @@ class DiscordIntegration: JavaPlugin() {
             }
             Bukkit.broadcastMessage(messageManager.connected)
         } catch (error: Exception) {
-            Bukkit.broadcastMessage(messageManager.failedToConnect)
+            Bukkit.broadcastMessage(messageManager.connectionFailed)
             error.printStackTrace()
         }
     }

@@ -9,18 +9,24 @@ import org.bukkit.event.entity.PlayerDeathEvent
 import java.text.DecimalFormat
 
 class DiscordFormatter(val plugin: DiscordIntegration) {
-    fun formatDeathMessage(event: PlayerDeathEvent): String {
-        var deathMessage = event.deathMessage?.let {
-            plugin.messageManager.discordDeath
-                .replace("%death-message%", it)
-        } ?: plugin.messageManager.discordDeathFallback
-        deathMessage = ChatColor.stripColor(deathMessage) as String
-        deathMessage = deathMessage
+    private fun formatDeath(base: String, event: PlayerDeathEvent): String {
+        return (ChatColor.stripColor(base) as String)
             .replace("%player%", event.entity.name)
             .replace("%pos-x%", event.entity.location.blockX.toString())
             .replace("%pos-y%", event.entity.location.blockY.toString())
             .replace("%pos-z%", event.entity.location.blockZ.toString())
-        return deathMessage
+    }
+
+    fun formatDeathMessage(event: PlayerDeathEvent): String {
+        val baseMessage = event.deathMessage?.let {
+            plugin.messageManager.discordDeath
+                .replace("%death-message%", it)
+        } ?: plugin.messageManager.discordDeathFallback
+        return formatDeath(baseMessage, event)
+    }
+
+    fun formatDeathEmbedTitle(event: PlayerDeathEvent): String {
+        return formatDeath(plugin.messageManager.discordDeathEmbedTitle, event)
     }
 
     fun formatActivity(

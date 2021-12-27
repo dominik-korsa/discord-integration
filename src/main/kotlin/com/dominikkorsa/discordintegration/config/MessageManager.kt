@@ -33,6 +33,7 @@ class MessageManager(plugin: DiscordIntegration) {
     val discordQuit get() = getString("discord.quit")
     val discordDeath get() = getString("discord.death")
     val discordDeathFallback get() = getString("discord.death-fallback")
+    val discordDeathEmbedTitle get() = getString("discord.death-embed-title")
     val commandsHelpHeader get() = getString("commands.help.header")
     val commandsHelpCommand get() = getString("commands.help.command")
     val commandsUnknown get() = getString("commands.unknown")

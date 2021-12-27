@@ -6,10 +6,10 @@ import discord4j.core.DiscordClient
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.entity.Webhook
 import discord4j.core.`object`.entity.channel.TextChannel
+import discord4j.core.`object`.presence.ClientActivity
+import discord4j.core.`object`.presence.ClientPresence
 import discord4j.core.event.domain.message.MessageCreateEvent
-import discord4j.core.spec.MessageCreateSpec
-import discord4j.discordjson.json.ImmutableActivityUpdateRequest
-import discord4j.discordjson.json.gateway.ImmutableStatusUpdate
+import discord4j.core.spec.legacy.LegacyWebhookExecuteSpec
 import discord4j.rest.util.AllowedMentions
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
@@ -65,17 +65,7 @@ class Client(private val plugin: DiscordIntegration) {
                 (Bukkit.getWorld(plugin.configManager.activityTimeWorld) ?: Bukkit.getWorlds()[0]).time
             )
 
-            val statusUpdateBuilder = ImmutableStatusUpdate.builder()
-            statusUpdateBuilder.afk(false)
-
-            val activityUpdateBuilder = ImmutableActivityUpdateRequest.builder()
-            activityUpdateBuilder.type(0)
-            activityUpdateBuilder.name(message)
-
-            statusUpdateBuilder.activities(listOf(activityUpdateBuilder.build()))
-            statusUpdateBuilder.status("available")
-
-            updatePresence(statusUpdateBuilder.build()).awaitFirstOrNull()
+            updatePresence(ClientPresence.online(ClientActivity.playing(message))).awaitFirstOrNull()
         }
     }
 
@@ -89,21 +79,6 @@ class Client(private val plugin: DiscordIntegration) {
 
     private suspend fun getChatChannel(id: String): TextChannel {
         return getChatChannel(Snowflake.of(id))
-    }
-
-    private suspend fun sendBotMessage(function: (spec: MessageCreateSpec) -> Unit) {
-        if (gateway == null) return
-        plugin.configManager.chatChannels
-            .map { getChatChannel(it) }
-            .forEach {
-                it.createMessage { spec ->
-                    function(spec)
-                }.awaitFirstOrNull()
-            }
-    }
-
-    suspend fun sendBotMessage(content: String) {
-        sendBotMessage { it.setContent(content) }
     }
 
     private suspend fun getWebhooks(): Collection<Webhook>? {
@@ -122,18 +97,28 @@ class Client(private val plugin: DiscordIntegration) {
         }
     }
 
+    suspend fun sendWebhook(function: (spec: LegacyWebhookExecuteSpec) -> Unit) {
+        getWebhooks()?.forEach {
+            it.execute { spec ->
+                function(spec)
+                spec.setAllowedMentions(allowedMentionsNone)
+            }.awaitFirstOrNull()
+        }
+    }
+
+    suspend fun sendWebhook(content: String) {
+        sendWebhook { it.setContent(content) }
+    }
+
     suspend fun sendChatMessage(
         playerName: String,
         avatarUrl: String,
         content: String
     ) {
-        getWebhooks()?.forEach {
-            it.execute { spec ->
-                spec.setUsername(playerName)
-                spec.setAvatarUrl(avatarUrl)
-                spec.setContent(content)
-                spec.setAllowedMentions(allowedMentionsNone)
-            }.awaitFirstOrNull()
+        sendWebhook {
+            it.setUsername(playerName)
+            it.setAvatarUrl(avatarUrl)
+            it.setContent(content)
         }
     }
 }

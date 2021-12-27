@@ -7,6 +7,7 @@ discord:
   quit: '**%player% left the server**'
   death: '**%death-message%**'
   death-fallback: '**%player% died**'
+  death-embed-title: '**%player% died**'
 minecraft:
   message: '§2%nickname% §7in #%channel-name%§7 » §r%content%'
   tooltip: |

@@ -5,6 +5,15 @@ chat:
   # - 01248163264128256
   webhooks:
   # - https://discord.com/api/webhooks/...
+  join-embed:
+    enabled: true
+    color: 0xff0000
+  quit-embed:
+    enabled: true
+    color: 0x00ff00
+  death-embed:
+    enabled: true
+    color: 0x0000ff
   avatar:
     # Set to true on cracked servers,
     # for premium player heads to work:

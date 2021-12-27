@@ -21,9 +21,9 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
 
-    compileOnly 'org.spigotmc:spigot:1.17'
+    compileOnly 'org.spigotmc:spigot:1.17.1'
 
-    implementation 'com.discord4j:discord4j-core:3.2.0-M1'
+    implementation 'com.discord4j:discord4j-core:3.2.1'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.5.1'
