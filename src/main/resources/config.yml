@@ -10,10 +10,10 @@ chat:
     color: 0x06d6a0
   quit-embed:
     enabled: true
-    color: 0xffd166
+    color: 0xef476f
   death-embed:
     enabled: true
-    color: 0xef476f
+    color: 0xffd166
   avatar:
     # Set to true on cracked servers,
     # for premium player heads to work:
