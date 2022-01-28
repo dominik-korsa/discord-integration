@@ -1,16 +1,18 @@
 package com.dominikkorsa.discordintegration.listener
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
+import org.bukkit.ChatColor
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.AsyncPlayerChatEvent
 
 class ChatListener(private val plugin: DiscordIntegration) : Listener {
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     suspend fun onPlayerChat(event: AsyncPlayerChatEvent) {
         plugin.client.sendWebhook(
             plugin.client.getPlayerWebhookBuilder(event.player)
-                .content(event.message)
+                .content(ChatColor.stripColor(event.message).orEmpty())
                 .build(),
         )
     }
