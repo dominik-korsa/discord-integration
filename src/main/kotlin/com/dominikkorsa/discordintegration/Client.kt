@@ -8,6 +8,7 @@ import discord4j.core.`object`.entity.Webhook
 import discord4j.core.`object`.entity.channel.TextChannel
 import discord4j.core.`object`.presence.ClientActivity
 import discord4j.core.`object`.presence.ClientPresence
+import discord4j.core.`object`.presence.Status
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.spec.WebhookExecuteSpec
 import discord4j.rest.util.AllowedMentions
@@ -65,8 +66,8 @@ class Client(private val plugin: DiscordIntegration) {
                 tps,
                 (Bukkit.getWorld(plugin.configManager.activityTimeWorld) ?: Bukkit.getWorlds()[0]).time
             )
-
-            updatePresence(ClientPresence.online(ClientActivity.playing(message))).awaitFirstOrNull()
+            val status = if (players.isEmpty() && plugin.configManager.activityIdle) Status.IDLE else Status.ONLINE
+            updatePresence(ClientPresence.of(status, ClientActivity.playing(message))).awaitFirstOrNull()
         }
     }
 

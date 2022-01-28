@@ -40,6 +40,7 @@ class ConfigManager(private val plugin: DiscordIntegration) {
     val activityTimeWorld get() = getString("activity.time.world")
     val activityTimeRound get() = getInt("activity.time.round")
     val activityTime24h get() = config.getBoolean("activity.time.24h")
+    val activityIdle get() = config.getBoolean("activity.idle-when-no-players-online")
     val joinEmbed get() = getEmbedConfig("chat.join-embed")
     val quitEmbed get() = getEmbedConfig("chat.quit-embed")
     val deathEmbed get() = getEmbedConfig("chat.death-embed")
