@@ -9,13 +9,12 @@ import org.bukkit.event.entity.PlayerDeathEvent
 import java.text.DecimalFormat
 
 class DiscordFormatter(val plugin: DiscordIntegration) {
-    private fun formatDeath(base: String, event: PlayerDeathEvent): String {
-        return (ChatColor.stripColor(base) as String)
-            .replace("%player%", event.entity.name)
-            .replace("%pos-x%", event.entity.location.blockX.toString())
-            .replace("%pos-y%", event.entity.location.blockY.toString())
-            .replace("%pos-z%", event.entity.location.blockZ.toString())
-    }
+    private fun formatDeath(base: String, event: PlayerDeathEvent) = ChatColor.stripColor(base)
+        .orEmpty()
+        .replace("%player%", event.entity.name)
+        .replace("%pos-x%", event.entity.location.blockX.toString())
+        .replace("%pos-y%", event.entity.location.blockY.toString())
+        .replace("%pos-z%", event.entity.location.blockZ.toString())
 
     fun formatDeathMessage(event: PlayerDeathEvent): String {
         val baseMessage = event.deathMessage?.let {
@@ -25,9 +24,8 @@ class DiscordFormatter(val plugin: DiscordIntegration) {
         return formatDeath(baseMessage, event)
     }
 
-    fun formatDeathEmbedTitle(event: PlayerDeathEvent): String {
-        return formatDeath(plugin.messageManager.discordDeathEmbedTitle, event)
-    }
+    fun formatDeathEmbedTitle(event: PlayerDeathEvent) =
+        formatDeath(plugin.messageManager.discordDeathEmbedTitle, event)
 
     fun formatActivity(
         players: Collection<Player>,
@@ -64,13 +62,12 @@ class DiscordFormatter(val plugin: DiscordIntegration) {
             .replace("%time%", timeDisplay)
     }
 
-    fun formatJoinInfo(player: Player): String {
-        return plugin.messageManager.discordJoin
-            .replace("%player%", player.name)
-    }
+    fun formatJoinInfo(player: Player) = plugin.messageManager.discordJoin
+        .replace("%player%", player.name)
 
-    fun formatQuitInfo(player: Player): String {
-        return plugin.messageManager.discordQuit
-            .replace("%player%", player.name)
-    }
+    fun formatQuitInfo(player: Player) = plugin.messageManager.discordQuit
+        .replace("%player%", player.name)
+
+    fun formatMessageContent(message: String): String = plugin.emojiFormatter
+        .replaceEmojiNames(ChatColor.stripColor(message).orEmpty())
 }

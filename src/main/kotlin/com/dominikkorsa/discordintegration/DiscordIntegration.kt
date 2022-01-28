@@ -5,6 +5,7 @@ import com.dominikkorsa.discordintegration.command.DiscordIntegrationCommand
 import com.dominikkorsa.discordintegration.config.ConfigManager
 import com.dominikkorsa.discordintegration.config.MessageManager
 import com.dominikkorsa.discordintegration.formatter.DiscordFormatter
+import com.dominikkorsa.discordintegration.formatter.EmojiFormatter
 import com.dominikkorsa.discordintegration.formatter.MinecraftFormatter
 import com.dominikkorsa.discordintegration.listener.ChatListener
 import com.dominikkorsa.discordintegration.listener.DeathListener
@@ -33,8 +34,9 @@ class DiscordIntegration: JavaPlugin() {
     val client = Client(this)
     val discordFormatter = DiscordFormatter(this)
     val minecraftFormatter = MinecraftFormatter(this)
+    val emojiFormatter = EmojiFormatter(this)
     val avatarService = AvatarService(this)
-    val lockFileService = LockFileService(this)
+    private val lockFileService = LockFileService(this)
     lateinit var configManager: ConfigManager
     lateinit var messageManager: MessageManager
     private var activityJob: Job? = null
