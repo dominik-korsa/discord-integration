@@ -34,6 +34,7 @@ class DiscordIntegration: JavaPlugin() {
     val discordFormatter = DiscordFormatter(this)
     val minecraftFormatter = MinecraftFormatter(this)
     val avatarService = AvatarService(this)
+    val lockFileService = LockFileService(this)
     lateinit var configManager: ConfigManager
     lateinit var messageManager: MessageManager
     private var activityJob: Job? = null
@@ -45,11 +46,15 @@ class DiscordIntegration: JavaPlugin() {
         messageManager = MessageManager(this)
         initCommands()
         registerEvents()
-        this.launchAsync { connect(true) }
+        this.launchAsync {
+            connect(true)
+            lockFileService.start()
+        }
     }
 
     override fun onDisable() {
         super.onDisable()
+        lockFileService.stop()
         runBlocking {
             withTimeout(Duration.ofSeconds(5)) {
                 disconnect(true)
@@ -86,7 +91,9 @@ class DiscordIntegration: JavaPlugin() {
         client.disconnect()
     }
 
-    suspend fun reconnect() {
+    suspend fun reload() {
+        configManager.reload()
+        messageManager.reload()
         connectionLock.withLock {
             disconnect(false)
             connect(false)

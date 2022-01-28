@@ -8,6 +8,13 @@ discord:
   death: '**%death-message%**'
   death-fallback: '**%player% died**'
   death-embed-title: '**%player% died**'
+  crash-embed:
+    title: Server started after crash
+    content: |
+      The previous server process did not exit properly.
+      It might have crashed or have been force stopped.
+      This might also be an error of Discord Integration.
+    last-online: Last online
 minecraft:
   message: '§2%nickname% §7in #%channel-name%§7 » §r%content%'
   tooltip: |
@@ -21,7 +28,7 @@ commands:
       §9§lDiscord Integration help§r
       §9Version: §l%plugin-version%§r
     command: '§9> §r%command% §9- %description%§r'
-  unknown: '§cUnknown command. See avaliable commands using §r/di help'
+  unknown: '§cUnknown command. See available commands using §r/di help'
   descriptions:
     help: 'Show list of plugin commands'
     reload: 'Reload plugin configuration and reconnect'

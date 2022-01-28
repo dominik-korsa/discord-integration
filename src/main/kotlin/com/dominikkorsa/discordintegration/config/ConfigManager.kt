@@ -44,4 +44,5 @@ class ConfigManager(private val plugin: DiscordIntegration) {
     val joinEmbed get() = getEmbedConfig("chat.join-embed")
     val quitEmbed get() = getEmbedConfig("chat.quit-embed")
     val deathEmbed get() = getEmbedConfig("chat.death-embed")
+    val crashEmbed get() = getEmbedConfig("chat.crash-embed")
 }

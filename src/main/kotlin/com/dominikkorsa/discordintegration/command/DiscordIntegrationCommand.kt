@@ -11,11 +11,7 @@ class DiscordIntegrationCommand(val plugin: DiscordIntegration): BaseCommand() {
     @Subcommand("reload")
     @CommandPermission("discordintegration.command.reload")
     fun onReload() {
-        plugin.launchAsync {
-            plugin.configManager.reload()
-            plugin.messageManager.reload()
-            plugin.reconnect()
-        }
+        plugin.launchAsync { plugin.reload() }
     }
 
     @Subcommand("help")
