@@ -5,7 +5,6 @@ import discord4j.common.util.Snowflake
 import discord4j.core.DiscordClient
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.entity.Webhook
-import discord4j.core.`object`.entity.channel.TextChannel
 import discord4j.core.`object`.presence.ClientActivity
 import discord4j.core.`object`.presence.ClientPresence
 import discord4j.core.`object`.presence.Status
@@ -69,18 +68,6 @@ class Client(private val plugin: DiscordIntegration) {
             val status = if (players.isEmpty() && plugin.configManager.activityIdle) Status.IDLE else Status.ONLINE
             updatePresence(ClientPresence.of(status, ClientActivity.playing(message))).awaitFirstOrNull()
         }
-    }
-
-    private suspend fun getChatChannel(id: Snowflake): TextChannel {
-        val channel = gateway
-            ?.getChannelById(id)
-            ?.awaitFirstOrNull() ?: throw Exception("Channel not found")
-        if (channel !is TextChannel) throw Exception("Channel is not of type Text")
-        return channel
-    }
-
-    private suspend fun getChatChannel(id: String): TextChannel {
-        return getChatChannel(Snowflake.of(id))
     }
 
     private suspend fun getWebhooks(): Collection<Webhook>? {
