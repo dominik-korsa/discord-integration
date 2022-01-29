@@ -22,9 +22,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.time.delay
 import kotlinx.coroutines.time.withTimeout
-import net.md_5.bungee.api.chat.ComponentBuilder
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
+import net.md_5.bungee.api.chat.hover.content.Text
 import org.bukkit.Bukkit
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
@@ -123,11 +123,11 @@ class DiscordIntegration: JavaPlugin() {
         ))
         messageComponent.hoverEvent = HoverEvent(
             HoverEvent.Action.SHOW_TEXT,
-            ComponentBuilder(minecraftFormatter.formatDiscordMessage(
+            Text(minecraftFormatter.formatDiscordMessage(
                 messageManager.minecraftTooltip,
                 message,
                 channel
-            )).create()
+            ))
         )
         server.spigot().broadcast(messageComponent)
     }
