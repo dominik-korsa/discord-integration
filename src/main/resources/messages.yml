@@ -16,12 +16,36 @@ discord:
       This might also be an error of Discord Integration.
     last-online: Last online
 minecraft:
-  message: '§2%nickname% §7in #%channel-name%§7 » §r%content%'
+  message: '%user-color%@%nickname% §7in #%channel-name%§7 » §r%content%'
   tooltip: |
     §9§lDiscord Integration§r
-    §6Channel: §r#%channel-name% §7(%channel-id%)§r
-    §6User: §r%user-tag%§r
+    §6Channel: §r#%channel-name%§r
+    §6User: §r@%user-tag%§r
+    §6User id: §7%user-id%§r
     §6Server: §r%guild-name%§r
+  default-author-color: '§f'
+
+  member-mention:
+    content: '%user-color%@%nickname%'
+    tooltip: |
+      §9User mention§r
+      §6User: §r@%user-tag%§r
+      §6User id: §7%user-id%§r
+    default-color: '§9'
+  role-mention:
+    content: '%role-color%@%role-name%'
+    tooltip: |
+      §9Role mention§r
+      §6Role name: §r%role-name%§r
+    default-color: '§9'
+  channel-mention:
+    content: '§b#%channel-name%'
+    tooltip: |
+      §9Channel§r
+      §6Name: §r%channel-name%§r
+      §6Category: §r%channel-category%§r
+      §6Id: §7%channel-id%§r
+  no-category: '§7None'
 commands:
   help:
     header: |

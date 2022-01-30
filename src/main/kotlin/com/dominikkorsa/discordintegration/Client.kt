@@ -139,4 +139,10 @@ class Client(private val plugin: DiscordIntegration) {
     }
 
     fun getEmojiFormat(name: String) = guildEmojis?.firstNotNullOfOrNull { it.value[name] }
+
+    suspend fun getMember(guildId: Snowflake, userId: Snowflake) = gateway?.getMemberById(guildId, userId)?.awaitFirstOrNull()
+
+    suspend fun getRole(guildId: Snowflake, roleId: Snowflake) = gateway?.getRoleById(guildId, roleId)?.awaitFirstOrNull()
+
+    suspend fun getChannel(channelId: Snowflake) = gateway?.getChannelById(channelId)?.awaitFirstOrNull()
 }

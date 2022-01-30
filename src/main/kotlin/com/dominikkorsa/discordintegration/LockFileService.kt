@@ -44,10 +44,10 @@ class LockFileService(private val plugin: DiscordIntegration) {
             webhookBuilder
                 .addEmbed(
                     EmbedCreateSpec.builder()
-                        .title(plugin.messageManager.discordCrashEmbedTitle)
-                        .description(plugin.messageManager.discordCrashEmbedContent)
+                        .title(plugin.messages.discordCrashEmbedTitle)
+                        .description(plugin.messages.discordCrashEmbedContent)
                         .addField(
-                            plugin.messageManager.discordCrashEmbedLastOnline,
+                            plugin.messages.discordCrashEmbedLastOnline,
                             "<t:${timestamp/1000}>",
                             false
                         )

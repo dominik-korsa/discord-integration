@@ -24,7 +24,7 @@ class DiscordIntegrationCommand(val plugin: DiscordIntegration): BaseCommand() {
 
     @CatchUnknown
     fun onUnknown(sender: CommandSender) {
-        sender.sendMessage(plugin.messageManager.commandsUnknown)
+        sender.sendMessage(plugin.messages.commandsUnknown)
     }
 
     private fun sendHelpCommandItem(

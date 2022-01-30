@@ -18,14 +18,14 @@ class DiscordFormatter(val plugin: DiscordIntegration) {
 
     fun formatDeathMessage(event: PlayerDeathEvent): String {
         val baseMessage = event.deathMessage?.let {
-            plugin.messageManager.discordDeath
+            plugin.messages.discordDeath
                 .replace("%death-message%", it)
-        } ?: plugin.messageManager.discordDeathFallback
+        } ?: plugin.messages.discordDeathFallback
         return formatDeath(baseMessage, event)
     }
 
     fun formatDeathEmbedTitle(event: PlayerDeathEvent) =
-        formatDeath(plugin.messageManager.discordDeathEmbedTitle, event)
+        formatDeath(plugin.messages.discordDeathEmbedTitle, event)
 
     fun formatActivity(
         players: Collection<Player>,
@@ -34,8 +34,8 @@ class DiscordFormatter(val plugin: DiscordIntegration) {
         time: Long
     ): String {
         val messageTemplate = when {
-            players.isNotEmpty() -> plugin.messageManager.discordActivity
-            else -> plugin.messageManager.discordActivityEmpty
+            players.isNotEmpty() -> plugin.messages.discordActivity
+            else -> plugin.messages.discordActivityEmpty
         }
 
         val timeOfDay = ((time + 6000).mod((24000).toLong()) * 60 / 1000)
@@ -62,10 +62,10 @@ class DiscordFormatter(val plugin: DiscordIntegration) {
             .replace("%time%", timeDisplay)
     }
 
-    fun formatJoinInfo(player: Player) = plugin.messageManager.discordJoin
+    fun formatJoinInfo(player: Player) = plugin.messages.discordJoin
         .replace("%player%", player.name)
 
-    fun formatQuitInfo(player: Player) = plugin.messageManager.discordQuit
+    fun formatQuitInfo(player: Player) = plugin.messages.discordQuit
         .replace("%player%", player.name)
 
     fun formatMessageContent(message: String): String = plugin.emojiFormatter

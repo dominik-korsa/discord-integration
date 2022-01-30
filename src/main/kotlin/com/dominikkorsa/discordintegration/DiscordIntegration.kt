@@ -22,9 +22,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.time.delay
 import kotlinx.coroutines.time.withTimeout
-import net.md_5.bungee.api.chat.HoverEvent
-import net.md_5.bungee.api.chat.TextComponent
-import net.md_5.bungee.api.chat.hover.content.Text
+import net.md_5.bungee.api.ChatMessageType
 import org.bukkit.Bukkit
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
@@ -38,14 +36,14 @@ class DiscordIntegration: JavaPlugin() {
     val avatarService = AvatarService(this)
     private val lockFileService = LockFileService(this)
     lateinit var configManager: ConfigManager
-    lateinit var messageManager: MessageManager
+    lateinit var messages: MessageManager
     private var activityJob: Job? = null
     private val connectionLock = Mutex()
 
     override fun onEnable() {
         super.onEnable()
         configManager = ConfigManager(this)
-        messageManager = MessageManager(this)
+        messages = MessageManager(this)
         initCommands()
         registerEvents()
         this.launchAsync {
@@ -78,9 +76,9 @@ class DiscordIntegration: JavaPlugin() {
                     delay(Duration.ofSeconds(configManager.activityUpdateInterval.toLong()))
                 }
             }
-            Bukkit.broadcastMessage(messageManager.connected)
+            Bukkit.broadcastMessage(messages.connected)
         } catch (error: Exception) {
-            Bukkit.broadcastMessage(messageManager.connectionFailed)
+            Bukkit.broadcastMessage(messages.connectionFailed)
             error.printStackTrace()
         }
     }
@@ -95,7 +93,7 @@ class DiscordIntegration: JavaPlugin() {
 
     suspend fun reload() {
         configManager.reload()
-        messageManager.reload()
+        messages.reload()
         connectionLock.withLock {
             disconnect(false)
             connect(false)
@@ -116,20 +114,14 @@ class DiscordIntegration: JavaPlugin() {
     suspend fun broadcastDiscordMessage(message: Message) {
         val channel = message.channel.awaitFirstOrNull()
         if (channel == null || channel !is GuildMessageChannel) return
-        val messageComponent = TextComponent(minecraftFormatter.formatDiscordMessage(
-            messageManager.minecraftMessage,
+        val parts = minecraftFormatter.formatDiscordMessage(
             message,
-            channel
-        ))
-        messageComponent.hoverEvent = HoverEvent(
-            HoverEvent.Action.SHOW_TEXT,
-            Text(minecraftFormatter.formatDiscordMessage(
-                messageManager.minecraftTooltip,
-                message,
-                channel
-            ))
-        )
-        server.spigot().broadcast(messageComponent)
+            channel,
+        ).toTypedArray()
+        server.onlinePlayers.forEach {
+            it.spigot().sendMessage(ChatMessageType.CHAT, *parts)
+        }
+        Bukkit.getConsoleSender().spigot().sendMessage(*parts)
     }
 
     private fun registerSuspendingEvents(listener: Listener) {
