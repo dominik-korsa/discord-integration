@@ -20,7 +20,8 @@ class AvatarService(private val plugin: DiscordIntegration) {
             )
             val reader = response.content.toInputStream().reader(Charsets.UTF_8)
             val responseData = Gson().fromJson(reader, NameToUUIDResponse::class.java)
-            uuids[player.name] = responseData.id
+           
+            uuids[player.name] = if (responseData != null) responseData.id else player.getUniqueId().toString()
         } catch (error: Exception) {
             error.printStackTrace()
         }
