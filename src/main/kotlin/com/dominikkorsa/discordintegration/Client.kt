@@ -5,14 +5,14 @@ import com.google.common.collect.ImmutableMap
 import discord4j.common.util.Snowflake
 import discord4j.core.DiscordClient
 import discord4j.core.GatewayDiscordClient
-import discord4j.core.`object`.entity.GuildEmoji
-import discord4j.core.`object`.presence.ClientActivity
-import discord4j.core.`object`.presence.ClientPresence
-import discord4j.core.`object`.presence.Status
 import discord4j.core.event.domain.guild.EmojisUpdateEvent
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
+import discord4j.core.`object`.entity.GuildEmoji
+import discord4j.core.`object`.presence.ClientActivity
+import discord4j.core.`object`.presence.ClientPresence
+import discord4j.core.`object`.presence.Status
 import discord4j.core.spec.WebhookExecuteSpec
 import discord4j.rest.util.AllowedMentions
 import kotlinx.coroutines.async
@@ -60,9 +60,9 @@ class Client(private val plugin: DiscordIntegration) {
     }
 
     private fun mapEmojis(emojis: Collection<GuildEmoji>): ImmutableMap<String, String> {
-        val builder = ImmutableMap.builder<String, String>()
-        emojis.forEach { builder.put(it.name, it.asFormat()) }
-        return builder.build()
+        val map = mutableMapOf<String, String>()
+        emojis.forEach { map[it.name] = it.asFormat() }
+        return ImmutableMap.copyOf(map)
     }
 
     suspend fun initListeners() = coroutineScope {

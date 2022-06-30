@@ -5,7 +5,7 @@ import java.util.regex.Pattern
 
 class EmojiFormatter(private val plugin: DiscordIntegration) {
     private val unicodeToName = HashMap<String, List<String>>()
-    private val nameToUnicode = HashMap<String, String>()
+    private val nameToMarkdown = HashMap<String, String>()
     private val unicodeEmojiPattern: Pattern
     private val serverEmojiPattern = Pattern.compile("<a?:(\\w+):\\d+>")
     private val emojiNamePattern = Pattern.compile(":(\\w+):")
@@ -17,7 +17,7 @@ class EmojiFormatter(private val plugin: DiscordIntegration) {
             val (key, nameString) = line.split(": ")
             val names = nameString.split(", ")
             unicodeToName[key] = names
-            names.forEach { nameToUnicode[it] = key }
+            names.forEach { nameToMarkdown[it] = key }
         }
         unicodeEmojiPattern = Pattern.compile(unicodeToName.keys.joinToString("|") { Pattern.quote(it) })
     }
@@ -33,7 +33,7 @@ class EmojiFormatter(private val plugin: DiscordIntegration) {
     fun replaceEmojis(input: String): String = replaceGuildEmojis(replaceUnicodeEmojis(input))
 
     fun replaceEmojiNames(input: String): String = emojiNamePattern.matcher(input).replaceAll {
-        nameToUnicode[it.group(1)]
+        nameToMarkdown[it.group(1)]
             ?: plugin.client.getEmojiFormat(it.group(1))
             ?: it.group()
     }
