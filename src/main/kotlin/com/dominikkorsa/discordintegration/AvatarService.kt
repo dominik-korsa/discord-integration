@@ -19,9 +19,9 @@ class AvatarService(private val plugin: DiscordIntegration) {
                 "https://api.mojang.com/users/profiles/minecraft/${player.name}"
             )
             val reader = response.content.toInputStream().reader(Charsets.UTF_8)
-            val responseData = Gson().fromJson(reader, NameToUUIDResponse::class.java)
-           
-            uuids[player.name] = if (responseData != null) responseData.id else player.getUniqueId().toString()
+            val responseData: NameToUUIDResponse? = Gson().fromJson(reader, NameToUUIDResponse::class.java)
+
+            if (responseData != null) uuids[player.name] = responseData.id
         } catch (error: Exception) {
             error.printStackTrace()
         }
