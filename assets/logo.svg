@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="48"
+   height="48"
+   viewBox="0 0 12.7 12.7"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   sodipodi:docname="logo.svg"
+   inkscape:export-filename="D:\spigot-plugins\discord-integration\assets\logo.png"
+   inkscape:export-xdpi="768"
+   inkscape:export-ydpi="768"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#111111"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     units="px"
+     inkscape:zoom="3.9986889"
+     inkscape:cx="33.135862"
+     inkscape:cy="35.386599"
+     inkscape:window-width="1920"
+     inkscape:window-height="991"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     inkscape:snap-text-baseline="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid1040"
+       empspacing="4"
+       spacingx="0.52916667"
+       spacingy="0.52916667" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Warstwa 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       sodipodi:type="star"
+       style="fill:#5865f2;fill-opacity:1;fill-rule:evenodd;stroke:#1a1a1a;stroke-width:1.50000002;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000"
+       id="path1225"
+       inkscape:flatsided="true"
+       sodipodi:sides="6"
+       sodipodi:cx="24"
+       sodipodi:cy="24"
+       sodipodi:r1="22"
+       sodipodi:r2="13.856407"
+       sodipodi:arg1="-1.5707963"
+       sodipodi:arg2="-1.0471976"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="m 24,2 19.052559,11 0,22 L 24,46 4.9474409,35 l 4e-7,-22 z"
+       transform="scale(0.26458333)" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-size:9.17222px;line-height:1.25;font-family:Bahnschrift;-inkscape-font-specification:'Bahnschrift Semi-Bold';stroke-width:0.66145833;stroke:#000000;paint-order:markers stroke fill;stroke-miterlimit:4;stroke-dasharray:none"
+       x="6.3499999"
+       y="8.7191916"
+       id="text2717"><tspan
+         sodipodi:role="line"
+         id="tspan2715"
+         style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-size:9.17222px;font-family:Bahnschrift;-inkscape-font-specification:'Bahnschrift Semi-Bold';text-align:center;text-anchor:middle;fill:#ffffff;stroke-width:0.66145833;stroke:#000000;paint-order:markers stroke fill;stroke-miterlimit:4;stroke-dasharray:none"
+         x="6.3499999"
+         y="8.7191916">@</tspan></text>
+  </g>
+</svg>
