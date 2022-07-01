@@ -46,6 +46,22 @@ minecraft:
       §6Category: §r%channel-category%§r
       §6Id: §7%channel-id%§r
   no-category: '§7None'
+
+  linking:
+    # A message displayed to users who haven't yet linked their account
+    # It's a good idea to include a Discord invite link in here
+    kick: |
+      §6Please link your Discord account,
+      §6by executing this command on our Discord server:
+      
+      §r/link-minecraft %code%
+      
+      §7This code will expire after 10 minutes
+      
+      §7If you haven't joined out Discord server yet,
+      use this invite: §rINSERT INVITE LINK HERE
+      
+      §9Discord Integration §7plugin by §rDominik Korsa
 commands:
   help:
     header: |

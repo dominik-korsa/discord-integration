@@ -7,8 +7,10 @@ import com.dominikkorsa.discordintegration.config.MessageManager
 import com.dominikkorsa.discordintegration.formatter.DiscordFormatter
 import com.dominikkorsa.discordintegration.formatter.EmojiFormatter
 import com.dominikkorsa.discordintegration.formatter.MinecraftFormatter
+import com.dominikkorsa.discordintegration.linking.Linking
 import com.dominikkorsa.discordintegration.listener.ChatListener
 import com.dominikkorsa.discordintegration.listener.DeathListener
+import com.dominikkorsa.discordintegration.listener.LoginListener
 import com.dominikkorsa.discordintegration.listener.PlayerCountListener
 import com.github.shynixn.mccoroutine.launchAsync
 import com.github.shynixn.mccoroutine.registerSuspendingEvents
@@ -34,6 +36,8 @@ class DiscordIntegration: JavaPlugin() {
     val minecraftFormatter = MinecraftFormatter(this)
     val emojiFormatter = EmojiFormatter(this)
     val avatarService = AvatarService(this)
+    val db = Db(this)
+    val linking = Linking(this)
     private val lockFileService = LockFileService(this)
     lateinit var configManager: ConfigManager
     lateinit var messages: MessageManager
@@ -46,6 +50,7 @@ class DiscordIntegration: JavaPlugin() {
         messages = MessageManager(this)
         initCommands()
         registerEvents()
+        linking.startJob()
         this.launchAsync {
             connect(true)
             lockFileService.start()
@@ -109,6 +114,7 @@ class DiscordIntegration: JavaPlugin() {
         registerSuspendingEvents(PlayerCountListener(this@DiscordIntegration))
         registerSuspendingEvents(ChatListener(this@DiscordIntegration))
         registerSuspendingEvents(DeathListener(this@DiscordIntegration))
+        registerSuspendingEvents(LoginListener(this@DiscordIntegration))
     }
 
     suspend fun broadcastDiscordMessage(message: Message) {

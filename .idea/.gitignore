@@ -2,8 +2,9 @@
 /shelf/
 /workspace.xml
 # Datasource local storage ignored files
-/../../../../:\spigot-plugins\discord-integration\.idea/dataSources/
+/dataSources/
 /dataSources.local.xml
+/dataSources.xml
 # Editor-based HTTP Client requests
 /httpRequests/
 

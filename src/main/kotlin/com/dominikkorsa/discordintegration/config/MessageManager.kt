@@ -38,6 +38,7 @@ class MessageManager(plugin: DiscordIntegration) {
     val roleMentionDefaultColor get() = getString("minecraft.role-mention.default-color").trimEnd()
     val channelMentionContent get() = getString("minecraft.channel-mention.content")
     val channelMentionTooltip get() = getString("minecraft.channel-mention.tooltip").trimEnd()
+    val kickMessage get() = getString("minecraft.linking.kick")
     val noCategory get() = getString("minecraft.no-category")
     val discordJoin get() = getString("discord.join")
     val discordQuit get() = getString("discord.quit")
