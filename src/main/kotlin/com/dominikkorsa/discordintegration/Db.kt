@@ -1,16 +1,13 @@
 package com.dominikkorsa.discordintegration
 
+import com.dominikkorsa.discordintegration.entities.PlayerEntity
+import com.dominikkorsa.discordintegration.entities.Players
 import org.bukkit.OfflinePlayer
-import org.jetbrains.exposed.dao.UUIDEntity
-import org.jetbrains.exposed.dao.UUIDEntityClass
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
-import java.util.*
 
 class Db(plugin: DiscordIntegration) {
     init {
@@ -22,21 +19,12 @@ class Db(plugin: DiscordIntegration) {
         }
     }
 
-    suspend fun getPlayer(player: OfflinePlayer): Player {
+    suspend fun getPlayer(player: OfflinePlayer): PlayerEntity {
         return newSuspendedTransaction {
-            val dbPlayer = Player.find { Players.id eq player.uniqueId }.singleOrNull()
-            dbPlayer ?: Player.new(player.uniqueId) {
+            val dbPlayer = PlayerEntity.find { Players.id eq player.uniqueId }.singleOrNull()
+            dbPlayer ?: PlayerEntity.new(player.uniqueId) {
 
             }
         }
     }
-}
-
-object Players : UUIDTable() {
-    val discordId = integer("discordId").nullable().uniqueIndex()
-}
-
-class Player(id: EntityID<UUID>) : UUIDEntity(id) {
-    companion object : UUIDEntityClass<Player>(Players)
-    var discordId by Players.discordId
 }

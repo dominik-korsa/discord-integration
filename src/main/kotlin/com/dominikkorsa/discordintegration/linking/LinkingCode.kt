@@ -1,14 +1,14 @@
 package com.dominikkorsa.discordintegration.linking
 
 import kotlinx.coroutines.delay
-import org.bukkit.OfflinePlayer
+import org.bukkit.entity.Player
 import java.time.Duration
 import java.time.LocalDateTime.now
 import kotlin.time.toKotlinDuration
 
 class LinkingCode(
     val code: String,
-    private val player: OfflinePlayer
+    val player: Player
 ) {
     private val validUntil = now() + Duration.ofMinutes(10)
 

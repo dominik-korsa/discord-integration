@@ -1,21 +1,26 @@
 package com.dominikkorsa.discordintegration.linking
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
+import com.dominikkorsa.discordintegration.entities.PlayerEntity
+import com.dominikkorsa.discordintegration.entities.Players
 import com.github.shynixn.mccoroutine.launchAsync
+import discord4j.common.util.Snowflake
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
 import org.bukkit.OfflinePlayer
+import org.bukkit.entity.Player
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 
 class Linking(private val plugin: DiscordIntegration) {
-    private val pendingConnections = HashMap<String, LinkingCode>()
-    private val pendingConnectionQueue = Channel<LinkingCode>(8192)
+    private val linkingCodes = HashMap<String, LinkingCode>()
+    private val linkingCodeQueue = Channel<LinkingCode>(8192)
 
     fun startJob() {
         plugin.launchAsync {
-            pendingConnectionQueue.consumeEach {
+            linkingCodeQueue.consumeEach {
                 it.waitUntilInvalid()
-                pendingConnections.remove(it.code)
+                linkingCodes.remove(it.code)
             }
         }
     }
@@ -24,22 +29,35 @@ class Linking(private val plugin: DiscordIntegration) {
         return plugin.db.getPlayer(player).discordId != null
     }
 
-    fun generateLinkingCode(player: OfflinePlayer): LinkingCode {
+    fun generateLinkingCode(player: Player): LinkingCode {
         val allowedChars = ('a'..'z') + ('0'..'9')
         var code: String
         do {
             code = (1..6)
                 .map { allowedChars.random() }
                 .joinToString("")
-        } while (pendingConnections.containsKey(code))
+        } while (linkingCodes.containsKey(code))
         val linkingCode = LinkingCode(code, player)
-        pendingConnections[code] = linkingCode
-        if (pendingConnectionQueue.trySend(linkingCode).isFailure) {
-            pendingConnectionQueue.tryReceive().getOrNull()?.let {
-                pendingConnections.remove(it.code)
+        linkingCodes[code] = linkingCode
+        if (linkingCodeQueue.trySend(linkingCode).isFailure) {
+            linkingCodeQueue.tryReceive().getOrNull()?.let {
+                linkingCodes.remove(it.code)
             }
-            pendingConnectionQueue.trySend(linkingCode).getOrThrow()
+            linkingCodeQueue.trySend(linkingCode).getOrThrow()
         }
         return linkingCode
+    }
+
+    suspend fun link(code: String, discordId: Snowflake): Player? {
+        val linkingCode = linkingCodes[code.lowercase()] ?: return null
+        if (!linkingCode.isValid()) return null
+        linkingCode.use()
+        val dbPlayer = plugin.db.getPlayer(linkingCode.player)
+        newSuspendedTransaction {
+            // TODO: Remove role if discordId of previous player changed
+            PlayerEntity.find { return@find Players.discordId eq discordId.asLong() }.singleOrNull()?.discordId = null
+            dbPlayer.discordId = discordId.asLong()
+        }
+        return linkingCode.player
     }
 }

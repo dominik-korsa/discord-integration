@@ -8,25 +8,26 @@ import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.guild.EmojisUpdateEvent
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
+import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
+import discord4j.core.`object`.command.ApplicationCommandOption
 import discord4j.core.`object`.entity.GuildEmoji
 import discord4j.core.`object`.presence.ClientActivity
 import discord4j.core.`object`.presence.ClientPresence
 import discord4j.core.`object`.presence.Status
 import discord4j.core.spec.WebhookExecuteSpec
+import discord4j.discordjson.json.ApplicationCommandOptionData
+import discord4j.discordjson.json.ApplicationCommandRequest
 import discord4j.rest.util.AllowedMentions
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
-import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactive.collect
+import kotlinx.coroutines.reactive.*
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+
 
 class Client(private val plugin: DiscordIntegration) {
     companion object {
@@ -41,6 +42,7 @@ class Client(private val plugin: DiscordIntegration) {
         val client = DiscordClient.create(plugin.configManager.discordToken)
         gateway = client.login().awaitFirstOrNull() ?: throw Exception("Failed to connect to Discord")
         initEmojis()
+        initCommands()
     }
 
     suspend fun disconnect() {
@@ -52,9 +54,9 @@ class Client(private val plugin: DiscordIntegration) {
     }
 
     private suspend fun initEmojis() {
-        gateway?.apply {
+        gateway?.let { it ->
             val result = HashMap<Snowflake, ImmutableMap<String, String>>()
-            guilds.collect { result[it.id] = mapEmojis(it.emojis.collectList().awaitFirst()) }
+            it.guilds.collect { result[it.id] = mapEmojis(it.emojis.collectList().awaitFirst()) }
             guildEmojis = result
         }
     }
@@ -82,7 +84,10 @@ class Client(private val plugin: DiscordIntegration) {
                 },
                 async {
                     eventDispatcher.on(GuildCreateEvent::class.java)
-                        .collect { guildEmojis?.set(it.guild.id, mapEmojis(it.guild.emojis.collectList().awaitFirst())) }
+                        .collect {
+                            guildEmojis?.set(it.guild.id, mapEmojis(it.guild.emojis.collectList().awaitFirst()))
+                            registerCommands(it.guild.id)
+                        }
                 },
                 async {
                     eventDispatcher.on(GuildDeleteEvent::class.java)
@@ -92,7 +97,29 @@ class Client(private val plugin: DiscordIntegration) {
                     eventDispatcher.on(EmojisUpdateEvent::class.java)
                         .collect { guildEmojis?.set(it.guildId, mapEmojis(it.emojis)) }
                 },
+                async {
+                    eventDispatcher.on(ChatInputInteractionEvent::class.java)
+                        .collect {
+                            when (it.commandName) {
+                                "link-minecraft" -> handleLinkMinecraftCommand(it)
+                            }
+                        }
+                },
             )
+        }
+    }
+
+    private suspend fun handleLinkMinecraftCommand(event: ChatInputInteractionEvent) {
+        val player = plugin.linking.link(
+            event.getOption("code").orElseThrow().value.orElseThrow().asString(),
+            event.interaction.user.id
+        )
+
+        // TODO: Add messages to config
+        if (player == null) {
+            event.reply("Code expired").awaitFirst()
+        } else {
+            event.reply("Connected with player ${player.name}").awaitFirst()
         }
     }
 
@@ -139,6 +166,36 @@ class Client(private val plugin: DiscordIntegration) {
     }
 
     fun getEmojiFormat(name: String) = guildEmojis?.firstNotNullOfOrNull { it.value[name] }
+
+    private suspend fun initCommands() {
+        gateway?.guilds?.collect {
+            registerCommands(it.id)
+        }
+    }
+
+    private suspend fun registerCommands(guildId: Snowflake) {
+        // TODO: Don't register command if linking is not enabled
+        val linkMinecraftCommand: ApplicationCommandRequest = ApplicationCommandRequest.builder()
+            .name("link-minecraft")
+            .description("Link Minecraft account to your Discord account")
+            .addOption(
+                ApplicationCommandOptionData.builder()
+                    .name("code")
+                    .description("One-time code")
+                    .type(ApplicationCommandOption.Type.STRING.value)
+                    .required(true)
+                    .build()
+            )
+            .build()
+
+        gateway?.restClient?.let {
+            it.applicationService.bulkOverwriteGuildApplicationCommand(
+                it.applicationId.cache().awaitFirst(),
+                guildId.asLong(),
+                listOf(linkMinecraftCommand)
+            ).awaitSingle()
+        }
+    }
 
     suspend fun getMember(guildId: Snowflake, userId: Snowflake) = gateway?.getMemberById(guildId, userId)?.awaitFirstOrNull()
 
