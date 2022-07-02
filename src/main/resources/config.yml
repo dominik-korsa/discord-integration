@@ -49,3 +49,5 @@ activity:
     # Whether to use 24-hour clock (true) or 12-hour clock (false)
     24h: true
   idle-when-no-players-online: true
+linking:
+  enable: false

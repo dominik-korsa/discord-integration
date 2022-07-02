@@ -39,13 +39,13 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
     private fun formatRole(template: String, role: Role) = template
         .replace("%role-name%", role.name)
         .replace("%role-id%", role.id.asString())
-        .replace("%role-color%", formatRoleColor(role) ?: plugin.messages.roleMentionDefaultColor)
+        .replace("%role-color%", formatRoleColor(role) ?: plugin.messages.minecraft.roleMentionDefaultColor)
 
     private suspend fun formatChannel(template: String, channel: GuildMessageChannel) = template
         .replace("%channel-name%", channel.name)
         .replace("%channel-id%", channel.id.asString())
         .replace("%channel-category%",
-            channel.tryCast<CategorizableChannel>()?.category?.awaitFirstOrNull()?.name ?: plugin.messages.noCategory
+            channel.tryCast<CategorizableChannel>()?.category?.awaitFirstOrNull()?.name ?: plugin.messages.minecraft.noCategory
         )
         .replace("%guild-name%", channel.guild.awaitFirst().name)
 
@@ -62,16 +62,16 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
                         val guildMember = plugin.client.getMember(messageChannel.guildId, Snowflake.of(it.group(1)))
                             ?: return@async listOf(TextComponent(it.group()))
                         val component = TextComponent(*TextComponent.fromLegacyText(formatUser(
-                            plugin.messages.memberMentionContent,
+                            plugin.messages.minecraft.memberMentionContent,
                             guildMember,
-                            plugin.messages.memberMentionDefaultColor
+                            plugin.messages.minecraft.memberMentionDefaultColor
                         )))
                         if (hover) component.hoverEvent = HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
                             Text(formatUser(
-                                plugin.messages.memberMentionTooltip,
+                                plugin.messages.minecraft.memberMentionTooltip,
                                 guildMember,
-                                plugin.messages.memberMentionDefaultColor
+                                plugin.messages.minecraft.memberMentionDefaultColor
                             ))
                         )
                         listOf(component)
@@ -81,10 +81,12 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
                     async {
                         val role = plugin.client.getRole(messageChannel.guildId, Snowflake.of(it.group(1)))
                             ?: return@async listOf(TextComponent(it.group()))
-                        val component = TextComponent(*TextComponent.fromLegacyText(formatRole(plugin.messages.roleMentionContent, role)))
+                        val component = TextComponent(*TextComponent.fromLegacyText(
+                            formatRole(plugin.messages.minecraft.roleMentionContent, role)
+                        ))
                         if (hover) component.hoverEvent = HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
-                            Text(formatRole(plugin.messages.roleMentionTooltip, role))
+                            Text(formatRole(plugin.messages.minecraft.roleMentionTooltip, role))
                         )
                         listOf(component)
                     }
@@ -96,10 +98,12 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
                         val channel = plugin.client.getChannel(Snowflake.of(it.group(1)))
                             ?.tryCast<GuildMessageChannel>()
                             ?: return@async listOf(TextComponent(it.group()))
-                        val component = TextComponent(*TextComponent.fromLegacyText(formatChannel(plugin.messages.channelMentionContent, channel)))
+                        val component = TextComponent(*TextComponent.fromLegacyText(
+                            formatChannel(plugin.messages.minecraft.channelMentionContent, channel)
+                        ))
                         if (hover) component.hoverEvent = HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
-                            Text(formatChannel(plugin.messages.channelMentionTooltip, channel))
+                            Text(formatChannel(plugin.messages.minecraft.channelMentionTooltip, channel))
                         )
                         listOf(component)
                     }
@@ -124,7 +128,7 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
         result = formatUser(
             result,
             message.authorAsMember.awaitFirstOrNull() ?: author,
-            plugin.messages.minecraftDefaultAuthorColor
+            plugin.messages.minecraft.defaultAuthorColor
         )
         return result
             .split("%content%")
@@ -143,13 +147,13 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
         message: Message,
         channel: GuildMessageChannel,
     ) = formatDiscordMessage(
-        plugin.messages.minecraftMessage,
+        plugin.messages.minecraft.message,
         message,
         channel,
         HoverEvent(
             HoverEvent.Action.SHOW_TEXT,
             Text(arrayOf(TextComponent(*plugin.minecraftFormatter.formatDiscordMessage(
-                plugin.messages.minecraftTooltip,
+                plugin.messages.minecraft.tooltip,
                 message,
                 channel,
                 null,
@@ -159,10 +163,10 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
         true,
     )
 
-    fun formatHelpHeader() = plugin.messages.commandsHelpHeader
+    fun formatHelpHeader() = plugin.messages.commands.helpHeader
         .replace("%plugin-version%", plugin.description.version)
 
-    fun formatHelpCommand(command: String, code: String) = plugin.messages.commandsHelpCommand
+    fun formatHelpCommand(command: String, code: String) = plugin.messages.commands.helpCommand
         .replace("%command%", command)
         .replace("%description%", plugin.messages.getCommandDescription(code))
 }

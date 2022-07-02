@@ -7,6 +7,39 @@ class MessageManager(plugin: DiscordIntegration) {
     private val configAccessor = CustomConfigAccessor(plugin, "messages.yml")
     private val config get() = configAccessor.config
 
+    interface Minecraft {
+        val message: String
+        val tooltip: String
+        val defaultAuthorColor: String
+        val memberMentionContent: String
+        val memberMentionTooltip: String
+        val memberMentionDefaultColor: String
+        val roleMentionContent: String
+        val roleMentionTooltip: String
+        val roleMentionDefaultColor: String
+        val channelMentionContent: String
+        val channelMentionTooltip: String
+        val kickMessage: String
+        val noCategory: String
+    }
+
+    interface Discord {
+        val join: String
+        val quit: String
+        val death: String
+        val deathFallback: String
+        val deathEmbedTitle: String
+        val crashEmbedTitle: String
+        val crashEmbedContent: String
+        val crashEmbedLastOnline: String
+    }
+
+    interface Commands {
+        val helpHeader: String
+        val helpCommand: String
+        val unknown: String
+    }
+
     init {
         configAccessor.saveDefaultConfig()
     }
@@ -27,28 +60,34 @@ class MessageManager(plugin: DiscordIntegration) {
     val connectionFailed get() = getString("connection-failed")
     val discordActivity get() = getString("discord-activity")
     val discordActivityEmpty get() = getString("discord-activity-empty")
-    val minecraftMessage get() = getString("minecraft.message")
-    val minecraftTooltip get() = getString("minecraft.tooltip").trimEnd()
-    val minecraftDefaultAuthorColor get() = getString("minecraft.default-author-color").trimEnd()
-    val memberMentionContent get() = getString("minecraft.member-mention.content")
-    val memberMentionTooltip get() = getString("minecraft.member-mention.tooltip").trimEnd()
-    val memberMentionDefaultColor get() = getString("minecraft.member-mention.default-color").trimEnd()
-    val roleMentionContent get() = getString("minecraft.role-mention.content")
-    val roleMentionTooltip get() = getString("minecraft.role-mention.tooltip").trimEnd()
-    val roleMentionDefaultColor get() = getString("minecraft.role-mention.default-color").trimEnd()
-    val channelMentionContent get() = getString("minecraft.channel-mention.content")
-    val channelMentionTooltip get() = getString("minecraft.channel-mention.tooltip").trimEnd()
-    val kickMessage get() = getString("minecraft.linking.kick")
-    val noCategory get() = getString("minecraft.no-category")
-    val discordJoin get() = getString("discord.join")
-    val discordQuit get() = getString("discord.quit")
-    val discordDeath get() = getString("discord.death")
-    val discordDeathFallback get() = getString("discord.death-fallback")
-    val discordDeathEmbedTitle get() = getString("discord.death-embed-title")
-    val discordCrashEmbedTitle get() = getString("discord.crash-embed.title")
-    val discordCrashEmbedContent get() = getString("discord.crash-embed.content")
-    val discordCrashEmbedLastOnline get() = getString("discord.crash-embed.last-online")
-    val commandsHelpHeader get() = getString("commands.help.header")
-    val commandsHelpCommand get() = getString("commands.help.command")
-    val commandsUnknown get() = getString("commands.unknown")
+    val minecraft = object: Minecraft {
+        override val message get() = getString("minecraft.message")
+        override val tooltip get() = getString("minecraft.tooltip").trimEnd()
+        override val defaultAuthorColor get() = getString("minecraft.default-author-color").trimEnd()
+        override val memberMentionContent get() = getString("minecraft.member-mention.content")
+        override val memberMentionTooltip get() = getString("minecraft.member-mention.tooltip").trimEnd()
+        override val memberMentionDefaultColor get() = getString("minecraft.member-mention.default-color").trimEnd()
+        override val roleMentionContent get() = getString("minecraft.role-mention.content")
+        override val roleMentionTooltip get() = getString("minecraft.role-mention.tooltip").trimEnd()
+        override val roleMentionDefaultColor get() = getString("minecraft.role-mention.default-color").trimEnd()
+        override val channelMentionContent get() = getString("minecraft.channel-mention.content")
+        override val channelMentionTooltip get() = getString("minecraft.channel-mention.tooltip").trimEnd()
+        override val kickMessage get() = getString("minecraft.linking.kick")
+        override val noCategory get() = getString("minecraft.no-category")
+    }
+    val discord = object: Discord {
+        override val join get() = getString("discord.join")
+        override val quit get() = getString("discord.quit")
+        override val death get() = getString("discord.death")
+        override val deathFallback get() = getString("discord.death-fallback")
+        override val deathEmbedTitle get() = getString("discord.death-embed-title")
+        override val crashEmbedTitle get() = getString("discord.crash-embed.title")
+        override val crashEmbedContent get() = getString("discord.crash-embed.content")
+        override val crashEmbedLastOnline get() = getString("discord.crash-embed.last-online")
+    }
+    val commands = object: Commands {
+        override val helpHeader get() = getString("commands.help.header")
+        override val helpCommand get() = getString("commands.help.command")
+        override val unknown get() = getString("commands.unknown")
+    }
 }

@@ -13,7 +13,7 @@ class LoginListener(private val plugin: DiscordIntegration): Listener {
         val code = plugin.linking.generateLinkingCode(event.player)
         event.disallow(
             PlayerLoginEvent.Result.KICK_OTHER,
-            plugin.messages.kickMessage.replace("%code%", code.code)
+            plugin.messages.minecraft.kickMessage.replace("%code%", code.code)
         )
     }
 }

@@ -18,14 +18,14 @@ class DiscordFormatter(val plugin: DiscordIntegration) {
 
     fun formatDeathMessage(event: PlayerDeathEvent): String {
         val baseMessage = event.deathMessage?.let {
-            plugin.messages.discordDeath
+            plugin.messages.discord.death
                 .replace("%death-message%", it)
-        } ?: plugin.messages.discordDeathFallback
+        } ?: plugin.messages.discord.deathFallback
         return formatDeath(baseMessage, event)
     }
 
     fun formatDeathEmbedTitle(event: PlayerDeathEvent) =
-        formatDeath(plugin.messages.discordDeathEmbedTitle, event)
+        formatDeath(plugin.messages.discord.deathEmbedTitle, event)
 
     fun formatActivity(
         players: Collection<Player>,
@@ -62,10 +62,10 @@ class DiscordFormatter(val plugin: DiscordIntegration) {
             .replace("%time%", timeDisplay)
     }
 
-    fun formatJoinInfo(player: Player) = plugin.messages.discordJoin
+    fun formatJoinInfo(player: Player) = plugin.messages.discord.join
         .replace("%player%", player.name)
 
-    fun formatQuitInfo(player: Player) = plugin.messages.discordQuit
+    fun formatQuitInfo(player: Player) = plugin.messages.discord.quit
         .replace("%player%", player.name)
 
     fun formatMessageContent(message: String): String = plugin.emojiFormatter
