@@ -1,6 +1,7 @@
 package com.dominikkorsa.discordintegration
 
 import com.dominikkorsa.discordintegration.tps.TpsService
+import com.dominikkorsa.discordintegration.utils.orNull
 import com.dominikkorsa.discordintegration.utils.swapped
 import com.google.common.collect.ImmutableMap
 import discord4j.common.util.Snowflake
@@ -20,14 +21,12 @@ import discord4j.core.`object`.entity.Role
 import discord4j.core.`object`.presence.ClientActivity
 import discord4j.core.`object`.presence.ClientPresence
 import discord4j.core.`object`.presence.Status
-import discord4j.core.spec.EmbedCreateFields
-import discord4j.core.spec.EmbedCreateSpec
-import discord4j.core.spec.InteractionReplyEditSpec
-import discord4j.core.spec.WebhookExecuteSpec
+import discord4j.core.spec.*
 import discord4j.discordjson.json.ApplicationCommandOptionData
 import discord4j.discordjson.json.ApplicationCommandRequest
 import discord4j.gateway.intent.Intent
 import discord4j.gateway.intent.IntentSet
+import discord4j.rest.http.client.ClientException
 import discord4j.rest.util.AllowedMentions
 import discord4j.rest.util.Color
 import kotlinx.coroutines.async
@@ -58,7 +57,7 @@ class Client(private val plugin: DiscordIntegration) {
             .awaitFirstOrNull() ?: throw Exception("Failed to connect to Discord")
         initEmojis()
         initCommands()
-        updateAllMembersRoles()
+        updateAllMembers()
     }
 
     suspend fun disconnect() {
@@ -126,7 +125,7 @@ class Client(private val plugin: DiscordIntegration) {
                     eventDispatcher.on(MemberJoinEvent::class.java)
                         .collect {
                             val roles = getLinkingRoles(it.guild.awaitFirst())
-                            updateMemberRoles(it.member, roles)
+                            updateMember(it.member, roles)
                         }
                 }
             )
@@ -268,32 +267,40 @@ class Client(private val plugin: DiscordIntegration) {
         return Pair(getLinkingRoles(guild, true), getLinkingRoles(guild, false))
     }
 
-    private suspend fun updateMemberRoles(member: Member, roles: Pair<List<Role>, List<Role>>) {
+    private suspend fun updateMember(member: Member, roles: Pair<List<Role>, List<Role>>) {
         if (member.isBot) return
-        val (addedRoles, removedRoles) = when {
-            plugin.linking.memberHasLinked(member.id) -> roles
-            else -> roles.swapped()
-        }
+        val player = plugin.linking.playerOfMember(member.id)
+        val (addedRoles, removedRoles) = if (player == null) roles.swapped() else roles
         addedRoles.forEach {
             if (!member.roleIds.contains(it.id)) member.addRole(it.id).awaitFirstOrNull()
         }
         removedRoles.forEach {
             if (member.roleIds.contains(it.id)) member.removeRole(it.id).awaitFirstOrNull()
         }
-    }
-
-    private suspend fun updateAllMembersRoles() {
-        gateway?.guilds?.collect { guild ->
-            val roles = getLinkingRoles(guild)
-            guild.members.collect { updateMemberRoles(it, roles) }
+        if (plugin.configManager.linking.syncNicknames) {
+            player?.let { Bukkit.getOfflinePlayer(it.id.value) }?.name?.let { name ->
+                if (member.nickname.orNull() == name) return@let
+                try {
+                    member.edit(
+                        GuildMemberEditSpec.create().withNicknameOrNull(name)
+                    ).awaitFirstOrNull()
+                } catch (error: ClientException) {
+                    plugin.logger.warning("Cannot change nickname of user @${member.tag} to ${name}, reason:\n${error.message}")
+                }
+            }
         }
     }
 
-    suspend fun updateMemberRoles(memberId: Snowflake) {
+    private suspend fun updateAllMembers() {
         gateway?.guilds?.collect { guild ->
-            val member = guild.getMemberById(memberId).awaitFirstOrNull()
-            plugin.logger.info(member?.username)
-            updateMemberRoles(
+            val roles = getLinkingRoles(guild)
+            guild.members.collect { updateMember(it, roles) }
+        }
+    }
+
+    suspend fun updateMember(memberId: Snowflake) {
+        gateway?.guilds?.collect { guild ->
+            updateMember(
                 guild.getMemberById(memberId).awaitFirstOrNull() ?: return@collect,
                 getLinkingRoles(guild)
             )

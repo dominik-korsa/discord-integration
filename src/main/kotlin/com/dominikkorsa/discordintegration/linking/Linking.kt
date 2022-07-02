@@ -28,16 +28,12 @@ class Linking(private val plugin: DiscordIntegration) {
         }
     }
 
-    suspend fun playerHasLinked(player: OfflinePlayer): Boolean {
-        return plugin.db.getPlayer(player).discordId != null
-    }
+    suspend fun playerHasLinked(player: OfflinePlayer) = plugin.db.getPlayer(player).discordId != null
 
-    suspend fun memberHasLinked(discordId: Snowflake): Boolean {
-        return newSuspendedTransaction {
-            !PlayerEntity.find {
-                Players.discordId eq discordId.asLong()
-            }.empty()
-        }
+    suspend fun playerOfMember(discordId: Snowflake) = newSuspendedTransaction {
+        PlayerEntity.find {
+            Players.discordId eq discordId.asLong()
+        }.firstOrNull()
     }
 
     fun generateLinkingCode(player: Player): LinkingCode {
@@ -79,8 +75,8 @@ class Linking(private val plugin: DiscordIntegration) {
             dbPlayer.discordId = user.id.asLong()
             previousId
         }
-        if (previousId != null) plugin.client.updateMemberRoles(Snowflake.of(previousId))
-        plugin.client.updateMemberRoles(user.id)
+        if (previousId != null) plugin.client.updateMember(Snowflake.of(previousId))
+        plugin.client.updateMember(user.id)
         linkingCode.player.sendMessage(
             plugin.minecraftFormatter.formatLinkingSuccess(user)
         )

@@ -66,3 +66,9 @@ linking:
   # - 0123456789
   not-linked-roles:
   # - 0123456789
+
+  # If set to true, the bot automatically set the nicknames
+  # of Discord members to names of linked Minecraft players
+  # You should remove "Change Nickname" permission from users
+  # if this setting is enabled
+  sync-nicknames: false

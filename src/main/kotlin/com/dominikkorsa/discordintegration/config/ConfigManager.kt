@@ -13,6 +13,7 @@ class ConfigManager(private val plugin: DiscordIntegration) {
         val mandatory: Boolean
         val linkedRoles: MutableList<String>
         val notLinkedRoles: MutableList<String>
+        val syncNicknames: Boolean
     }
 
     init {
@@ -61,5 +62,6 @@ class ConfigManager(private val plugin: DiscordIntegration) {
         override val mandatory get() = config.getBoolean("linking.mandatory")
         override val linkedRoles get() = config.getStringList("linking.linked-roles")
         override val notLinkedRoles get() = config.getStringList("linking.not-linked-roles")
+        override val syncNicknames get() = config.getBoolean("linking.sync-nicknames")
     }
 }
