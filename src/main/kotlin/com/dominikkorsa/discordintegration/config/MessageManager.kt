@@ -34,6 +34,10 @@ class MessageManager(plugin: DiscordIntegration) {
         val crashEmbedTitle: String
         val crashEmbedContent: String
         val crashEmbedLastOnline: String
+        val linkingSuccessTitle: String
+        val linkingSuccessPlayerNameHeader: String
+        val linkingUnknownCodeTitle: String
+        val linkingUnknownCodeContent: String
     }
 
     interface Commands {
@@ -91,6 +95,10 @@ class MessageManager(plugin: DiscordIntegration) {
         override val crashEmbedTitle get() = getString("discord.crash-embed.title")
         override val crashEmbedContent get() = getString("discord.crash-embed.content")
         override val crashEmbedLastOnline get() = getString("discord.crash-embed.last-online")
+        override val linkingSuccessTitle get() = getString("discord.linking.success.title")
+        override val linkingSuccessPlayerNameHeader get() = getString("discord.linking.success.player-name-header")
+        override val linkingUnknownCodeTitle get() = getString("discord.linking.unknown-code.title")
+        override val linkingUnknownCodeContent get() = getString("discord.linking.unknown-code.content")
     }
     val commands = object: Commands {
         override val helpHeader get() = getString("commands.help.header")

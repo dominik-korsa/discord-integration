@@ -20,12 +20,16 @@ import discord4j.core.`object`.entity.Role
 import discord4j.core.`object`.presence.ClientActivity
 import discord4j.core.`object`.presence.ClientPresence
 import discord4j.core.`object`.presence.Status
+import discord4j.core.spec.EmbedCreateFields
+import discord4j.core.spec.EmbedCreateSpec
+import discord4j.core.spec.InteractionReplyEditSpec
 import discord4j.core.spec.WebhookExecuteSpec
 import discord4j.discordjson.json.ApplicationCommandOptionData
 import discord4j.discordjson.json.ApplicationCommandRequest
 import discord4j.gateway.intent.Intent
 import discord4j.gateway.intent.IntentSet
 import discord4j.rest.util.AllowedMentions
+import discord4j.rest.util.Color
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -136,11 +140,33 @@ class Client(private val plugin: DiscordIntegration) {
             event.interaction.user
         )
 
-        // TODO: Add messages to config
         if (player == null) {
-            event.editReply("Code expired").awaitFirstOrNull()
+            event.editReply(
+                InteractionReplyEditSpec.create()
+                    .withEmbeds(
+                        EmbedCreateSpec.create()
+                            .withTitle(plugin.messages.discord.linkingUnknownCodeTitle)
+                            .withDescription(plugin.messages.discord.linkingUnknownCodeContent)
+                            .withColor(Color.of(0xef476f))
+                    )
+            ).awaitFirstOrNull()
         } else {
-            event.editReply("Connected with player ${player.name}").awaitFirstOrNull()
+            event.editReply(
+                InteractionReplyEditSpec.create()
+                    .withEmbeds(
+                        EmbedCreateSpec.create()
+                            .withTitle(plugin.messages.discord.linkingSuccessTitle)
+                            .withThumbnail(plugin.avatarService.getAvatarUrl(player))
+                            .withFields(
+                                EmbedCreateFields.Field.of(
+                                    plugin.messages.discord.linkingSuccessPlayerNameHeader,
+                                    player.name,
+                                    false
+                                )
+                            )
+                            .withColor(Color.of(0x06d6a0))
+                    )
+            ).awaitFirstOrNull()
         }
     }
 
@@ -219,9 +245,11 @@ class Client(private val plugin: DiscordIntegration) {
         }
     }
 
-    suspend fun getMember(guildId: Snowflake, userId: Snowflake) = gateway?.getMemberById(guildId, userId)?.awaitFirstOrNull()
+    suspend fun getMember(guildId: Snowflake, userId: Snowflake) =
+        gateway?.getMemberById(guildId, userId)?.awaitFirstOrNull()
 
-    suspend fun getRole(guildId: Snowflake, roleId: Snowflake) = gateway?.getRoleById(guildId, roleId)?.awaitFirstOrNull()
+    suspend fun getRole(guildId: Snowflake, roleId: Snowflake) =
+        gateway?.getRoleById(guildId, roleId)?.awaitFirstOrNull()
 
     suspend fun getChannel(channelId: Snowflake) = gateway?.getChannelById(channelId)?.awaitFirstOrNull()
 

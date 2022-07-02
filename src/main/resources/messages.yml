@@ -15,6 +15,15 @@ discord:
       It might have crashed or have been force stopped.
       This might also be an error of Discord Integration.
     last-online: Last online
+  linking:
+    success:
+      title: Successfully linked Minecraft profile
+      player-name-header: Linked player
+    unknown-code:
+      title: Invalid code
+      content: |
+        This linking code is invalid or has expired.
+        You can generate a new one by running `/di link` on the Minecraft server
 minecraft:
   message: '%user-color%@%nickname% §7in #%channel-name%§7 » §r%content%'
   tooltip: |
