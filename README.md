@@ -1,5 +1,3 @@
-![Discord](https://img.shields.io/discord/992885335207977040?label=Discord%20server&style=flat-square)
-
 # Discord Integration
 Spigot Plugin to sync your Discord server text channel with Minecraft chat
 
@@ -8,3 +6,7 @@ For usage instructions see the [Spigot Resources listing](https://www.spigotmc.o
 
 # Credit
 Discord emoji list is from [Snarr/discord-emoji-convert](https://github.com/Snarr/discord-emoji-convert)
+
+# Discord server
+You can get support and get information about new releases on this Discord server:
+https://discord.gg/22qjJ3jWBq
