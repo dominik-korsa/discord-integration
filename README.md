@@ -1,3 +1,5 @@
+![Discord](https://img.shields.io/discord/992885335207977040?label=Discord%20server&style=flat-square)
+
 # Discord Integration
 Spigot Plugin to sync your Discord server text channel with Minecraft chat
 
