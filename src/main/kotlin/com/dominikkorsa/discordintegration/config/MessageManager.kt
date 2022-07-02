@@ -38,6 +38,10 @@ class MessageManager(plugin: DiscordIntegration) {
         val linkingSuccessPlayerNameHeader: String
         val linkingUnknownCodeTitle: String
         val linkingUnknownCodeContent: String
+        val profileInfoNotLinked: String
+        val profileInfoError: String
+        val profileInfoTitle: String
+        val profileInfoPlayerNameHeader: String
     }
 
     interface Commands {
@@ -101,6 +105,10 @@ class MessageManager(plugin: DiscordIntegration) {
         override val linkingSuccessPlayerNameHeader get() = getString("discord.linking.success.player-name-header")
         override val linkingUnknownCodeTitle get() = getString("discord.linking.unknown-code.title")
         override val linkingUnknownCodeContent get() = getString("discord.linking.unknown-code.content")
+        override val profileInfoNotLinked get() = getString("discord.linking.profile-info.not-linked")
+        override val profileInfoError get() = getString("discord.linking.profile-info.error")
+        override val profileInfoTitle get() = getString("discord.linking.profile-info.title")
+        override val profileInfoPlayerNameHeader get() = getString("discord.linking.profile-info.player-name-header")
     }
     val commands = object: Commands {
         override val helpHeader get() = getString("commands.help.header")

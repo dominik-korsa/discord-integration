@@ -24,6 +24,11 @@ discord:
       content: |
         This linking code is invalid or has expired.
         You can generate a new one by running `/di link` on the Minecraft server
+    profile-info:
+      not-linked: This user has not linked their Minecraft profile
+      error: Cannot get Minecraft profile info
+      title: Minecraft profile
+      player-name-header: Player name
 minecraft:
   message: '%user-color%@%nickname% §7in #%channel-name%§7 » §r%content%'
   tooltip: |
