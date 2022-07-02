@@ -133,4 +133,8 @@ class DiscordIntegration: JavaPlugin() {
     private fun registerSuspendingEvents(listener: Listener) {
         server.pluginManager.registerSuspendingEvents(listener, this)
     }
+
+    fun runTask(fn: () -> Unit) {
+        Bukkit.getScheduler().runTask(this, Runnable(fn))
+    }
 }

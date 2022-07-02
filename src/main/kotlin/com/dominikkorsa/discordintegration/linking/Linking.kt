@@ -5,10 +5,13 @@ import com.dominikkorsa.discordintegration.entities.PlayerEntity
 import com.dominikkorsa.discordintegration.entities.Players
 import com.github.shynixn.mccoroutine.launchAsync
 import discord4j.common.util.Snowflake
+import discord4j.core.`object`.entity.User
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
+import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 
@@ -27,6 +30,14 @@ class Linking(private val plugin: DiscordIntegration) {
 
     suspend fun playerHasLinked(player: OfflinePlayer): Boolean {
         return plugin.db.getPlayer(player).discordId != null
+    }
+
+    suspend fun memberHasLinked(discordId: Snowflake): Boolean {
+        return newSuspendedTransaction {
+            !PlayerEntity.find {
+                Players.discordId eq discordId.asLong()
+            }.empty()
+        }
     }
 
     fun generateLinkingCode(player: Player): LinkingCode {
@@ -48,16 +59,31 @@ class Linking(private val plugin: DiscordIntegration) {
         return linkingCode
     }
 
-    suspend fun link(code: String, discordId: Snowflake): Player? {
+    suspend fun link(code: String, user: User): Player? {
         val linkingCode = linkingCodes[code.lowercase()] ?: return null
         if (!linkingCode.isValid()) return null
         linkingCode.use()
         val dbPlayer = plugin.db.getPlayer(linkingCode.player)
-        newSuspendedTransaction {
-            // TODO: Remove role if discordId of previous player changed
-            PlayerEntity.find { return@find Players.discordId eq discordId.asLong() }.singleOrNull()?.discordId = null
-            dbPlayer.discordId = discordId.asLong()
+        val previousId = newSuspendedTransaction {
+            PlayerEntity
+                .find { return@find (Players.discordId eq user.id.asLong()) and (Players.id neq dbPlayer.id) }
+                .forEach {
+                    plugin.runTask {
+                        Bukkit.getPlayer(it.id.value)?.kickPlayer(
+                            plugin.minecraftFormatter.formatClaimedByOtherMessage(linkingCode.player, user)
+                        )
+                    }
+                    it.discordId = null
+                }
+            val previousId = dbPlayer.discordId
+            dbPlayer.discordId = user.id.asLong()
+            previousId
         }
+        if (previousId != null) plugin.client.updateMemberRoles(Snowflake.of(previousId))
+        plugin.client.updateMemberRoles(user.id)
+        linkingCode.player.sendMessage(
+            plugin.minecraftFormatter.formatLinkingSuccess(user)
+        )
         return linkingCode.player
     }
 }

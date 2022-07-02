@@ -54,3 +54,15 @@ linking:
   # If set to true, users will now be able to join the game
   # without linking their Discord account
   mandatory: true
+
+  # These roles are assigned to Discord members (except bots),
+  # who have or have not linked their Minecraft profile
+  # You must create these roles yourself
+  #
+  # Please note the role of your Discord bot must be higher
+  # than the linked and not linked roles, otherwise the bot
+  # will not be able to assign them
+  linked-roles:
+  # - 0123456789
+  not-linked-roles:
+  # - 0123456789

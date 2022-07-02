@@ -21,6 +21,7 @@ import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
 import net.md_5.bungee.api.chat.hover.content.Text
+import org.bukkit.entity.Player
 import java.util.regex.Pattern
 import kotlin.streams.toList
 
@@ -189,4 +190,11 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
             )
             component
         })
+
+    fun formatClaimedByOtherMessage(player: Player, user: User) = plugin.messages.minecraft.linkingClaimedByOther
+        .replace("%player-name%", player.name)
+        .replace("%user-tag%", user.tag)
+
+    fun formatLinkingSuccess(user: User) = plugin.messages.minecraft.linkingSuccess
+        .replace("%user-tag%", user.tag)
 }

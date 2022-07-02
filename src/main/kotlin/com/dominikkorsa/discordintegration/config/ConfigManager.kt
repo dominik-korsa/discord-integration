@@ -11,6 +11,8 @@ class ConfigManager(private val plugin: DiscordIntegration) {
 
         val enabled: Boolean
         val mandatory: Boolean
+        val linkedRoles: MutableList<String>
+        val notLinkedRoles: MutableList<String>
     }
 
     init {
@@ -57,5 +59,7 @@ class ConfigManager(private val plugin: DiscordIntegration) {
     val linking = object: Linking {
         override val enabled get() = config.getBoolean("linking.enabled")
         override val mandatory get() = config.getBoolean("linking.mandatory")
+        override val linkedRoles get() = config.getStringList("linking.linked-roles")
+        override val notLinkedRoles get() = config.getStringList("linking.not-linked-roles")
     }
 }

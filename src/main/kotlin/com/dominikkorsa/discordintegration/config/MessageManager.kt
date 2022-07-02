@@ -20,7 +20,9 @@ class MessageManager(plugin: DiscordIntegration) {
         val channelMentionContent: String
         val channelMentionTooltip: String
         val kickMessage: String
+        val linkingClaimedByOther: String
         val noCategory: String
+        val linkingSuccess: String
     }
 
     interface Discord {
@@ -76,6 +78,8 @@ class MessageManager(plugin: DiscordIntegration) {
         override val channelMentionContent get() = getString("minecraft.channel-mention.content")
         override val channelMentionTooltip get() = getString("minecraft.channel-mention.tooltip").trimEnd()
         override val kickMessage get() = getString("minecraft.linking.kick")
+        override val linkingClaimedByOther get() = getString("minecraft.linking.claimed-by-other-player")
+        override val linkingSuccess get() = getString("minecraft.linking.success")
         override val noCategory get() = getString("minecraft.no-category")
     }
     val discord = object: Discord {

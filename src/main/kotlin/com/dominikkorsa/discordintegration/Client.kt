@@ -1,6 +1,7 @@
 package com.dominikkorsa.discordintegration
 
 import com.dominikkorsa.discordintegration.tps.TpsService
+import com.dominikkorsa.discordintegration.utils.swapped
 import com.google.common.collect.ImmutableMap
 import discord4j.common.util.Snowflake
 import discord4j.core.DiscordClient
@@ -8,26 +9,29 @@ import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.guild.EmojisUpdateEvent
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
+import discord4j.core.event.domain.guild.MemberJoinEvent
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.`object`.command.ApplicationCommandOption
+import discord4j.core.`object`.entity.Guild
 import discord4j.core.`object`.entity.GuildEmoji
+import discord4j.core.`object`.entity.Member
+import discord4j.core.`object`.entity.Role
 import discord4j.core.`object`.presence.ClientActivity
 import discord4j.core.`object`.presence.ClientPresence
 import discord4j.core.`object`.presence.Status
 import discord4j.core.spec.WebhookExecuteSpec
 import discord4j.discordjson.json.ApplicationCommandOptionData
 import discord4j.discordjson.json.ApplicationCommandRequest
+import discord4j.gateway.intent.Intent
+import discord4j.gateway.intent.IntentSet
 import discord4j.rest.util.AllowedMentions
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
-import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactive.collect
+import kotlinx.coroutines.reactive.*
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 
@@ -43,9 +47,14 @@ class Client(private val plugin: DiscordIntegration) {
 
     suspend fun connect() {
         val client = DiscordClient.create(plugin.configManager.discordToken)
-        gateway = client.login().awaitFirstOrNull() ?: throw Exception("Failed to connect to Discord")
+        gateway = client
+            .gateway()
+            .setEnabledIntents(IntentSet.of(Intent.GUILD_MEMBERS))
+            .login()
+            .awaitFirstOrNull() ?: throw Exception("Failed to connect to Discord")
         initEmojis()
         initCommands()
+        updateAllMembersRoles()
     }
 
     suspend fun disconnect() {
@@ -109,22 +118,29 @@ class Client(private val plugin: DiscordIntegration) {
                             }
                         }
                 },
+                async {
+                    eventDispatcher.on(MemberJoinEvent::class.java)
+                        .collect {
+                            val roles = getLinkingRoles(it.guild.awaitFirst())
+                            updateMemberRoles(it.member, roles)
+                        }
+                }
             )
         }
     }
 
     private suspend fun handleLinkMinecraftCommand(event: ChatInputInteractionEvent) {
-        event.deferReply().withEphemeral(true)
+        event.deferReply().withEphemeral(true).awaitFirstOrNull()
         val player = plugin.linking.link(
             event.getOption("code").orElseThrow().value.orElseThrow().asString(),
-            event.interaction.user.id
+            event.interaction.user
         )
 
         // TODO: Add messages to config
         if (player == null) {
-            event.reply("Code expired").withEphemeral(true).awaitFirstOrNull()
+            event.editReply("Code expired").awaitFirstOrNull()
         } else {
-            event.reply("Connected with player ${player.name}").withEphemeral(true).awaitFirstOrNull()
+            event.editReply("Connected with player ${player.name}").awaitFirstOrNull()
         }
     }
 
@@ -208,4 +224,51 @@ class Client(private val plugin: DiscordIntegration) {
     suspend fun getRole(guildId: Snowflake, roleId: Snowflake) = gateway?.getRoleById(guildId, roleId)?.awaitFirstOrNull()
 
     suspend fun getChannel(channelId: Snowflake) = gateway?.getChannelById(channelId)?.awaitFirstOrNull()
+
+    private suspend fun getLinkingRoles(guild: Guild, linked: Boolean): MutableList<Role> {
+        val roleIds = when {
+            linked -> plugin.configManager.linking.linkedRoles
+            else -> plugin.configManager.linking.notLinkedRoles
+        }
+        return guild.roles
+            .filter { roleIds.contains(it.id.asString()) }
+            .collectList()
+            .awaitSingle()
+    }
+
+    private suspend fun getLinkingRoles(guild: Guild): Pair<MutableList<Role>, MutableList<Role>> {
+        return Pair(getLinkingRoles(guild, true), getLinkingRoles(guild, false))
+    }
+
+    private suspend fun updateMemberRoles(member: Member, roles: Pair<List<Role>, List<Role>>) {
+        if (member.isBot) return
+        val (addedRoles, removedRoles) = when {
+            plugin.linking.memberHasLinked(member.id) -> roles
+            else -> roles.swapped()
+        }
+        addedRoles.forEach {
+            if (!member.roleIds.contains(it.id)) member.addRole(it.id).awaitFirstOrNull()
+        }
+        removedRoles.forEach {
+            if (member.roleIds.contains(it.id)) member.removeRole(it.id).awaitFirstOrNull()
+        }
+    }
+
+    private suspend fun updateAllMembersRoles() {
+        gateway?.guilds?.collect { guild ->
+            val roles = getLinkingRoles(guild)
+            guild.members.collect { updateMemberRoles(it, roles) }
+        }
+    }
+
+    suspend fun updateMemberRoles(memberId: Snowflake) {
+        gateway?.guilds?.collect { guild ->
+            val member = guild.getMemberById(memberId).awaitFirstOrNull()
+            plugin.logger.info(member?.username)
+            updateMemberRoles(
+                guild.getMemberById(memberId).awaitFirstOrNull() ?: return@collect,
+                getLinkingRoles(guild)
+            )
+        }
+    }
 }

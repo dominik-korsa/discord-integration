@@ -62,6 +62,16 @@ minecraft:
       use this invite: §rINSERT INVITE LINK HERE
       
       §9Discord Integration §7plugin by Dominik Korsa
+    claimed-by-other-player: |
+      §6Another player (§r%player-name%§6) linked your Discord account (§r@%user-tag%§6)
+      §6A Discord account can only be assigned to a single player,
+      §6so your Minecraft profile is no longer linked to a Discord account
+      
+      §c§lPlease contact server administrators if this wasn't you
+      §c§lHave you shared your linking code with someone?
+    success: |
+      §aSuccessfully linked your minecraft Profile to your Discord account (§r@%user-tag%§a)
+      §6Please contact server administrators if this wasn't you.
 commands:
   help:
     header: |
