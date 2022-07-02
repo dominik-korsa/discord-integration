@@ -6,3 +6,7 @@ For usage instructions see the [Spigot Resources listing](https://www.spigotmc.o
 
 # Credit
 Discord emoji list is from [Snarr/discord-emoji-convert](https://github.com/Snarr/discord-emoji-convert)
+
+# Discord server
+You can get support and get information about new releases on this Discord server:
+https://discord.gg/22qjJ3jWBq
