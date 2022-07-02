@@ -11,3 +11,6 @@ permissions:
   discordintegration.command.link:
     description: Allow users to use the /di link command
     default: true
+  discordintegration.command.unlink:
+    description: Allow users to use the /di unlink command
+    default: true

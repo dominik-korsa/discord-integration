@@ -19,9 +19,9 @@ class MessageManager(plugin: DiscordIntegration) {
         val roleMentionDefaultColor: String
         val channelMentionContent: String
         val channelMentionTooltip: String
+        val noCategory: String
         val kickMessage: String
         val linkingClaimedByOther: String
-        val noCategory: String
         val linkingSuccess: String
     }
 
@@ -46,6 +46,8 @@ class MessageManager(plugin: DiscordIntegration) {
         val linkDisabled: String
         val linkMessage: String
         val linkCodeTooltip: String
+        val unlinkSuccess: String
+        val alreadyUnlinked: String
         val unknown: String
     }
 
@@ -82,9 +84,9 @@ class MessageManager(plugin: DiscordIntegration) {
         override val channelMentionContent get() = getString("minecraft.channel-mention.content")
         override val channelMentionTooltip get() = getString("minecraft.channel-mention.tooltip").trimEnd()
         override val kickMessage get() = getString("minecraft.linking.kick")
+        override val noCategory get() = getString("minecraft.no-category")
         override val linkingClaimedByOther get() = getString("minecraft.linking.claimed-by-other-player")
         override val linkingSuccess get() = getString("minecraft.linking.success")
-        override val noCategory get() = getString("minecraft.no-category")
     }
     val discord = object: Discord {
         override val join get() = getString("discord.join")
@@ -107,5 +109,7 @@ class MessageManager(plugin: DiscordIntegration) {
         override val linkMessage get() = getString("commands.link.message")
         override val linkCodeTooltip get() = getString("commands.link.code-tooltip")
         override val unknown get() = getString("commands.unknown")
+        override val unlinkSuccess get() = getString("commands.unlink.success")
+        override val alreadyUnlinked get() = getString("commands.unlink.already-unlinked")
     }
 }

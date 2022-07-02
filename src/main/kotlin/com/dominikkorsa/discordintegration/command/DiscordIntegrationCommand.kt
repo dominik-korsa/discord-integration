@@ -28,6 +28,19 @@ class DiscordIntegrationCommand(val plugin: DiscordIntegration): BaseCommand() {
         sender.spigot().sendMessage(ChatMessageType.SYSTEM, *parts)
     }
 
+    @Subcommand("unlink")
+    @CommandPermission("discordintegration.command.unlink")
+    fun onUnlink(sender: Player) {
+        plugin.launchAsync {
+            sender.sendMessage(
+                when (plugin.linking.unlink(sender)) {
+                    true -> plugin.messages.commands.unlinkSuccess
+                    false -> plugin.messages.commands.alreadyUnlinked
+                }
+            )
+        }
+    }
+
     @Subcommand("help")
     @Default
     fun onHelp(sender: CommandSender) {
@@ -35,6 +48,7 @@ class DiscordIntegrationCommand(val plugin: DiscordIntegration): BaseCommand() {
         sendHelpCommandItem(sender, "/di help", "help")
         sendHelpCommandItem(sender, "/di reload", "reload")
         sendHelpCommandItem(sender, "/di link", "link")
+        sendHelpCommandItem(sender, "/di unlink", "unlink")
     }
 
     @CatchUnknown

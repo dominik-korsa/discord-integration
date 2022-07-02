@@ -82,4 +82,14 @@ class Linking(private val plugin: DiscordIntegration) {
         )
         return linkingCode.player
     }
+
+    suspend fun unlink(player: OfflinePlayer): Boolean {
+        val dbPlayer = plugin.db.getPlayer(player)
+        val discordId = dbPlayer.discordId ?: return false
+        newSuspendedTransaction {
+            dbPlayer.discordId = null
+        }
+        plugin.client.updateMember(Snowflake.of(discordId))
+        return true
+    }
 }

@@ -95,8 +95,12 @@ commands:
       §r/link-minecraft §l%code%
       §9This code will expire after 10 minutes
     code-tooltip: 'Click to copy code'
+  unlink:
+    success: '§aSuccessfully unlinked your Discord account'
+    already-unlinked: '§6No Discord account to unlink'
   unknown: '§cUnknown command. See available commands using §r/di help'
   descriptions:
     help: 'Show list of plugin commands'
     reload: 'Reload plugin configuration and reconnect'
     link: 'Link your Discord account with your Minecraft profile'
+    unlink: 'Unlink the linked Discord account'
