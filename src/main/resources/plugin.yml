@@ -6,4 +6,8 @@ api-version: 1.17
 
 permissions:
   discordintegration.command.reload:
-    description: Allow users to reload the configuration
+    description: Allow users to use the /di reload command
+    default: op
+  discordintegration.command.link:
+    description: Allow users to use the /di link command
+    default: true

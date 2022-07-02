@@ -17,6 +17,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import net.md_5.bungee.api.chat.BaseComponent
+import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
 import net.md_5.bungee.api.chat.hover.content.Text
@@ -169,4 +170,23 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
     fun formatHelpCommand(command: String, code: String) = plugin.messages.commands.helpCommand
         .replace("%command%", command)
         .replace("%description%", plugin.messages.getCommandDescription(code))
+
+    fun formatLinkCommandMessage(code: String) = plugin.messages.commands.linkMessage
+        .split("%code%")
+        .mapAndJoin({
+            val component = TextComponent(*TextComponent.fromLegacyText(it))
+            component
+        }, {
+            val component = TextComponent.fromLegacyText(extractColorCodes(it).toList().joinToString()).last()
+            component.addExtra(code)
+            component.clickEvent = ClickEvent(
+                ClickEvent.Action.COPY_TO_CLIPBOARD,
+                code
+            )
+            component.hoverEvent = HoverEvent(
+                HoverEvent.Action.SHOW_TEXT,
+                Text(plugin.messages.commands.linkCodeTooltip)
+            )
+            component
+        })
 }

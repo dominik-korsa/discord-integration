@@ -37,6 +37,9 @@ class MessageManager(plugin: DiscordIntegration) {
     interface Commands {
         val helpHeader: String
         val helpCommand: String
+        val linkDisabled: String
+        val linkMessage: String
+        val linkCodeTooltip: String
         val unknown: String
     }
 
@@ -88,6 +91,9 @@ class MessageManager(plugin: DiscordIntegration) {
     val commands = object: Commands {
         override val helpHeader get() = getString("commands.help.header")
         override val helpCommand get() = getString("commands.help.command")
+        override val linkDisabled get() = getString("commands.link.disabled")
+        override val linkMessage get() = getString("commands.link.message")
+        override val linkCodeTooltip get() = getString("commands.link.code-tooltip")
         override val unknown get() = getString("commands.unknown")
     }
 }

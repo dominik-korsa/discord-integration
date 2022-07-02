@@ -61,14 +61,23 @@ minecraft:
       §7If you haven't joined out Discord server yet,
       use this invite: §rINSERT INVITE LINK HERE
       
-      §9Discord Integration §7plugin by §rDominik Korsa
+      §9Discord Integration §7plugin by Dominik Korsa
 commands:
   help:
     header: |
       §9§lDiscord Integration help§r
       §9Version: §l%plugin-version%§r
     command: '§9> §r%command% §9- %description%§r'
+  link:
+    disabled: '§cDiscord account linking is disabled on this server'
+    message: |
+      §9Execute this command on our Discord server, 
+      §9to link your Discord account:
+      §r/link-minecraft §l%code%
+      §9This code will expire after 10 minutes
+    code-tooltip: 'Click to copy code'
   unknown: '§cUnknown command. See available commands using §r/di help'
   descriptions:
     help: 'Show list of plugin commands'
     reload: 'Reload plugin configuration and reconnect'
+    link: 'Link your Discord account with your Minecraft profile'

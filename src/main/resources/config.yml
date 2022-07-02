@@ -50,4 +50,7 @@ activity:
     24h: true
   idle-when-no-players-online: true
 linking:
-  enable: false
+  enabled: false
+  # If set to true, users will now be able to join the game
+  # without linking their Discord account
+  mandatory: true

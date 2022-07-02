@@ -24,7 +24,10 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
-import kotlinx.coroutines.reactive.*
+import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.collect
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 
@@ -102,6 +105,7 @@ class Client(private val plugin: DiscordIntegration) {
                         .collect {
                             when (it.commandName) {
                                 "link-minecraft" -> handleLinkMinecraftCommand(it)
+                                else -> it.deleteReply().awaitFirstOrNull()
                             }
                         }
                 },
@@ -110,6 +114,7 @@ class Client(private val plugin: DiscordIntegration) {
     }
 
     private suspend fun handleLinkMinecraftCommand(event: ChatInputInteractionEvent) {
+        event.deferReply().withEphemeral(true)
         val player = plugin.linking.link(
             event.getOption("code").orElseThrow().value.orElseThrow().asString(),
             event.interaction.user.id
@@ -117,9 +122,9 @@ class Client(private val plugin: DiscordIntegration) {
 
         // TODO: Add messages to config
         if (player == null) {
-            event.reply("Code expired").awaitFirst()
+            event.reply("Code expired").withEphemeral(true).awaitFirstOrNull()
         } else {
-            event.reply("Connected with player ${player.name}").awaitFirst()
+            event.reply("Connected with player ${player.name}").withEphemeral(true).awaitFirstOrNull()
         }
     }
 
@@ -174,8 +179,7 @@ class Client(private val plugin: DiscordIntegration) {
     }
 
     private suspend fun registerCommands(guildId: Snowflake) {
-        // TODO: Don't register command if linking is not enabled
-        val linkMinecraftCommand: ApplicationCommandRequest = ApplicationCommandRequest.builder()
+        val linkMinecraftCommand = ApplicationCommandRequest.builder()
             .name("link-minecraft")
             .description("Link Minecraft account to your Discord account")
             .addOption(
@@ -188,12 +192,14 @@ class Client(private val plugin: DiscordIntegration) {
             )
             .build()
 
+        val commands = if (plugin.configManager.linking.enabled) listOf(linkMinecraftCommand) else listOf()
+
         gateway?.restClient?.let {
             it.applicationService.bulkOverwriteGuildApplicationCommand(
                 it.applicationId.cache().awaitFirst(),
                 guildId.asLong(),
-                listOf(linkMinecraftCommand)
-            ).awaitSingle()
+                commands
+            ).awaitFirstOrNull()
         }
     }
 
