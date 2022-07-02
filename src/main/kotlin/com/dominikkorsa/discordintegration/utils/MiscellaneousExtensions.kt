@@ -1,3 +1,9 @@
 package com.dominikkorsa.discordintegration.utils
 
+import java.util.*
+
 inline fun<reified T> Any.tryCast() = if (this is T) this else null
+
+fun<A, B> Pair<A, B>.swapped() = Pair(second, first)
+
+fun<T> Optional<T>.orNull(): T? = if (isEmpty) null else get()

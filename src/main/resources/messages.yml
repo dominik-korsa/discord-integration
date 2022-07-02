@@ -15,6 +15,20 @@ discord:
       It might have crashed or have been force stopped.
       This might also be an error of Discord Integration.
     last-online: Last online
+  linking:
+    success:
+      title: Successfully linked Minecraft profile
+      player-name-header: Linked player
+    unknown-code:
+      title: Invalid code
+      content: |
+        This linking code is invalid or has expired.
+        You can generate a new one by running `/di link` on the Minecraft server
+    profile-info:
+      not-linked: This user has not linked their Minecraft profile
+      error: Cannot get Minecraft profile info
+      title: Minecraft profile
+      player-name-header: Player name
 minecraft:
   message: '%user-color%@%nickname% §7in #%channel-name%§7 » §r%content%'
   tooltip: |
@@ -46,13 +60,52 @@ minecraft:
       §6Category: §r%channel-category%§r
       §6Id: §7%channel-id%§r
   no-category: '§7None'
+
+  linking:
+    # A message displayed to users who haven't yet linked their account
+    # It's a good idea to include a Discord invite link in here
+    kick: |
+      §6Please link your Discord account,
+      §6by executing this command on our Discord server:
+      
+      §r/link-minecraft %code%
+      
+      §7This code will expire after 10 minutes
+      
+      §7If you haven't joined out Discord server yet,
+      use this invite: §rINSERT INVITE LINK HERE
+      
+      §9Discord Integration §7plugin by Dominik Korsa
+    claimed-by-other-player: |
+      §6Another player (§r%player-name%§6) linked your Discord account (§r@%user-tag%§6)
+      §6A Discord account can only be assigned to a single player,
+      §6so your Minecraft profile is no longer linked to a Discord account
+      
+      §c§lPlease contact server administrators if this wasn't you
+      §c§lHave you shared your linking code with someone?
+    success: |
+      §aSuccessfully linked your minecraft Profile to your Discord account (§r@%user-tag%§a)
+      §6Please contact server administrators if this wasn't you.
 commands:
   help:
     header: |
       §9§lDiscord Integration help§r
       §9Version: §l%plugin-version%§r
     command: '§9> §r%command% §9- %description%§r'
+  link:
+    disabled: '§cDiscord account linking is disabled on this server'
+    message: |
+      §9Execute this command on our Discord server, 
+      §9to link your Discord account:
+      §r/link-minecraft §l%code%
+      §9This code will expire after 10 minutes
+    code-tooltip: 'Click to copy code'
+  unlink:
+    success: '§aSuccessfully unlinked your Discord account'
+    already-unlinked: '§6No Discord account to unlink'
   unknown: '§cUnknown command. See available commands using §r/di help'
   descriptions:
     help: 'Show list of plugin commands'
     reload: 'Reload plugin configuration and reconnect'
+    link: 'Link your Discord account with your Minecraft profile'
+    unlink: 'Unlink the linked Discord account'
