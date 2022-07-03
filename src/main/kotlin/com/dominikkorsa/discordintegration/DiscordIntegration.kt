@@ -26,6 +26,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.time.delay
 import kotlinx.coroutines.time.withTimeout
 import net.md_5.bungee.api.ChatMessageType
+import org.bstats.bukkit.Metrics
 import org.bukkit.Bukkit
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
@@ -51,6 +52,10 @@ class DiscordIntegration: JavaPlugin() {
         configManager = ConfigManager(this)
         messages = MessageManager(this)
         db = Db(this)
+
+        @Suppress("UNUSED_VARIABLE")
+        val metrics = Metrics(this, 15660)
+
         initCommands()
         registerEvents()
         linking.startJob()

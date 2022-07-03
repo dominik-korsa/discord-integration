@@ -50,6 +50,7 @@ dependencies {
     implementation 'org.jetbrains.exposed:exposed-jdbc:0.38.2'
     implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
     implementation 'dev.dejvokep:boosted-yaml:1.2'
+    implementation 'org.bstats:bstats-bukkit:3.0.0'
 }
 
 test {
@@ -60,5 +61,6 @@ shadowJar {
     relocate 'io.netty', 'com.discord4j.shaded.io.netty'
     relocate 'co.aikar.commands', 'com.dominikkorsa.discordintegration.acf'
     relocate 'co.aikar.locales', 'com.dominikkorsa.discordintegration.locales'
+    relocate 'org.bstats', 'com.dominikkorsa.discordintegratio'
     archiveClassifier.set('')
 }
