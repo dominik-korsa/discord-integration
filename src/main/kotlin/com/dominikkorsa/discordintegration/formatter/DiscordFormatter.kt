@@ -2,12 +2,17 @@ package com.dominikkorsa.discordintegration.formatter
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
 import com.dominikkorsa.discordintegration.utils.floorBy
+import me.clip.placeholderapi.PlaceholderAPI
+import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.PlayerDeathEvent
 import java.text.DecimalFormat
 
 class DiscordFormatter(val plugin: DiscordIntegration) {
+    private val placeholderApiInstalled
+        get() = Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null
+
     private fun formatDeath(base: String, event: PlayerDeathEvent) = ChatColor.stripColor(base)
         .orEmpty()
         .replace("%player%", event.entity.name)
@@ -46,7 +51,7 @@ class DiscordFormatter(val plugin: DiscordIntegration) {
             if (plugin.configManager.activityTime24h) "$hour:$minuteDisplay"
             else "${(hour - 1).mod(12) + 1}:$minuteDisplay ${if (pm) "PM" else "AM"}"
 
-        return messageTemplate
+        var message = messageTemplate
             .replace("%online%", players.size.toString())
             .replace("%max%", maxPlayers.toString())
             .replace("%player-list%", players
@@ -54,6 +59,10 @@ class DiscordFormatter(val plugin: DiscordIntegration) {
                 .sorted()
                 .joinToString(", "))
             .replace("%time%", timeDisplay)
+        if (placeholderApiInstalled) {
+            message = PlaceholderAPI.setPlaceholders(null, message)
+        }
+        return message
     }
 
     fun formatJoinInfo(player: Player) = plugin.messages.discord.join

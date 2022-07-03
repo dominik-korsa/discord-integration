@@ -3,6 +3,8 @@ version: 2.5.0
 author: Dominik Korsa
 main: com.dominikkorsa.discordintegration.DiscordIntegration
 api-version: 1.16
+softdepend:
+  - PlaceholderAPI
 
 permissions:
   discordintegration.command.reload:
