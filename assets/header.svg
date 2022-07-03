@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+        width="800"
+        height="168"
+        viewBox="0 0 211.66665 44.449997"
+        version="1.1"
+        id="svg5"
+        inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+        sodipodi:docname="header.svg"
+        inkscape:export-filename="D:\spigot-plugins\discord-integration\assets\logo.png"
+        inkscape:export-xdpi="768"
+        inkscape:export-ydpi="768"
+        xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+        xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+        xmlns="http://www.w3.org/2000/svg"
+>
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#111111"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     units="px"
+     inkscape:zoom="1.0091146"
+     inkscape:cx="392.9187"
+     inkscape:cy="54.007741"
+     inkscape:window-width="1920"
+     inkscape:window-height="991"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     inkscape:snap-text-baseline="true"
+     inkscape:showpageshadow="0"
+     inkscape:deskcolor="#d1d1d1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid1040"
+       empspacing="4"
+       spacingx="1.5874999"
+       spacingy="1.5874999"
+       originx="0"
+       originy="0" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2">
+    <filter
+       style="color-interpolation-filters:sRGB"
+       inkscape:label="Drop Shadow"
+       id="filter2224"
+       x="-0.14564973"
+       y="-0.1287733"
+       width="1.2912995"
+       height="1.2802739">
+      <feFlood
+         flood-opacity="0.34902"
+         flood-color="rgb(0,0,0)"
+         result="flood"
+         id="feFlood2214" />
+      <feComposite
+         in="flood"
+         in2="SourceGraphic"
+         operator="in"
+         result="composite1"
+         id="feComposite2216" />
+      <feGaussianBlur
+         in="composite1"
+         stdDeviation="2"
+         result="blur"
+         id="feGaussianBlur2218" />
+      <feOffset
+         dx="0"
+         dy="1"
+         result="offset"
+         id="feOffset2220" />
+      <feComposite
+         in="SourceGraphic"
+         in2="offset"
+         operator="over"
+         result="composite2"
+         id="feComposite2222" />
+    </filter>
+  </defs>
+  <g
+     inkscape:label="Warstwa 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(12.7,12.7)">
+    <path
+       id="path5642"
+       style="fill:#5865f2;fill-opacity:1;fill-rule:evenodd;stroke:#1a1a1a;stroke-width:1.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000"
+       d="M 4.9474419,262.15698 H 43.052562 L 43.052559,18.707624 23.999999,7.7080229 4.9474386,18.707624 Z"
+       transform="matrix(0,0.74989923,-0.74989923,0,202.94132,-8.4725829)"
+       sodipodi:nodetypes="cccccc" />
+    <path
+       sodipodi:type="star"
+       style="fill:#5865f2;fill-opacity:1;fill-rule:evenodd;stroke:#1a1a1a;stroke-width:1.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter2224);stop-color:#000000"
+       id="path1225"
+       inkscape:flatsided="true"
+       sodipodi:sides="6"
+       sodipodi:cx="24"
+       sodipodi:cy="24"
+       sodipodi:r1="22"
+       sodipodi:r2="13.856407"
+       sodipodi:arg1="-1.5707963"
+       sodipodi:arg2="-1.0471976"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="m 24.000001,2 19.052558,11.000001 0,22 L 23.999999,46 4.9474408,34.999999 l 6e-7,-22 z"
+       transform="matrix(0.79374999,0,0,0.79374999,-12.699989,-9.5249992)" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-size:27.5167px;line-height:1.25;font-family:Bahnschrift;-inkscape-font-specification:'Bahnschrift Semi-Bold';stroke:#000000;stroke-width:1.5875;stroke-miterlimit:4;stroke-dasharray:none;paint-order:markers stroke fill"
+       x="6.3500113"
+       y="16.632576"
+       id="text2717"><tspan
+         sodipodi:role="line"
+         id="tspan2715"
+         style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-size:27.5167px;font-family:Bahnschrift;-inkscape-font-specification:'Bahnschrift Semi-Bold';text-align:center;text-anchor:middle;fill:#ffffff;stroke:#000000;stroke-width:1.5875;stroke-miterlimit:4;stroke-dasharray:none;paint-order:markers stroke fill"
+         x="6.3500113"
+         y="16.632576">@</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:18.6972px;line-height:1.25;font-family:'Old English Text MT';-inkscape-font-specification:'Old English Text MT';fill:#ffffff;stroke:#000000;stroke-width:1.05833;stroke-dasharray:none;paint-order:markers stroke fill"
+       x="27.516676"
+       y="15.345833"
+       id="text736"><tspan
+         sodipodi:role="line"
+         id="tspan734"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.6972px;font-family:Bahnschrift;-inkscape-font-specification:Bahnschrift;fill:#ffffff;stroke:#000000;stroke-width:1.05833;stroke-dasharray:none;paint-order:markers stroke fill"
+         x="27.516676"
+         y="15.345833">Discord Integration</tspan></text>
+  </g>
+</svg>

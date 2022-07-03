@@ -1,4 +1,4 @@
-# Discord Integration
+![Discord Integration](assets/header.png)
 Spigot Plugin to sync your Discord server text channel with Minecraft chat
 
 You can download any version from [releases](https://github.com/dominik-korsa/discord-integration/releases).
