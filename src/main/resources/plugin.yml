@@ -2,7 +2,7 @@ name: DiscordIntegration
 version: 2.5.0
 author: Dominik Korsa
 main: com.dominikkorsa.discordintegration.DiscordIntegration
-api-version: 1.17
+api-version: 1.16
 
 permissions:
   discordintegration.command.reload:
