@@ -1,11 +1,21 @@
+buildscript {
+    dependencies {
+        classpath 'org.codehaus.groovy:groovy-yaml:3.0.11'
+    }
+}
+
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.6.0'
     id 'com.github.johnrengelman.shadow' version '6.1.0'
     id 'java'
 }
 
+import groovy.yaml.YamlSlurper
+
 group 'com.dominikkorsa.discordintegration'
-version '2.5.0-rc.1'
+
+def pluginYaml = new YamlSlurper().parse(file("$rootDir/src/main/resources/plugin.yml"))
+version pluginYaml.version
 
 repositories {
     mavenCentral()
