@@ -36,7 +36,7 @@ class DiscordIntegration: JavaPlugin() {
     val minecraftFormatter = MinecraftFormatter(this)
     val emojiFormatter = EmojiFormatter(this)
     val avatarService = AvatarService(this)
-    val db = Db(this)
+    lateinit var db: Db
     val linking = Linking(this)
     private val lockFileService = LockFileService(this)
     lateinit var configManager: ConfigManager
@@ -46,8 +46,10 @@ class DiscordIntegration: JavaPlugin() {
 
     override fun onEnable() {
         super.onEnable()
+        dataFolder.mkdirs()
         configManager = ConfigManager(this)
         messages = MessageManager(this)
+        db = Db(this)
         initCommands()
         registerEvents()
         linking.startJob()
