@@ -4,6 +4,7 @@ import co.aikar.commands.PaperCommandManager
 import com.dominikkorsa.discordintegration.command.DiscordIntegrationCommand
 import com.dominikkorsa.discordintegration.config.ConfigManager
 import com.dominikkorsa.discordintegration.config.MessageManager
+import com.dominikkorsa.discordintegration.exception.ConfigNotSetException
 import com.dominikkorsa.discordintegration.formatter.DiscordFormatter
 import com.dominikkorsa.discordintegration.formatter.EmojiFormatter
 import com.dominikkorsa.discordintegration.formatter.MinecraftFormatter
@@ -54,7 +55,7 @@ class DiscordIntegration: JavaPlugin() {
         registerEvents()
         linking.startJob()
         this.launchAsync {
-            connect(true)
+            connectionLock.withLock { connect() }
             lockFileService.start()
         }
     }
@@ -64,14 +65,12 @@ class DiscordIntegration: JavaPlugin() {
         lockFileService.stop()
         runBlocking {
             withTimeout(Duration.ofSeconds(5)) {
-                disconnect(true)
+                connectionLock.withLock { disconnect() }
             }
         }
     }
 
-    private suspend fun connect(withLock: Boolean) {
-        if (withLock) return connectionLock.withLock { connect(false) }
-
+    private suspend fun connect() {
         try {
             client.connect()
             this@DiscordIntegration.launchAsync {
@@ -84,15 +83,16 @@ class DiscordIntegration: JavaPlugin() {
                 }
             }
             Bukkit.broadcastMessage(messages.connected)
+        } catch (error: ConfigNotSetException) {
+            Bukkit.broadcastMessage(messages.connectionFailed)
+            logger.severe(error.message)
         } catch (error: Exception) {
             Bukkit.broadcastMessage(messages.connectionFailed)
             error.printStackTrace()
         }
     }
 
-    private suspend fun disconnect(withLock: Boolean) {
-        if (withLock) return connectionLock.withLock { disconnect(false) }
-
+    private suspend fun disconnect() {
         activityJob?.cancel()
         activityJob = null
         client.disconnect()
@@ -102,8 +102,8 @@ class DiscordIntegration: JavaPlugin() {
         configManager.reload()
         messages.reload()
         connectionLock.withLock {
-            disconnect(false)
-            connect(false)
+            disconnect()
+            connect()
         }
     }
 

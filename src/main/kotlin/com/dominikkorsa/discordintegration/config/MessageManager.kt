@@ -1,7 +1,6 @@
 package com.dominikkorsa.discordintegration.config
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
-import com.dominikkorsa.discordintegration.exception.MessageNotSetException
 import dev.dejvokep.boostedyaml.route.Route
 
 class MessageManager(plugin: DiscordIntegration): CustomConfig(plugin, "messages.yml") {
@@ -53,10 +52,7 @@ class MessageManager(plugin: DiscordIntegration): CustomConfig(plugin, "messages
         val alreadyUnlinked: String
         val unknown: String
     }
-
-    private fun getString(path: String) = config.getString(path) ?: throw MessageNotSetException(path)
-
-    fun getCommandDescription(code: String): String = config.getString( Route.from("commands", "descriptions", code))
+    fun getCommandDescription(code: String) = getString( Route.from("commands", "descriptions", code))
 
     val connected get() = getString("connected")
     val connectionFailed get() = getString("connection-failed")
