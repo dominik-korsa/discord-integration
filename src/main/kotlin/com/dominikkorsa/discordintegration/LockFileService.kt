@@ -1,6 +1,6 @@
 package com.dominikkorsa.discordintegration
 
-import com.github.shynixn.mccoroutine.launchAsync
+import com.github.shynixn.mccoroutine.bukkit.launch
 import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
@@ -14,7 +14,7 @@ class LockFileService(private val plugin: DiscordIntegration) {
 
     suspend fun start() {
         readFile()?.let { notifyCrashed(it) }
-        job = plugin.launchAsync {
+        job = plugin.launch {
             while (isActive) {
                 updateFile()
                 delay(Duration.ofSeconds(15))

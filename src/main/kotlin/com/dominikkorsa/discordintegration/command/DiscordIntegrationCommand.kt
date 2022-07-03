@@ -3,7 +3,7 @@ package com.dominikkorsa.discordintegration.command
 import co.aikar.commands.BaseCommand
 import co.aikar.commands.annotation.*
 import com.dominikkorsa.discordintegration.DiscordIntegration
-import com.github.shynixn.mccoroutine.launchAsync
+import com.github.shynixn.mccoroutine.bukkit.launch
 import net.md_5.bungee.api.ChatMessageType
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
@@ -13,7 +13,7 @@ class DiscordIntegrationCommand(val plugin: DiscordIntegration): BaseCommand() {
     @Subcommand("reload")
     @CommandPermission("discordintegration.command.reload")
     fun onReload() {
-        plugin.launchAsync { plugin.reload() }
+        plugin.launch { plugin.reload() }
     }
 
     @Subcommand("link")
@@ -31,7 +31,7 @@ class DiscordIntegrationCommand(val plugin: DiscordIntegration): BaseCommand() {
     @Subcommand("unlink")
     @CommandPermission("discordintegration.command.unlink")
     fun onUnlink(sender: Player) {
-        plugin.launchAsync {
+        plugin.launch {
             sender.sendMessage(
                 when (plugin.linking.unlink(sender)) {
                     true -> plugin.messages.commands.unlinkSuccess

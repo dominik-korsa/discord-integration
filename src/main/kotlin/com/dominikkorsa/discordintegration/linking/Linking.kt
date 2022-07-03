@@ -3,7 +3,7 @@ package com.dominikkorsa.discordintegration.linking
 import com.dominikkorsa.discordintegration.DiscordIntegration
 import com.dominikkorsa.discordintegration.entities.PlayerEntity
 import com.dominikkorsa.discordintegration.entities.Players
-import com.github.shynixn.mccoroutine.launchAsync
+import com.github.shynixn.mccoroutine.bukkit.launch
 import discord4j.common.util.Snowflake
 import discord4j.core.`object`.entity.User
 import kotlinx.coroutines.channels.Channel
@@ -20,7 +20,7 @@ class Linking(private val plugin: DiscordIntegration) {
     private val linkingCodeQueue = Channel<LinkingCode>(8192)
 
     fun startJob() {
-        plugin.launchAsync {
+        plugin.launch {
             linkingCodeQueue.consumeEach {
                 it.waitUntilInvalid()
                 linkingCodes.remove(it.code)

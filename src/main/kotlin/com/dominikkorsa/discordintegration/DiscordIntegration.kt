@@ -13,8 +13,8 @@ import com.dominikkorsa.discordintegration.listener.ChatListener
 import com.dominikkorsa.discordintegration.listener.DeathListener
 import com.dominikkorsa.discordintegration.listener.LoginListener
 import com.dominikkorsa.discordintegration.listener.PlayerCountListener
-import com.github.shynixn.mccoroutine.launchAsync
-import com.github.shynixn.mccoroutine.registerSuspendingEvents
+import com.github.shynixn.mccoroutine.bukkit.launch
+import com.github.shynixn.mccoroutine.bukkit.registerSuspendingEvents
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.channel.GuildMessageChannel
 import kotlinx.coroutines.Job
@@ -59,7 +59,7 @@ class DiscordIntegration: JavaPlugin() {
         initCommands()
         registerEvents()
         linking.startJob()
-        this.launchAsync {
+        this.launch {
             connectionLock.withLock { connect() }
             lockFileService.start()
         }
@@ -78,10 +78,10 @@ class DiscordIntegration: JavaPlugin() {
     private suspend fun connect() {
         try {
             client.connect()
-            this@DiscordIntegration.launchAsync {
+            this@DiscordIntegration.launch {
                 client.initListeners()
             }
-            activityJob = this@DiscordIntegration.launchAsync {
+            activityJob = this@DiscordIntegration.launch {
                 while (isActive) {
                     client.updateActivity()
                     delay(Duration.ofSeconds(configManager.activityUpdateInterval.toLong()))

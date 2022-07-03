@@ -1,12 +1,10 @@
 package com.dominikkorsa.discordintegration
 
 import com.dominikkorsa.discordintegration.response.NameToUUIDResponse
-import com.google.gson.Gson
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.utils.io.jvm.javaio.*
 import org.bukkit.entity.Player
 import java.util.*
 
@@ -16,13 +14,11 @@ class AvatarService(private val plugin: DiscordIntegration) {
 
     private suspend fun updateNicknameUUID(playerName: String) {
         try {
-            val response: HttpResponse = client.get(
+            val response: NameToUUIDResponse? = client.get(
                 "https://api.mojang.com/users/profiles/minecraft/${playerName}"
-            )
-            val reader = response.content.toInputStream().reader(Charsets.UTF_8)
-            val responseData: NameToUUIDResponse? = Gson().fromJson(reader, NameToUUIDResponse::class.java)
+            ).body()
 
-            if (responseData != null) uuids[playerName] = responseData.id
+            if (response != null) uuids[playerName] = response.id
         } catch (error: Exception) {
             error.printStackTrace()
         }
