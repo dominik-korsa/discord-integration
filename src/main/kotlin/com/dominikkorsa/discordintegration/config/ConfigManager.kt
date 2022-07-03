@@ -13,10 +13,12 @@ class ConfigManager(plugin: DiscordIntegration): CustomConfig(plugin, "config.ym
         val syncNicknames: Boolean
     }
 
+    private fun getColor(path: String) = Color.of(Integer.decode(config.getString(path)))
+
     private fun getEmbedConfig(path: String): EmbedConfig {
         return EmbedConfig(
             config.getBoolean("$path.enabled"),
-            Color.of(config.getInt("$path.color"))
+            getColor("$path.color")
         )
     }
 
