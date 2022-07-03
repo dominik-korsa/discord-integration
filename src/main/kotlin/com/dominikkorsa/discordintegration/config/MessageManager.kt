@@ -2,10 +2,9 @@ package com.dominikkorsa.discordintegration.config
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
 import com.dominikkorsa.discordintegration.exception.MessageNotSetException
+import dev.dejvokep.boostedyaml.route.Route
 
-class MessageManager(plugin: DiscordIntegration) {
-    private val configAccessor = CustomConfigAccessor(plugin, "messages.yml")
-    private val config get() = configAccessor.config
+class MessageManager(plugin: DiscordIntegration): CustomConfig(plugin, "messages.yml") {
 
     interface Minecraft {
         val message: String
@@ -55,21 +54,9 @@ class MessageManager(plugin: DiscordIntegration) {
         val unknown: String
     }
 
-    init {
-        configAccessor.saveDefaultConfig()
-    }
+    private fun getString(path: String) = config.getString(path) ?: throw MessageNotSetException(path)
 
-    fun reload() {
-        configAccessor.reloadConfig()
-    }
-
-    private fun getString(path: String): String {
-        return config.getString(path) ?: throw MessageNotSetException(path)
-    }
-
-    fun getCommandDescription(code: String): String {
-        return getString("commands.descriptions.$code")
-    }
+    fun getCommandDescription(code: String): String = config.getString( Route.from("commands", "descriptions", code))
 
     val connected get() = getString("connected")
     val connectionFailed get() = getString("connection-failed")

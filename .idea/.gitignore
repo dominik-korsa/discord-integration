@@ -8,4 +8,7 @@
 # Editor-based HTTP Client requests
 /httpRequests/
 
+/deployment.xml
+/webServers.xml
+
 /discord.xml

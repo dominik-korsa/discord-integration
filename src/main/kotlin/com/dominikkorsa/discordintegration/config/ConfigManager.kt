@@ -1,35 +1,16 @@
 package com.dominikkorsa.discordintegration.config
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
-import com.dominikkorsa.discordintegration.exception.ConfigNotSetException
 import discord4j.rest.util.Color
 
-class ConfigManager(private val plugin: DiscordIntegration) {
-    private val config get() = plugin.config
+class ConfigManager(plugin: DiscordIntegration): CustomConfig(plugin, "config.yml") {
 
     interface Linking {
-
         val enabled: Boolean
         val mandatory: Boolean
         val linkedRoles: MutableList<String>
         val notLinkedRoles: MutableList<String>
         val syncNicknames: Boolean
-    }
-
-    init {
-        plugin.saveDefaultConfig()
-    }
-
-    fun reload() {
-        plugin.reloadConfig()
-    }
-
-    private fun getString(path: String): String {
-        return config.getString(path) ?: throw ConfigNotSetException(path)
-    }
-
-    private fun getInt(path: String): Int {
-        return config.getInt(path)
     }
 
     private fun getEmbedConfig(path: String): EmbedConfig {
@@ -39,18 +20,18 @@ class ConfigManager(private val plugin: DiscordIntegration) {
         )
     }
 
-    val discordToken get() = getString("discord-token")
+    val discordToken get() = config.getString("discord-token")!!
     val chatChannels: List<String> get() = config.getStringList("chat.channels")
     val chatWebhooks: List<String> get() = config.getStringList("chat.webhooks")
-    val playerAsStatusAuthor get() = config.getBoolean("chat.player-as-status-author")
-    val avatarOfflineMode get() = config.getBoolean("chat.avatar.offline-mode")
-    val avatarUrl get() = getString("chat.avatar.url")
+    val playerAsStatusAuthor get() = config.getBoolean("chat.player-as-status-author")!!
+    val avatarOfflineMode get() = config.getBoolean("chat.avatar.offline-mode")!!
+    val avatarUrl get() = config.getString("chat.avatar.url")!!
 
-    val activityUpdateInterval get() = getInt("activity.update-interval")
-    val activityTimeWorld get() = getString("activity.time.world")
-    val activityTimeRound get() = getInt("activity.time.round")
-    val activityTime24h get() = config.getBoolean("activity.time.24h")
-    val activityIdle get() = config.getBoolean("activity.idle-when-no-players-online")
+    val activityUpdateInterval get() = config.getInt("activity.update-interval")!!
+    val activityTimeWorld get() = config.getString("activity.time.world")!!
+    val activityTimeRound get() = config.getInt("activity.time.round")!!
+    val activityTime24h get() = config.getBoolean("activity.time.24h")!!
+    val activityIdle get() = config.getBoolean("activity.idle-when-no-players-online")!!
 
     val joinEmbed get() = getEmbedConfig("chat.join-embed")
     val quitEmbed get() = getEmbedConfig("chat.quit-embed")
