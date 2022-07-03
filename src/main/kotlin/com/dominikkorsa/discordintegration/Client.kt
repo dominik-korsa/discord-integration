@@ -1,6 +1,5 @@
 package com.dominikkorsa.discordintegration
 
-import com.dominikkorsa.discordintegration.tps.TpsService
 import com.dominikkorsa.discordintegration.utils.orNull
 import com.dominikkorsa.discordintegration.utils.swapped
 import com.google.common.collect.ImmutableMap
@@ -49,7 +48,6 @@ class Client(private val plugin: DiscordIntegration) {
     }
 
     private var gateway: GatewayDiscordClient? = null
-    private val tpsService = TpsService()
     private var guildEmojis: HashMap<Snowflake, ImmutableMap<String, String>>? = null
 
     suspend fun connect() {
@@ -232,11 +230,9 @@ class Client(private val plugin: DiscordIntegration) {
     suspend fun updateActivity() {
         gateway?.apply {
             val players = Bukkit.getOnlinePlayers()
-            val tps = tpsService.getRecentTps()
             val message = plugin.discordFormatter.formatActivity(
                 players,
                 Bukkit.getMaxPlayers(),
-                tps,
                 (Bukkit.getWorld(plugin.configManager.activityTimeWorld) ?: Bukkit.getWorlds()[0]).time
             )
             val status = if (players.isEmpty() && plugin.configManager.activityIdle) Status.IDLE else Status.ONLINE

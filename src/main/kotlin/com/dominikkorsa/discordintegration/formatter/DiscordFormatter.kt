@@ -1,7 +1,6 @@
 package com.dominikkorsa.discordintegration.formatter
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
-import com.dominikkorsa.discordintegration.tps.Tps
 import com.dominikkorsa.discordintegration.utils.floorBy
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
@@ -30,7 +29,6 @@ class DiscordFormatter(val plugin: DiscordIntegration) {
     fun formatActivity(
         players: Collection<Player>,
         maxPlayers: Int,
-        tps: Tps,
         time: Long
     ): String {
         val messageTemplate = when {
@@ -48,7 +46,6 @@ class DiscordFormatter(val plugin: DiscordIntegration) {
             if (plugin.configManager.activityTime24h) "$hour:$minuteDisplay"
             else "${(hour - 1).mod(12) + 1}:$minuteDisplay ${if (pm) "PM" else "AM"}"
 
-        val tpsFormat = DecimalFormat("#0.00")
         return messageTemplate
             .replace("%online%", players.size.toString())
             .replace("%max%", maxPlayers.toString())
@@ -56,9 +53,6 @@ class DiscordFormatter(val plugin: DiscordIntegration) {
                 .map { player -> player.name }
                 .sorted()
                 .joinToString(", "))
-            .replace("%tps-1m%", tpsFormat.format(tps.of1min))
-            .replace("%tps-5m%", tpsFormat.format(tps.of5min))
-            .replace("%tps-15m%", tpsFormat.format(tps.of15min))
             .replace("%time%", timeDisplay)
     }
 
