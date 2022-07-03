@@ -54,7 +54,7 @@ class Client(private val plugin: DiscordIntegration) {
         val client = DiscordClient.create(plugin.configManager.discordToken)
         gateway = client
             .gateway()
-            .setEnabledIntents(IntentSet.of(Intent.GUILD_MEMBERS))
+            .setEnabledIntents(IntentSet.of(Intent.GUILD_MEMBERS, Intent.GUILD_MESSAGES))
             .login()
             .awaitFirstOrNull() ?: throw Exception("Failed to connect to Discord")
         initEmojis()
