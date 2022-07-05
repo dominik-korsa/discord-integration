@@ -13,6 +13,7 @@ class LockFileService(private val plugin: DiscordIntegration) {
     private val file = plugin.dataFolder.resolve("lock.txt")
 
     suspend fun start() {
+        if (job !== null) return
         readFile()?.let { notifyCrashed(it) }
         job = plugin.launch {
             while (isActive) {

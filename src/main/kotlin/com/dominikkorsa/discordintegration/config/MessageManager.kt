@@ -21,6 +21,8 @@ class MessageManager(plugin: DiscordIntegration): CustomConfig(plugin, "messages
         val kickMessage: String
         val linkingClaimedByOther: String
         val linkingSuccess: String
+        val updateMessage: String
+        val updateLink: String
     }
 
     interface Discord {
@@ -74,6 +76,8 @@ class MessageManager(plugin: DiscordIntegration): CustomConfig(plugin, "messages
         override val noCategory get() = getString("minecraft.no-category")
         override val linkingClaimedByOther get() = getString("minecraft.linking.claimed-by-other-player")
         override val linkingSuccess get() = getString("minecraft.linking.success")
+        override val updateMessage get() = getString("minecraft.update-notification.message")
+        override val updateLink get() = getString("minecraft.update-notification.link")
     }
     val discord = object: Discord {
         override val join get() = getString("discord.join")

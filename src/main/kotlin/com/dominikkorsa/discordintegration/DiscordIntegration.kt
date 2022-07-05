@@ -13,6 +13,7 @@ import com.dominikkorsa.discordintegration.listener.ChatListener
 import com.dominikkorsa.discordintegration.listener.DeathListener
 import com.dominikkorsa.discordintegration.listener.LoginListener
 import com.dominikkorsa.discordintegration.listener.PlayerCountListener
+import com.dominikkorsa.discordintegration.update.UpdateCheckerService
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.registerSuspendingEvents
 import discord4j.core.`object`.entity.Message
@@ -41,6 +42,7 @@ class DiscordIntegration: JavaPlugin() {
     lateinit var db: Db
     val linking = Linking(this)
     private val lockFileService = LockFileService(this)
+    val updateCheckerService = UpdateCheckerService(this)
     lateinit var configManager: ConfigManager
     lateinit var messages: MessageManager
     private var activityJob: Job? = null
@@ -62,12 +64,14 @@ class DiscordIntegration: JavaPlugin() {
         this.launch {
             connectionLock.withLock { connect() }
             lockFileService.start()
+            updateCheckerService.start()
         }
     }
 
     override fun onDisable() {
         super.onDisable()
         lockFileService.stop()
+        updateCheckerService.stop()
         runBlocking {
             withTimeout(Duration.ofSeconds(5)) {
                 connectionLock.withLock { disconnect() }
@@ -110,6 +114,8 @@ class DiscordIntegration: JavaPlugin() {
             disconnect()
             connect()
         }
+        updateCheckerService.stop()
+        updateCheckerService.start()
     }
 
     private fun initCommands() {

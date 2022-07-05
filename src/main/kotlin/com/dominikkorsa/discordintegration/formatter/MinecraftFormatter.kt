@@ -3,6 +3,7 @@ package com.dominikkorsa.discordintegration.formatter
 import com.dominikkorsa.discordintegration.DiscordIntegration
 import com.dominikkorsa.discordintegration.replace.Replacer
 import com.dominikkorsa.discordintegration.replace.replaceTo
+import com.dominikkorsa.discordintegration.update.PendingUpdate
 import com.dominikkorsa.discordintegration.utils.*
 import discord4j.common.util.Snowflake
 import discord4j.core.`object`.entity.Member
@@ -29,7 +30,8 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
     private suspend fun formatUserOrMemberColor(user: User) = user
         .tryCast<Member>()?.getColorOrNull()?.toChatColor()?.toString()
 
-    private fun formatRoleColor(role: Role) = role.color.takeUnless { it == Role.DEFAULT_COLOR }?.toChatColor()?.toString()
+    private fun formatRoleColor(role: Role) =
+        role.color.takeUnless { it == Role.DEFAULT_COLOR }?.toChatColor()?.toString()
 
     private suspend fun formatUser(template: String, user: User, defaultColor: String) = template
         .replace("%username%", user.username)
@@ -46,15 +48,17 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
     private suspend fun formatChannel(template: String, channel: GuildMessageChannel) = template
         .replace("%channel-name%", channel.name)
         .replace("%channel-id%", channel.id.asString())
-        .replace("%channel-category%",
-            channel.tryCast<CategorizableChannel>()?.category?.awaitFirstOrNull()?.name ?: plugin.messages.minecraft.noCategory
+        .replace(
+            "%channel-category%",
+            channel.tryCast<CategorizableChannel>()?.category?.awaitFirstOrNull()?.name
+                ?: plugin.messages.minecraft.noCategory
         )
         .replace("%guild-name%", channel.guild.awaitFirst().name)
 
     private suspend fun formatDiscordMessageContent(
         message: Message,
         messageChannel: GuildMessageChannel,
-        hover: Boolean
+        hover: Boolean,
     ) = coroutineScope {
         plugin.emojiFormatter
             .replaceEmojis(message.content.trimEnd())
@@ -135,13 +139,13 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
         return result
             .split("%content%")
             .mapAndJoin({
-                val component = TextComponent(*TextComponent.fromLegacyText(it))
-                component.hoverEvent = prefixHoverEvent
-                component
+                TextComponent(*TextComponent.fromLegacyText(it)).apply {
+                    hoverEvent = prefixHoverEvent
+                }
             }, {
-                val component = TextComponent.fromLegacyText(extractColorCodes(it).toList().joinToString()).last()
-                content.forEach(component::addExtra)
-                component
+                TextComponent.fromLegacyText(extractColorCodes(it).toList().joinToString()).last().apply {
+                    content.forEach(::addExtra)
+                }
             })
     }
 
@@ -174,21 +178,18 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
 
     fun formatLinkCommandMessage(code: String) = plugin.messages.commands.linkMessage
         .split("%code%")
-        .mapAndJoin({
-            val component = TextComponent(*TextComponent.fromLegacyText(it))
-            component
-        }, {
-            val component = TextComponent.fromLegacyText(extractColorCodes(it).toList().joinToString()).last()
-            component.addExtra(code)
-            component.clickEvent = ClickEvent(
-                ClickEvent.Action.COPY_TO_CLIPBOARD,
-                code
-            )
-            component.hoverEvent = HoverEvent(
-                HoverEvent.Action.SHOW_TEXT,
-                Text(plugin.messages.commands.linkCodeTooltip)
-            )
-            component
+        .mapAndJoin({ TextComponent(*TextComponent.fromLegacyText(it)) }, {
+            TextComponent.fromLegacyText(extractColorCodes(it).toList().joinToString()).last().apply {
+                addExtra(code)
+                clickEvent = ClickEvent(
+                    ClickEvent.Action.COPY_TO_CLIPBOARD,
+                    code
+                )
+                hoverEvent = HoverEvent(
+                    HoverEvent.Action.SHOW_TEXT,
+                    Text(plugin.messages.commands.linkCodeTooltip)
+                )
+            }
         })
 
     fun formatClaimedByOtherMessage(player: Player, user: User) = plugin.messages.minecraft.linkingClaimedByOther
@@ -197,4 +198,16 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
 
     fun formatLinkingSuccess(user: User) = plugin.messages.minecraft.linkingSuccess
         .replace("%user-tag%", user.tag)
+
+    fun formatUpdateNotification(pendingUpdate: PendingUpdate) = plugin.messages.minecraft.updateMessage
+        .replace("%current-version%", pendingUpdate.currentVersion)
+        .replace("%latest-version%", pendingUpdate.latestVersion)
+        .replace("%url%", pendingUpdate.url)
+        .split("%link%")
+        .mapAndJoin({ TextComponent(*TextComponent.fromLegacyText(it)) }, {
+            TextComponent(*TextComponent.fromLegacyText(plugin.messages.minecraft.updateLink)).apply {
+                clickEvent = ClickEvent(ClickEvent.Action.OPEN_URL, pendingUpdate.url)
+                hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(pendingUpdate.url))
+            }
+        })
 }

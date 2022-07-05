@@ -16,3 +16,6 @@ permissions:
   discordintegration.command.unlink:
     description: Allow users to use the /di unlink command
     default: true
+  discordintegration.notifyupdates:
+    description: Users with this permission will get messages about Discord Integration updates when joining the server
+    default: op

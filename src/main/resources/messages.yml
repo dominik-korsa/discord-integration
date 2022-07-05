@@ -1,5 +1,5 @@
 # Do not edit the file-version!
-file-version: 2
+file-version: 3
 
 connected: '§9§lDiscord Integration connected'
 connection-failed: '§c§lDiscord Integration failed to connect'
@@ -89,6 +89,13 @@ minecraft:
     success: |
       §aSuccessfully linked your minecraft Profile to your Discord account (§r@%user-tag%§a)
       §6Please contact server administrators if this wasn't you.
+
+  update-notification:
+    message: |
+      §9§lDiscord Integration update available!
+      §9Version: §7%current-version% §9→ §a§l%latest-version%§r§9
+      §9Visit %link% §9to update
+    link: §n[download page]
 commands:
   help:
     header: |

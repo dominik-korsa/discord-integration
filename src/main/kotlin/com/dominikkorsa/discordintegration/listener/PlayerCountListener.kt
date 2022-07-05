@@ -43,6 +43,7 @@ class PlayerCountListener(private val plugin: DiscordIntegration) : Listener {
     suspend fun onPlayerJoin(event: PlayerJoinEvent) {
         val content = plugin.discordFormatter.formatJoinInfo(event.player)
         sendStatus(content, event.player, plugin.configManager.joinEmbed)
+        plugin.updateCheckerService.notify(event.player)
     }
 
     @EventHandler
