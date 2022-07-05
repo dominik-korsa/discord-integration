@@ -7,6 +7,7 @@ buildscript {
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.7.0'
     id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id 'org.jetbrains.kotlin.plugin.serialization' version "1.6.21"
     id 'java'
 }
 
@@ -16,6 +17,11 @@ group 'com.dominikkorsa.discordintegration'
 
 def pluginYaml = new YamlSlurper().parse(file("$rootDir/src/main/resources/plugin.yml"))
 version pluginYaml.version
+
+ext {
+    ktor_version = '2.0.3'
+    exposed_version = '0.38.2'
+}
 
 repositories {
     mavenCentral()
@@ -41,12 +47,14 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.2'
     implementation 'com.github.shynixn.mccoroutine:mccoroutine-bukkit-api:2.2.0'
     implementation 'com.github.shynixn.mccoroutine:mccoroutine-bukkit-core:2.2.0'
-    implementation 'io.ktor:ktor-client-core:2.0.2'
-    implementation 'io.ktor:ktor-client-cio:2.0.2'
-    implementation "co.aikar:acf-paper:0.5.0-SNAPSHOT"
-    implementation 'org.jetbrains.exposed:exposed-core:0.38.2'
-    implementation 'org.jetbrains.exposed:exposed-dao:0.38.2'
-    implementation 'org.jetbrains.exposed:exposed-jdbc:0.38.2'
+    implementation "io.ktor:ktor-client-core-jvm:$ktor_version"
+    implementation "io.ktor:ktor-client-cio-jvm:$ktor_version"
+    implementation "io.ktor:ktor-serialization-kotlinx-json:$ktor_version"
+    implementation "io.ktor:ktor-client-content-negotiation:$ktor_version"
+    implementation 'co.aikar:acf-paper:0.5.0-SNAPSHOT'
+    implementation "org.jetbrains.exposed:exposed-core:$exposed_version"
+    implementation "org.jetbrains.exposed:exposed-dao:$exposed_version"
+    implementation "org.jetbrains.exposed:exposed-jdbc:$exposed_version"
     implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
     implementation 'dev.dejvokep:boosted-yaml:1.2'
     implementation 'org.bstats:bstats-bukkit:3.0.0'
