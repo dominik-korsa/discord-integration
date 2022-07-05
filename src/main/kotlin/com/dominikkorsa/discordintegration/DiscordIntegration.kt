@@ -62,7 +62,7 @@ class DiscordIntegration: JavaPlugin() {
         registerEvents()
         linking.startJob()
         this.launch {
-            connectionLock.withLock { connect() }
+            linking.kickUnlinked()
             lockFileService.start()
             connectionLock.withLock { connect() }
             updateCheckerService.start()
@@ -111,11 +111,12 @@ class DiscordIntegration: JavaPlugin() {
     suspend fun reload() {
         configManager.reload()
         messages.reload()
+        linking.kickUnlinked()
+        updateCheckerService.stop()
         connectionLock.withLock {
             disconnect()
             connect()
         }
-        updateCheckerService.stop()
         updateCheckerService.start()
     }
 

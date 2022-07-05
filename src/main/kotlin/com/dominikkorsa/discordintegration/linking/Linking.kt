@@ -8,6 +8,8 @@ import discord4j.common.util.Snowflake
 import discord4j.core.`object`.entity.User
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.filter
 import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
@@ -91,5 +93,16 @@ class Linking(private val plugin: DiscordIntegration) {
         }
         plugin.client.updateMember(Snowflake.of(discordId))
         return true
+    }
+
+    suspend fun kickUnlinked() {
+        if (!plugin.configManager.linking.enabled || !plugin.configManager.linking.mandatory) return
+        Bukkit.getOnlinePlayers()
+            .asFlow()
+            .filter { !playerHasLinked(it) }
+            .collect { player ->
+                val code = plugin.linking.generateLinkingCode(player)
+                player.kickPlayer(plugin.messages.minecraft.kickMessage.replace("%code%", code.code))
+            }
     }
 }
