@@ -11,16 +11,16 @@ class DeathListener(private val plugin: DiscordIntegration) : Listener {
     suspend fun onDeath(event: PlayerDeathEvent) {
         val content = plugin.discordFormatter.formatDeathMessage(event)
         val webhookBuilder =
-            if (plugin.configManager.playerAsStatusAuthor) plugin.client.getPlayerWebhookBuilder(event.entity)
+            if (plugin.configManager.chat.playerAsStatusAuthor) plugin.client.getPlayerWebhookBuilder(event.entity)
             else plugin.client.getWebhookBuilder()
-        if (plugin.configManager.deathEmbed.enabled) {
+        if (plugin.configManager.chat.deathEmbed.enabled) {
             plugin.client.sendWebhook(
                 webhookBuilder
                     .addEmbed(
                         EmbedCreateSpec.builder()
                             .title(plugin.discordFormatter.formatDeathEmbedTitle(event))
                             .description(content)
-                            .color(plugin.configManager.deathEmbed.color)
+                            .color(plugin.configManager.chat.deathEmbed.color)
                             .build()
                     )
                     .build()

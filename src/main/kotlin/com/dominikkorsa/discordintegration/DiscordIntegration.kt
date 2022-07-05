@@ -64,6 +64,7 @@ class DiscordIntegration: JavaPlugin() {
         this.launch {
             connectionLock.withLock { connect() }
             lockFileService.start()
+            connectionLock.withLock { connect() }
             updateCheckerService.start()
         }
     }
@@ -88,7 +89,7 @@ class DiscordIntegration: JavaPlugin() {
             activityJob = this@DiscordIntegration.launch {
                 while (isActive) {
                     client.updateActivity()
-                    delay(Duration.ofSeconds(configManager.activityUpdateInterval.toLong()))
+                    delay(Duration.ofSeconds(configManager.activity.updateInterval.toLong()))
                 }
             }
             Bukkit.broadcastMessage(messages.connected)

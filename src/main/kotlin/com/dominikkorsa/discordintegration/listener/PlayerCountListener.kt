@@ -1,7 +1,7 @@
 package com.dominikkorsa.discordintegration.listener
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
-import com.dominikkorsa.discordintegration.config.EmbedConfig
+import com.dominikkorsa.discordintegration.config.ConfigManager
 import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.delay
 import org.bukkit.entity.Player
@@ -14,10 +14,10 @@ class PlayerCountListener(private val plugin: DiscordIntegration) : Listener {
     private suspend fun sendStatus(
         content: String,
         player: Player,
-        embedConfig: EmbedConfig
+        embedConfig: ConfigManager.Chat.Embed,
     ) {
         val webhookBuilder =
-            if (plugin.configManager.playerAsStatusAuthor) plugin.client.getPlayerWebhookBuilder(player)
+            if (plugin.configManager.chat.playerAsStatusAuthor) plugin.client.getPlayerWebhookBuilder(player)
             else plugin.client.getWebhookBuilder()
         if (embedConfig.enabled) {
             plugin.client.sendWebhook(
@@ -42,13 +42,13 @@ class PlayerCountListener(private val plugin: DiscordIntegration) : Listener {
     @EventHandler
     suspend fun onPlayerJoin(event: PlayerJoinEvent) {
         val content = plugin.discordFormatter.formatJoinInfo(event.player)
-        sendStatus(content, event.player, plugin.configManager.joinEmbed)
+        sendStatus(content, event.player, plugin.configManager.chat.joinEmbed)
         plugin.updateCheckerService.notify(event.player)
     }
 
     @EventHandler
     suspend fun onPlayerQuit(event: PlayerQuitEvent) {
         val content = plugin.discordFormatter.formatQuitInfo(event.player)
-        sendStatus(content, event.player, plugin.configManager.quitEmbed)
+        sendStatus(content, event.player, plugin.configManager.chat.quitEmbed)
     }
 }

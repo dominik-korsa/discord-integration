@@ -1,47 +1,46 @@
 package com.dominikkorsa.discordintegration.config
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
+import dev.dejvokep.boostedyaml.block.implementation.Section
 
 class ConfigManager(plugin: DiscordIntegration): CustomConfig(plugin, "config.yml") {
 
-    interface Linking {
-        val enabled: Boolean
-        val mandatory: Boolean
-        val linkedRoles: MutableList<String>
-        val notLinkedRoles: MutableList<String>
-        val syncNicknames: Boolean
+    class Chat(private val section: Section) {
+        class Embed(private val section: Section) {
+            val enabled get() = section.getBooleanSafe("enabled")
+            val color get() = section.getColor("color")
+        }
+
+        val channels get() = section.getStringListSafe("channels")
+        val webhooks get() = section.getStringListSafe("webhooks")
+        val playerAsStatusAuthor get() = section.getBooleanSafe("player-as-status-author")
+        val avatarOfflineMode get() = section.getBooleanSafe("avatar.offline-mode")
+        val avatarUrl get() = section.getTrimmedString("avatar.url")
+        val joinEmbed get() = Embed(section.getSection("join-embed"))
+        val quitEmbed get() = Embed(section.getSection("quit-embed"))
+        val deathEmbed get() = Embed(section.getSection("death-embed"))
+        val crashEmbed get() = Embed(section.getSection("crash-embed"))
     }
 
-    private fun getEmbedConfig(path: String): EmbedConfig {
-        return EmbedConfig(
-            config.getBoolean("$path.enabled"),
-            getColor("$path.color")
-        )
+    class Activity(private val section: Section) {
+        val updateInterval get() = section.getIntSafe("update-interval")
+        val timeWorld get() = section.getTrimmedString("time.world")
+        val timeRound get() = section.getIntSafe("time.round")
+        val time24h get() = section.getBooleanSafe("time.24h")
+        val idle get() = section.getBooleanSafe("idle-when-no-players-online")
     }
 
-    val discordToken get() = getString("discord-token")
-    val chatChannels: List<String> get() = config.getStringList("chat.channels")
-    val chatWebhooks: List<String> get() = config.getStringList("chat.webhooks")
-    val playerAsStatusAuthor get() = getBoolean("chat.player-as-status-author")
-    val avatarOfflineMode get() = getBoolean("chat.avatar.offline-mode")
-    val avatarUrl get() = getString("chat.avatar.url")
-
-    val activityUpdateInterval get() = getInt("activity.update-interval")
-    val activityTimeWorld get() = getString("activity.time.world")
-    val activityTimeRound get() = getInt("activity.time.round")
-    val activityTime24h get() = getBoolean("activity.time.24h")
-    val activityIdle get() = getBoolean("activity.idle-when-no-players-online")
-
-    val joinEmbed get() = getEmbedConfig("chat.join-embed")
-    val quitEmbed get() = getEmbedConfig("chat.quit-embed")
-    val deathEmbed get() = getEmbedConfig("chat.death-embed")
-    val crashEmbed get() = getEmbedConfig("chat.crash-embed")
-
-    val linking = object: Linking {
-        override val enabled get() = getBoolean("linking.enabled")
-        override val mandatory get() = getBoolean("linking.mandatory")
-        override val linkedRoles get() = config.getStringList("linking.linked-roles")
-        override val notLinkedRoles get() = config.getStringList("linking.not-linked-roles")
-        override val syncNicknames get() = config.getBoolean("linking.sync-nicknames")
+    class Linking(private val section: Section) {
+        val enabled get() = section.getBooleanSafe("enabled")
+        val mandatory get() = section.getBooleanSafe("mandatory")
+        val linkedRoles get() = section.getStringListSafe("linked-roles")
+        val notLinkedRoles get() = section.getStringListSafe("not-linked-roles")
+        val syncNicknames get() = section.getBooleanSafe("sync-nicknames")
     }
+
+    val discordToken get() = config.getTrimmedString("discord-token")
+
+    val chat get() = Chat(config.getSection("chat"))
+    val activity get() = Activity(config.getSection("activity"))
+    val linking get() = Linking(config.getSection("linking"))
 }

@@ -39,7 +39,7 @@ class LockFileService(private val plugin: DiscordIntegration) {
     }
 
     private suspend fun notifyCrashed(timestamp: Long) {
-        if (!plugin.configManager.crashEmbed.enabled) return
+        if (!plugin.configManager.chat.crashEmbed.enabled) return
         val webhookBuilder = plugin.client.getWebhookBuilder()
         plugin.client.sendWebhook(
             webhookBuilder
@@ -49,10 +49,10 @@ class LockFileService(private val plugin: DiscordIntegration) {
                         .description(plugin.messages.discord.crashEmbedContent)
                         .addField(
                             plugin.messages.discord.crashEmbedLastOnline,
-                            "<t:${timestamp/1000}>",
+                            "<t:${timestamp / 1000}>",
                             false
                         )
-                        .color(plugin.configManager.crashEmbed.color)
+                        .color(plugin.configManager.chat.crashEmbed.color)
                         .build()
                 )
                 .build()

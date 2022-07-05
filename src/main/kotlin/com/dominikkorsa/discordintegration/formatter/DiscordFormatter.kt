@@ -42,13 +42,13 @@ class DiscordFormatter(val plugin: DiscordIntegration) {
         }
 
         val timeOfDay = ((time + 6000).mod((24000).toLong()) * 60 / 1000)
-            .floorBy(plugin.configManager.activityTimeRound.toLong())
+            .floorBy(plugin.configManager.activity.timeRound.toLong())
         val hour = timeOfDay / 60
         val minute = timeOfDay.mod(60)
         val pm = hour >= 12
         val minuteDisplay = DecimalFormat("00").format(minute)
         val timeDisplay =
-            if (plugin.configManager.activityTime24h) "$hour:$minuteDisplay"
+            if (plugin.configManager.activity.time24h) "$hour:$minuteDisplay"
             else "${(hour - 1).mod(12) + 1}:$minuteDisplay ${if (pm) "PM" else "AM"}"
 
         var message = messageTemplate

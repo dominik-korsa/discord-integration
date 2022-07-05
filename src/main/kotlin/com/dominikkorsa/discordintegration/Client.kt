@@ -91,7 +91,7 @@ class Client(private val plugin: DiscordIntegration) {
                     eventDispatcher
                         .on(MessageCreateEvent::class.java)
                         .asFlow()
-                        .filter { plugin.configManager.chatChannels.contains(it.message.channelId.asString()) }
+                        .filter { plugin.configManager.chat.channels.contains(it.message.channelId.asString()) }
                         .filterNot { it.message.content.isNullOrEmpty() }
                         .filter { it.message.author.isPresent }
                         .filterNot { it.message.author.get().isBot }
@@ -233,15 +233,15 @@ class Client(private val plugin: DiscordIntegration) {
             val message = plugin.discordFormatter.formatActivity(
                 players,
                 Bukkit.getMaxPlayers(),
-                (Bukkit.getWorld(plugin.configManager.activityTimeWorld) ?: Bukkit.getWorlds()[0]).time
+                (Bukkit.getWorld(plugin.configManager.activity.timeWorld) ?: Bukkit.getWorlds()[0]).time
             )
-            val status = if (players.isEmpty() && plugin.configManager.activityIdle) Status.IDLE else Status.ONLINE
+            val status = if (players.isEmpty() && plugin.configManager.activity.idle) Status.IDLE else Status.ONLINE
             updatePresence(ClientPresence.of(status, ClientActivity.playing(message))).awaitFirstOrNull()
         }
     }
 
     private suspend fun getWebhooks() = gateway?.let { gateway ->
-        plugin.configManager.chatWebhooks
+        plugin.configManager.chat.webhooks
             .mapNotNull {
                 Regex("/api/webhooks/([^/]+)/([^/]+)\$").find(it)?.let { result ->
                     gateway
