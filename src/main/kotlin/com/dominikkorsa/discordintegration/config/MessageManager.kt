@@ -1,110 +1,68 @@
 package com.dominikkorsa.discordintegration.config
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
+import dev.dejvokep.boostedyaml.block.implementation.Section
 import dev.dejvokep.boostedyaml.route.Route
 
 class MessageManager(plugin: DiscordIntegration): CustomConfig(plugin, "messages.yml") {
 
-    interface Minecraft {
-        val message: String
-        val tooltip: String
-        val defaultAuthorColor: String
-        val memberMentionContent: String
-        val memberMentionTooltip: String
-        val memberMentionDefaultColor: String
-        val roleMentionContent: String
-        val roleMentionTooltip: String
-        val roleMentionDefaultColor: String
-        val channelMentionContent: String
-        val channelMentionTooltip: String
-        val noCategory: String
-        val kickMessage: String
-        val linkingClaimedByOther: String
-        val linkingSuccess: String
-        val updateMessage: String
-        val updateLink: String
+    class Minecraft(private val section: Section) {
+        val message get() = section.getString("message")
+        val tooltip get() = section.getString("tooltip").trimEnd()
+        val defaultAuthorColor get() = section.getString("default-author-color").trimEnd()
+        val memberMentionContent get() = section.getString("member-mention.content")
+        val memberMentionTooltip get() = section.getString("member-mention.tooltip").trimEnd()
+        val memberMentionDefaultColor get() = section.getString("member-mention.default-color").trimEnd()
+        val roleMentionContent get() = section.getString("role-mention.content")
+        val roleMentionTooltip get() = section.getString("role-mention.tooltip").trimEnd()
+        val roleMentionDefaultColor get() = section.getString("role-mention.default-color").trimEnd()
+        val channelMentionContent get() = section.getString("channel-mention.content")
+        val channelMentionTooltip get() = section.getString("channel-mention.tooltip").trimEnd()
+        val kickMessage get() = section.getString("linking.kick")
+        val noCategory get() = section.getString("no-category")
+        val linkingClaimedByOther get() = section.getString("linking.claimed-by-other-player")
+        val linkingSuccess get() = section.getString("linking.success")
+        val updateMessage get() = section.getString("update-notification.message")
+        val updateLink get() = section.getString("update-notification.link")
     }
 
-    interface Discord {
-        val join: String
-        val quit: String
-        val death: String
-        val deathFallback: String
-        val deathEmbedTitle: String
-        val crashEmbedTitle: String
-        val crashEmbedContent: String
-        val crashEmbedLastOnline: String
-        val linkingSuccessTitle: String
-        val linkingSuccessPlayerNameHeader: String
-        val linkingUnknownCodeTitle: String
-        val linkingUnknownCodeContent: String
-        val profileInfoNotLinked: String
-        val profileInfoError: String
-        val profileInfoTitle: String
-        val profileInfoPlayerNameHeader: String
+    class Discord(private val section: Section) {
+        val join get() = section.getString("join")
+        val quit get() = section.getString("quit")
+        val death get() = section.getString("death")
+        val deathFallback get() = section.getString("death-fallback")
+        val deathEmbedTitle get() = section.getString("death-embed-title")
+        val crashEmbedTitle get() = section.getString("crash-embed.title")
+        val crashEmbedContent get() = section.getString("crash-embed.content")
+        val crashEmbedLastOnline get() = section.getString("crash-embed.last-online")
+        val linkingSuccessTitle get() = section.getString("linking.success.title")
+        val linkingSuccessPlayerNameHeader get() = section.getString("linking.success.player-name-header")
+        val linkingUnknownCodeTitle get() = section.getString("linking.unknown-code.title")
+        val linkingUnknownCodeContent get() = section.getString("linking.unknown-code.content")
+        val profileInfoNotLinked get() = section.getString("linking.profile-info.not-linked")
+        val profileInfoError get() = section.getString("linking.profile-info.error")
+        val profileInfoTitle get() = section.getString("linking.profile-info.title")
+        val profileInfoPlayerNameHeader get() = section.getString("linking.profile-info.player-name-header")
     }
 
-    interface Commands {
-        val helpHeader: String
-        val helpCommand: String
-        val linkDisabled: String
-        val linkMessage: String
-        val linkCodeTooltip: String
-        val unlinkSuccess: String
-        val alreadyUnlinked: String
-        val unknown: String
+    class Commands(private val section: Section) {
+        val helpHeader get() = section.getString("help.header")
+        val helpCommand get() = section.getString("help.command")
+        val linkDisabled get() = section.getString("link.disabled")
+        val linkMessage get() = section.getString("link.message")
+        val linkCodeTooltip get() = section.getString("link.code-tooltip")
+        val unknown get() = section.getString("unknown")
+        val unlinkSuccess get() = section.getString("unlink.success")
+        val alreadyUnlinked get() = section.getString("unlink.already-unlinked")
     }
-    fun getCommandDescription(code: String) = getString( Route.from("commands", "descriptions", code))
+
+    fun getCommandDescription(code: String) = getString(Route.from("commands", "descriptions", code))
 
     val connected get() = getString("connected")
     val connectionFailed get() = getString("connection-failed")
     val discordActivity get() = getString("discord-activity")
     val discordActivityEmpty get() = getString("discord-activity-empty")
-    val minecraft = object: Minecraft {
-        override val message get() = getString("minecraft.message")
-        override val tooltip get() = getString("minecraft.tooltip").trimEnd()
-        override val defaultAuthorColor get() = getString("minecraft.default-author-color").trimEnd()
-        override val memberMentionContent get() = getString("minecraft.member-mention.content")
-        override val memberMentionTooltip get() = getString("minecraft.member-mention.tooltip").trimEnd()
-        override val memberMentionDefaultColor get() = getString("minecraft.member-mention.default-color").trimEnd()
-        override val roleMentionContent get() = getString("minecraft.role-mention.content")
-        override val roleMentionTooltip get() = getString("minecraft.role-mention.tooltip").trimEnd()
-        override val roleMentionDefaultColor get() = getString("minecraft.role-mention.default-color").trimEnd()
-        override val channelMentionContent get() = getString("minecraft.channel-mention.content")
-        override val channelMentionTooltip get() = getString("minecraft.channel-mention.tooltip").trimEnd()
-        override val kickMessage get() = getString("minecraft.linking.kick")
-        override val noCategory get() = getString("minecraft.no-category")
-        override val linkingClaimedByOther get() = getString("minecraft.linking.claimed-by-other-player")
-        override val linkingSuccess get() = getString("minecraft.linking.success")
-        override val updateMessage get() = getString("minecraft.update-notification.message")
-        override val updateLink get() = getString("minecraft.update-notification.link")
-    }
-    val discord = object: Discord {
-        override val join get() = getString("discord.join")
-        override val quit get() = getString("discord.quit")
-        override val death get() = getString("discord.death")
-        override val deathFallback get() = getString("discord.death-fallback")
-        override val deathEmbedTitle get() = getString("discord.death-embed-title")
-        override val crashEmbedTitle get() = getString("discord.crash-embed.title")
-        override val crashEmbedContent get() = getString("discord.crash-embed.content")
-        override val crashEmbedLastOnline get() = getString("discord.crash-embed.last-online")
-        override val linkingSuccessTitle get() = getString("discord.linking.success.title")
-        override val linkingSuccessPlayerNameHeader get() = getString("discord.linking.success.player-name-header")
-        override val linkingUnknownCodeTitle get() = getString("discord.linking.unknown-code.title")
-        override val linkingUnknownCodeContent get() = getString("discord.linking.unknown-code.content")
-        override val profileInfoNotLinked get() = getString("discord.linking.profile-info.not-linked")
-        override val profileInfoError get() = getString("discord.linking.profile-info.error")
-        override val profileInfoTitle get() = getString("discord.linking.profile-info.title")
-        override val profileInfoPlayerNameHeader get() = getString("discord.linking.profile-info.player-name-header")
-    }
-    val commands = object: Commands {
-        override val helpHeader get() = getString("commands.help.header")
-        override val helpCommand get() = getString("commands.help.command")
-        override val linkDisabled get() = getString("commands.link.disabled")
-        override val linkMessage get() = getString("commands.link.message")
-        override val linkCodeTooltip get() = getString("commands.link.code-tooltip")
-        override val unknown get() = getString("commands.unknown")
-        override val unlinkSuccess get() = getString("commands.unlink.success")
-        override val alreadyUnlinked get() = getString("commands.unlink.already-unlinked")
-    }
+    val minecraft = Minecraft(config.getSection("minecraft"))
+    val discord = Discord(config.getSection("discord"))
+    val commands = Commands(config.getSection("commands"))
 }
