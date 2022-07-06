@@ -37,8 +37,10 @@ import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.reactive.*
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import reactor.core.CorePublisher
 
 
+@Suppress("ReactiveStreamsUnusedPublisher")
 class Client(private val plugin: DiscordIntegration) {
     companion object {
         private val allowedMentionsNone = AllowedMentions.builder().build()
@@ -305,13 +307,22 @@ class Client(private val plugin: DiscordIntegration) {
         }
     }
 
+    private suspend fun <T> CorePublisher<T>.handleNotFound(): T? {
+        try {
+            return awaitFirstOrNull()
+        } catch (exception: ClientException) {
+            if (exception.status.code() == 404) return null
+            throw exception
+        }
+    }
+
     suspend fun getMember(guildId: Snowflake, userId: Snowflake) =
-        gateway?.getMemberById(guildId, userId)?.awaitFirstOrNull()
+        gateway?.getMemberById(guildId, userId)?.handleNotFound()
 
     suspend fun getRole(guildId: Snowflake, roleId: Snowflake) =
-        gateway?.getRoleById(guildId, roleId)?.awaitFirstOrNull()
+        gateway?.getRoleById(guildId, roleId)?.handleNotFound()
 
-    suspend fun getChannel(channelId: Snowflake) = gateway?.getChannelById(channelId)?.awaitFirstOrNull()
+    suspend fun getChannel(channelId: Snowflake) = gateway?.getChannelById(channelId)?.handleNotFound()
 
     private suspend fun getLinkingRoles(guild: Guild, linked: Boolean): MutableList<Role> {
         val roleIds = when {
@@ -364,7 +375,7 @@ class Client(private val plugin: DiscordIntegration) {
     suspend fun updateMember(memberId: Snowflake) {
         gateway?.guilds?.collect { guild ->
             updateMember(
-                guild.getMemberById(memberId).awaitFirstOrNull() ?: return@collect,
+                guild.getMemberById(memberId).handleNotFound() ?: return@collect,
                 getLinkingRoles(guild)
             )
         }
