@@ -1,6 +1,7 @@
 package com.dominikkorsa.discordintegration.formatter
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
+import com.dominikkorsa.discordintegration.compatibility.Compatibility.setCopyToClipboard
 import com.dominikkorsa.discordintegration.replace.Replacer
 import com.dominikkorsa.discordintegration.replace.replaceTo
 import com.dominikkorsa.discordintegration.update.PendingUpdate
@@ -187,15 +188,7 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
         .mapAndJoin({ TextComponent(*TextComponent.fromLegacyText(it)) }, {
             TextComponent.fromLegacyText(extractColorCodes(it).toList().joinToString()).last().apply {
                 addExtra(code)
-                // TODO: Create helper for COPY_TO_CLIPBOARD
-//                clickEvent = ClickEvent(
-//                    ClickEvent.Action.COPY_TO_CLIPBOARD,
-//                    code
-//                )
-//                hoverEvent = HoverEvent(
-//                    HoverEvent.Action.SHOW_TEXT,
-//                    TextComponent.fromLegacyText(plugin.messages.commands.linkCodeTooltip)
-//                )
+                setCopyToClipboard(code, TextComponent.fromLegacyText(plugin.messages.commands.linkCodeTooltip))
             }
         })
 

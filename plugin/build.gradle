@@ -1,0 +1,66 @@
+buildscript {
+    dependencies {
+        classpath 'org.codehaus.groovy:groovy-yaml:3.0.11'
+    }
+}
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.6.21'
+}
+
+import groovy.yaml.YamlSlurper
+
+group 'com.dominikkorsa.discordintegration'
+
+def pluginYaml = new YamlSlurper().parse(file("$projectDir/src/main/resources/plugin.yml"))
+version pluginYaml.version
+
+ext {
+    ktor_version = '2.0.3'
+    exposed_version = '0.38.2'
+}
+
+repositories {
+    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url = 'https://repo.aikar.co/content/groups/aikar/' }
+    maven { url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
+}
+
+dependencies {
+    implementation project(":compatibility")
+
+    compileOnly 'org.spigotmc:spigot-api:1.8-R0.1-SNAPSHOT'
+    compileOnly 'me.clip:placeholderapi:2.11.1'
+
+    implementation 'com.discord4j:discord4j-core:3.2.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.6.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.2'
+    implementation 'com.github.shynixn.mccoroutine:mccoroutine-bukkit-api:2.2.0'
+    implementation 'com.github.shynixn.mccoroutine:mccoroutine-bukkit-core:2.2.0'
+    implementation "io.ktor:ktor-client-core-jvm:$ktor_version"
+    implementation "io.ktor:ktor-client-cio-jvm:$ktor_version"
+    implementation "io.ktor:ktor-serialization-kotlinx-json:$ktor_version"
+    implementation "io.ktor:ktor-client-content-negotiation:$ktor_version"
+    implementation 'co.aikar:acf-paper:0.5.0-SNAPSHOT'
+    implementation "org.jetbrains.exposed:exposed-core:$exposed_version"
+    implementation "org.jetbrains.exposed:exposed-dao:$exposed_version"
+    implementation "org.jetbrains.exposed:exposed-jdbc:$exposed_version"
+    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
+    implementation 'dev.dejvokep:boosted-yaml:1.2'
+    implementation 'org.bstats:bstats-bukkit:3.0.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+shadowJar {
+    relocate 'io.netty', 'com.discord4j.shaded.io.netty'
+    relocate 'co.aikar.commands', 'com.dominikkorsa.discordintegration.acf'
+    relocate 'co.aikar.locales', 'com.dominikkorsa.discordintegration.locales'
+    relocate 'org.bstats', 'com.dominikkorsa.discordintegration'
+    archiveBaseName.set(pluginYaml.name)
+    archiveClassifier.set('')
+}

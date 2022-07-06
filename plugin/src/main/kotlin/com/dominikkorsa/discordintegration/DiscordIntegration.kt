@@ -1,8 +1,8 @@
 package com.dominikkorsa.discordintegration
 
 import co.aikar.commands.PaperCommandManager
-import com.dominikkorsa.discordintegration.Compatibility.sendChatMessage
 import com.dominikkorsa.discordintegration.command.DiscordIntegrationCommand
+import com.dominikkorsa.discordintegration.compatibility.Compatibility
 import com.dominikkorsa.discordintegration.config.ConfigManager
 import com.dominikkorsa.discordintegration.config.MessageManager
 import com.dominikkorsa.discordintegration.exception.ConfigNotSetException
@@ -141,7 +141,7 @@ class DiscordIntegration: JavaPlugin() {
             channel,
         ).toTypedArray()
         server.onlinePlayers.forEach {
-            it.spigot().sendChatMessage(*parts)
+            Compatibility.sendChatMessage(it, *parts)
         }
         Bukkit.getConsoleSender().sendMessage(TextComponent(*parts).toLegacyText())
     }
