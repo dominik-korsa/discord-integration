@@ -8,8 +8,8 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import net.md_5.bungee.api.ChatColor
 import reactor.math.MathFlux
 import java.util.stream.Stream
-
-fun Color.toChatColor(): ChatColor = ChatColor.of("#${rgb.toString(16).padStart(6, '0')}")
+fun Color.toChatColor() = "x${rgb.toString(16).padStart(6, '0')}"
+    .map { "${ChatColor.COLOR_CHAR}$it" }.joinToString("")
 
 suspend fun PartialMember.getColorOrNull(): Color? =
     MathFlux.max(roles.filter { it.color != Role.DEFAULT_COLOR }, OrderUtil.ROLE_ORDER)

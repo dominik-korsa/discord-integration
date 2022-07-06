@@ -28,10 +28,10 @@ import kotlin.streams.toList
 
 class MinecraftFormatter(val plugin: DiscordIntegration) {
     private suspend fun formatUserOrMemberColor(user: User) = user
-        .tryCast<Member>()?.getColorOrNull()?.toChatColor()?.toString()
+        .tryCast<Member>()?.getColorOrNull()?.toChatColor()
 
     private fun formatRoleColor(role: Role) =
-        role.color.takeUnless { it == Role.DEFAULT_COLOR }?.toChatColor()?.toString()
+        role.color.takeUnless { it == Role.DEFAULT_COLOR }?.toChatColor()
 
     private suspend fun formatUser(template: String, user: User, defaultColor: String) = template
         .replace("%username%", user.username)
