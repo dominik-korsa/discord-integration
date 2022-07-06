@@ -21,7 +21,6 @@ import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
-import net.md_5.bungee.api.chat.hover.content.Text
 import org.bukkit.entity.Player
 import java.util.regex.Pattern
 import kotlin.streams.toList
@@ -74,11 +73,13 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
                         )))
                         if (hover) component.hoverEvent = HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
-                            Text(formatUser(
-                                plugin.messages.minecraft.memberMentionTooltip,
-                                guildMember,
-                                plugin.messages.minecraft.memberMentionDefaultColor
-                            ))
+                            TextComponent.fromLegacyText(
+                                formatUser(
+                                    plugin.messages.minecraft.memberMentionTooltip,
+                                    guildMember,
+                                    plugin.messages.minecraft.memberMentionDefaultColor
+                                )
+                            )
                         )
                         listOf(component)
                     }
@@ -92,7 +93,7 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
                         ))
                         if (hover) component.hoverEvent = HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
-                            Text(formatRole(plugin.messages.minecraft.roleMentionTooltip, role))
+                            TextComponent.fromLegacyText(formatRole(plugin.messages.minecraft.roleMentionTooltip, role))
                         )
                         listOf(component)
                     }
@@ -109,7 +110,12 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
                         ))
                         if (hover) component.hoverEvent = HoverEvent(
                             HoverEvent.Action.SHOW_TEXT,
-                            Text(formatChannel(plugin.messages.minecraft.channelMentionTooltip, channel))
+                            TextComponent.fromLegacyText(
+                                formatChannel(
+                                    plugin.messages.minecraft.channelMentionTooltip,
+                                    channel
+                                )
+                            )
                         )
                         listOf(component)
                     }
@@ -158,13 +164,13 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
         channel,
         HoverEvent(
             HoverEvent.Action.SHOW_TEXT,
-            Text(arrayOf(TextComponent(*plugin.minecraftFormatter.formatDiscordMessage(
+            plugin.minecraftFormatter.formatDiscordMessage(
                 plugin.messages.minecraft.tooltip,
                 message,
                 channel,
                 null,
                 false
-            ).toTypedArray())))
+            ).toTypedArray()
         ),
         true,
     )
@@ -181,14 +187,15 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
         .mapAndJoin({ TextComponent(*TextComponent.fromLegacyText(it)) }, {
             TextComponent.fromLegacyText(extractColorCodes(it).toList().joinToString()).last().apply {
                 addExtra(code)
-                clickEvent = ClickEvent(
-                    ClickEvent.Action.COPY_TO_CLIPBOARD,
-                    code
-                )
-                hoverEvent = HoverEvent(
-                    HoverEvent.Action.SHOW_TEXT,
-                    Text(plugin.messages.commands.linkCodeTooltip)
-                )
+                // TODO: Create helper for COPY_TO_CLIPBOARD
+//                clickEvent = ClickEvent(
+//                    ClickEvent.Action.COPY_TO_CLIPBOARD,
+//                    code
+//                )
+//                hoverEvent = HoverEvent(
+//                    HoverEvent.Action.SHOW_TEXT,
+//                    TextComponent.fromLegacyText(plugin.messages.commands.linkCodeTooltip)
+//                )
             }
         })
 
@@ -207,7 +214,7 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
         .mapAndJoin({ TextComponent(*TextComponent.fromLegacyText(it)) }, {
             TextComponent(*TextComponent.fromLegacyText(plugin.messages.minecraft.updateLink)).apply {
                 clickEvent = ClickEvent(ClickEvent.Action.OPEN_URL, pendingUpdate.url)
-                hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(pendingUpdate.url))
+                hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, arrayOf(TextComponent(pendingUpdate.url)))
             }
         })
 }

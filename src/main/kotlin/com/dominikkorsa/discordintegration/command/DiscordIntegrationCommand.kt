@@ -2,9 +2,9 @@ package com.dominikkorsa.discordintegration.command
 
 import co.aikar.commands.BaseCommand
 import co.aikar.commands.annotation.*
+import com.dominikkorsa.discordintegration.Compatibility.sendSystemMessage
 import com.dominikkorsa.discordintegration.DiscordIntegration
 import com.github.shynixn.mccoroutine.bukkit.launch
-import net.md_5.bungee.api.ChatMessageType
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
@@ -25,7 +25,7 @@ class DiscordIntegrationCommand(val plugin: DiscordIntegration): BaseCommand() {
         }
         val linkingCode = plugin.linking.generateLinkingCode(sender)
         val parts = plugin.minecraftFormatter.formatLinkCommandMessage(linkingCode.code).toTypedArray()
-        sender.spigot().sendMessage(ChatMessageType.SYSTEM, *parts)
+        sender.spigot().sendSystemMessage(*parts)
     }
 
     @Subcommand("unlink")

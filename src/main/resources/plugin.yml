@@ -2,7 +2,7 @@ name: DiscordIntegration
 version: 2.6.2
 author: Dominik Korsa
 main: com.dominikkorsa.discordintegration.DiscordIntegration
-api-version: 1.16
+api-version: 1.13
 softdepend:
   - PlaceholderAPI
 

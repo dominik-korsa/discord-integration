@@ -1,6 +1,7 @@
 package com.dominikkorsa.discordintegration
 
 import co.aikar.commands.PaperCommandManager
+import com.dominikkorsa.discordintegration.Compatibility.sendChatMessage
 import com.dominikkorsa.discordintegration.command.DiscordIntegrationCommand
 import com.dominikkorsa.discordintegration.config.ConfigManager
 import com.dominikkorsa.discordintegration.config.MessageManager
@@ -26,7 +27,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.time.delay
 import kotlinx.coroutines.time.withTimeout
-import net.md_5.bungee.api.ChatMessageType
+import net.md_5.bungee.api.chat.TextComponent
 import org.bstats.bukkit.Metrics
 import org.bukkit.Bukkit
 import org.bukkit.event.Listener
@@ -140,9 +141,9 @@ class DiscordIntegration: JavaPlugin() {
             channel,
         ).toTypedArray()
         server.onlinePlayers.forEach {
-            it.spigot().sendMessage(ChatMessageType.CHAT, *parts)
+            it.spigot().sendChatMessage(*parts)
         }
-        Bukkit.getConsoleSender().spigot().sendMessage(*parts)
+        Bukkit.getConsoleSender().sendMessage(TextComponent(*parts).toLegacyText())
     }
 
     private fun registerSuspendingEvents(listener: Listener) {
