@@ -8,9 +8,9 @@ import org.bukkit.event.player.PlayerLoginEvent
 
 class LoginListener(private val plugin: DiscordIntegration): Listener {
     @EventHandler(priority = EventPriority.LOW)
-    suspend fun onLogin(event: PlayerLoginEvent) {
-        if (!plugin.configManager.linking.enabled || !plugin.configManager.linking.mandatory) return
-        if (plugin.linking.playerHasLinked(event.player)) return
+    fun onLogin(event: PlayerLoginEvent) {
+        if (!plugin.linking.mandatory) return
+        if (plugin.db.getDiscordId(event.player.uniqueId) != null) return
         val code = plugin.linking.generateLinkingCode(event.player)
         event.disallow(
             PlayerLoginEvent.Result.KICK_OTHER,

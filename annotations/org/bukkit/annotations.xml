@@ -1,0 +1,5 @@
+<root>
+    <item name='org.bukkit.OfflinePlayer org.bukkit.entity.Player getPlayer()'>
+        <annotation name='org.jetbrains.annotations.Nullable'/>
+    </item>
+</root>

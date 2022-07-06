@@ -40,7 +40,7 @@ class DiscordIntegration: JavaPlugin() {
     val minecraftFormatter = MinecraftFormatter(this)
     val emojiFormatter = EmojiFormatter(this)
     val avatarService = AvatarService(this)
-    lateinit var db: Db
+    val db = Db(this)
     val linking = Linking(this)
     private val lockFileService = LockFileService(this)
     val updateCheckerService = UpdateCheckerService(this)
@@ -54,15 +54,16 @@ class DiscordIntegration: JavaPlugin() {
         dataFolder.mkdirs()
         configManager = ConfigManager(this)
         messages = MessageManager(this)
-        db = Db(this)
 
         @Suppress("UNUSED_VARIABLE")
         val metrics = Metrics(this, 15660)
 
         initCommands()
-        registerEvents()
-        linking.startJob()
+        registerAllEvents()
+
         this.launch {
+            db.init()
+            linking.startJob()
             linking.kickUnlinked()
             lockFileService.start()
             connectionLock.withLock { connect() }
@@ -112,6 +113,7 @@ class DiscordIntegration: JavaPlugin() {
     suspend fun reload() {
         configManager.reload()
         messages.reload()
+        db.reload()
         linking.kickUnlinked()
         updateCheckerService.stop()
         connectionLock.withLock {
@@ -126,11 +128,11 @@ class DiscordIntegration: JavaPlugin() {
         manager.registerCommand(DiscordIntegrationCommand(this))
     }
 
-    private fun registerEvents() {
+    private fun registerAllEvents() {
         registerSuspendingEvents(PlayerCountListener(this@DiscordIntegration))
         registerSuspendingEvents(ChatListener(this@DiscordIntegration))
         registerSuspendingEvents(DeathListener(this@DiscordIntegration))
-        registerSuspendingEvents(LoginListener(this@DiscordIntegration))
+        registerEvents(LoginListener(this@DiscordIntegration))
     }
 
     suspend fun broadcastDiscordMessage(message: Message) {
@@ -148,6 +150,10 @@ class DiscordIntegration: JavaPlugin() {
 
     private fun registerSuspendingEvents(listener: Listener) {
         server.pluginManager.registerSuspendingEvents(listener, this)
+    }
+
+    private fun registerEvents(listener: Listener) {
+        server.pluginManager.registerEvents(listener, this)
     }
 
     fun runTask(fn: () -> Unit) {

@@ -182,8 +182,8 @@ class Client(private val plugin: DiscordIntegration) {
 
     private suspend fun handleProfileInfoCommand(event: UserInteractionEvent) {
         event.deferReply().withEphemeral(true).awaitFirstOrNull()
-        val dbPlayer = plugin.linking.playerOfMember(event.targetId)
-        if (dbPlayer == null) {
+        val playerId = plugin.db.playerIdOfMember(event.targetId)
+        if (playerId == null) {
             event.editReply(
                 InteractionReplyEditSpec.create()
                     .withEmbeds(
@@ -195,7 +195,7 @@ class Client(private val plugin: DiscordIntegration) {
             return
         }
 
-        val player = Bukkit.getOfflinePlayer(dbPlayer.id.value)
+        val player = Bukkit.getOfflinePlayer(playerId)
         val name = player.name
         if (name == null) {
             event.editReply(
@@ -221,7 +221,7 @@ class Client(private val plugin: DiscordIntegration) {
                                 false
                             )
                         )
-                        .withThumbnail(plugin.avatarService.getAvatarUrl(player.uniqueId, name))
+                        .withThumbnail(plugin.avatarService.getAvatarUrl(playerId, name))
                         .withColor(Color.of(0x06d6a0))
                 )
         ).awaitFirstOrNull()
@@ -328,28 +328,30 @@ class Client(private val plugin: DiscordIntegration) {
         return Pair(getLinkingRoles(guild, true), getLinkingRoles(guild, false))
     }
 
-    private suspend fun updateMember(member: Member, roles: Pair<List<Role>, List<Role>>) {
-        if (member.isBot) return
-        val player = plugin.linking.playerOfMember(member.id)
-        val (addedRoles, removedRoles) = if (player == null) roles.swapped() else roles
-        addedRoles.forEach {
-            if (!member.roleIds.contains(it.id)) member.addRole(it.id).awaitFirstOrNull()
-        }
-        removedRoles.forEach {
-            if (member.roleIds.contains(it.id)) member.removeRole(it.id).awaitFirstOrNull()
-        }
-        if (plugin.configManager.linking.syncNicknames) {
-            val name = player?.let { Bukkit.getOfflinePlayer(it.id.value) }?.name
-            if (member.nickname.orNull() != name) {
-                try {
-                    member.edit(
-                        GuildMemberEditSpec.create().withNicknameOrNull(name)
-                    ).awaitFirstOrNull()
-                } catch (error: ClientException) {
-                    plugin.logger.warning("Cannot change nickname of user @${member.tag} to ${name ?: "null"}, reason:\n${error.message}")
-                }
+    private suspend fun updateMember(member: Member, roles: Pair<List<Role>, List<Role>>) = coroutineScope {
+        if (member.isBot) return@coroutineScope
+        val playerId = plugin.db.playerIdOfMember(member.id)
+        val (addedRoles, removedRoles) = if (playerId == null) roles.swapped() else roles
+        awaitAll(async {
+            addedRoles.forEach {
+                if (!member.roleIds.contains(it.id)) member.addRole(it.id).awaitFirstOrNull()
             }
-        }
+        }, async {
+            removedRoles.forEach {
+                if (member.roleIds.contains(it.id)) member.removeRole(it.id).awaitFirstOrNull()
+            }
+        }, async {
+            if (!plugin.configManager.linking.syncNicknames) return@async
+            val name = playerId?.let(Bukkit::getOfflinePlayer)?.name
+            if (member.nickname.orNull() == name) return@async
+            try {
+                member.edit(
+                    GuildMemberEditSpec.create().withNicknameOrNull(name)
+                ).awaitFirstOrNull()
+            } catch (error: ClientException) {
+                plugin.logger.warning("Cannot change nickname of user @${member.tag} to ${name ?: "null"}, reason:\n${error.message}")
+            }
+        })
     }
 
     private suspend fun updateAllMembers() {
