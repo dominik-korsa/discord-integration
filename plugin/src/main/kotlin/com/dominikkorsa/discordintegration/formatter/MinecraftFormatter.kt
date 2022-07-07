@@ -1,6 +1,7 @@
 package com.dominikkorsa.discordintegration.formatter
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
+import com.dominikkorsa.discordintegration.compatibility.Compatibility
 import com.dominikkorsa.discordintegration.compatibility.Compatibility.setCopyToClipboard
 import com.dominikkorsa.discordintegration.replace.Replacer
 import com.dominikkorsa.discordintegration.replace.Replacer.Companion.replaceTo
@@ -28,10 +29,10 @@ import kotlin.streams.toList
 
 class MinecraftFormatter(val plugin: DiscordIntegration) {
     private suspend fun formatUserOrMemberColor(user: User) = user
-        .tryCast<Member>()?.getColorOrNull()?.toChatColor()
+        .tryCast<Member>()?.getColorOrNull()?.toHtml()?.let(Compatibility::hexChatColor)
 
     private fun formatRoleColor(role: Role) =
-        role.color.takeUnless { it == Role.DEFAULT_COLOR }?.toChatColor()
+        role.color.takeUnless { it == Role.DEFAULT_COLOR }?.toHtml()?.let(Compatibility::hexChatColor)
 
     private suspend fun formatUser(template: String, user: User, defaultColor: String) = template
         .replace("%username%", user.username)

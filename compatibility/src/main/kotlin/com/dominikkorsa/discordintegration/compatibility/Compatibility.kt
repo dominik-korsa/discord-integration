@@ -1,5 +1,6 @@
 package com.dominikkorsa.discordintegration.compatibility
 
+import net.md_5.bungee.api.ChatColor
 import net.md_5.bungee.api.ChatMessageType
 import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.ClickEvent
@@ -33,5 +34,10 @@ object Compatibility {
             )
         }
         return true
+    }
+
+    fun hexChatColor(html: String): String? {
+        if (minecraftVersion < 16) return null
+        return ChatColor.of(html).toString()
     }
 }
