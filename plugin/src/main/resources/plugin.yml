@@ -1,5 +1,5 @@
 name: DiscordIntegration
-version: 2.6.2
+version: 3.0.0-rc.1
 author: Dominik Korsa
 main: com.dominikkorsa.discordintegration.DiscordIntegration
 api-version: 1.13
