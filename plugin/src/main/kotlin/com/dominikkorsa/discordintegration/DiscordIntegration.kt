@@ -29,6 +29,7 @@ import kotlinx.coroutines.time.delay
 import kotlinx.coroutines.time.withTimeout
 import net.md_5.bungee.api.chat.TextComponent
 import org.bstats.bukkit.Metrics
+import org.bstats.charts.SimplePie
 import org.bukkit.Bukkit
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
@@ -55,8 +56,14 @@ class DiscordIntegration: JavaPlugin() {
         configManager = ConfigManager(this)
         messages = MessageManager(this)
 
-        @Suppress("UNUSED_VARIABLE")
         val metrics = Metrics(this, 15660)
+        metrics.addCustomChart(SimplePie("linking") {
+            when {
+                !configManager.linking.enabled -> "Disabled"
+                configManager.linking.mandatory -> "Mandatory"
+                else -> "Not mandatory"
+            }
+        })
 
         initCommands()
         registerAllEvents()
