@@ -298,7 +298,8 @@ class Client(private val plugin: DiscordIntegration) {
             .name(profileInfoCommandName)
             .build()
 
-        val commands = if (plugin.configManager.linking.enabled) listOf(linkMinecraftCommand, userInfoCommand) else listOf()
+        val commands =
+            if (plugin.configManager.linking.enabled) listOf(linkMinecraftCommand, userInfoCommand) else listOf()
 
         gateway?.restClient?.let {
             it.applicationService.bulkOverwriteGuildApplicationCommand(
@@ -345,13 +346,24 @@ class Client(private val plugin: DiscordIntegration) {
         if (member.isBot) return@coroutineScope
         val playerId = plugin.db.playerIdOfMember(member.id)
         val (addedRoles, removedRoles) = if (playerId == null) roles.swapped() else roles
+        var showWarning = false
         awaitAll(async {
             addedRoles.forEach {
-                if (!member.roleIds.contains(it.id)) member.addRole(it.id).awaitFirstOrNull()
+                try {
+                    if (!member.roleIds.contains(it.id)) member.addRole(it.id).awaitFirstOrNull()
+                } catch (error: ClientException) {
+                    plugin.logger.warning("Cannot add role `${it.name}` to user @${member.tag}, reason:\n${error.message}")
+                    showWarning = true
+                }
             }
         }, async {
             removedRoles.forEach {
-                if (member.roleIds.contains(it.id)) member.removeRole(it.id).awaitFirstOrNull()
+                try {
+                    if (member.roleIds.contains(it.id)) member.removeRole(it.id).awaitFirstOrNull()
+                } catch (error: ClientException) {
+                    plugin.logger.warning("Cannot remove role `${it.name}` from user @${member.tag}, reason:\n${error.message}")
+                    showWarning = true
+                }
             }
         }, async {
             if (!plugin.configManager.linking.enabled || !plugin.configManager.linking.syncNicknames) return@async
@@ -363,8 +375,10 @@ class Client(private val plugin: DiscordIntegration) {
                 ).awaitFirstOrNull()
             } catch (error: ClientException) {
                 plugin.logger.warning("Cannot change nickname of user @${member.tag} to ${name ?: "(none)"}, reason:\n${error.message}")
+                showWarning = true
             }
         })
+        if (showWarning) plugin.logger.warning("Make sure to put the bot's role on the top of the role list")
     }
 
     private suspend fun updateAllMembers() {
