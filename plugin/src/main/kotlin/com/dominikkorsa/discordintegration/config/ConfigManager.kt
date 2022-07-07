@@ -38,7 +38,7 @@ class ConfigManager(plugin: DiscordIntegration): CustomConfig(plugin, "config.ym
         val syncNicknames get() = section.getBooleanSafe("sync-nicknames")
     }
 
-    val discordToken get() = config.getTrimmedString("discord-token")
+    val discordToken get() = config.getString("discord-token")?.trim()
 
     val chat get() = Chat(config.getSection("chat"))
     val activity get() = Activity(config.getSection("activity"))

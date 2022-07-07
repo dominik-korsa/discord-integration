@@ -52,8 +52,8 @@ class Client(private val plugin: DiscordIntegration) {
     private var gateway: GatewayDiscordClient? = null
     private var guildEmojis: HashMap<Snowflake, ImmutableMap<String, String>>? = null
 
-    suspend fun connect() {
-        val client = DiscordClient.create(plugin.configManager.discordToken)
+    suspend fun connect(token: String) {
+        val client = DiscordClient.create(token)
         gateway = client
             .gateway()
             .setEnabledIntents(IntentSet.of(Intent.GUILD_MEMBERS, Intent.GUILD_MESSAGES))

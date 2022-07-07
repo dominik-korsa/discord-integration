@@ -5,7 +5,6 @@ import com.dominikkorsa.discordintegration.command.DiscordIntegrationCommand
 import com.dominikkorsa.discordintegration.compatibility.Compatibility
 import com.dominikkorsa.discordintegration.config.ConfigManager
 import com.dominikkorsa.discordintegration.config.MessageManager
-import com.dominikkorsa.discordintegration.exception.ConfigNotSetException
 import com.dominikkorsa.discordintegration.formatter.DiscordFormatter
 import com.dominikkorsa.discordintegration.formatter.EmojiFormatter
 import com.dominikkorsa.discordintegration.formatter.MinecraftFormatter
@@ -35,7 +34,7 @@ import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import java.time.Duration
 
-class DiscordIntegration: JavaPlugin() {
+class DiscordIntegration : JavaPlugin() {
     val client = Client(this)
     val discordFormatter = DiscordFormatter(this)
     val minecraftFormatter = MinecraftFormatter(this)
@@ -91,8 +90,37 @@ class DiscordIntegration: JavaPlugin() {
     }
 
     private suspend fun connect() {
+        val token = configManager.discordToken
+        if (token == null) {
+            Bukkit.broadcastMessage(messages.connectionFailed)
+            logger.severe("Field `discord-token` in config.yml has not been set")
+            logger.severe(
+                "Visit https://github.com/dominik-korsa/discord-integration/wiki/Configuring-a-Discord-bot for the configuration guide"
+            )
+            return
+        }
+        if (configManager.chat.channels.isEmpty()) {
+            """
+                No Discord channels have been added in field `chat.channels`
+                Put the IDs of the channels you want to be forwarded to Minecraft
+                as entries in that list
+                TIP: Enable `Advanced/Developer Mode` setting in Discord
+                to get access to `Copy ID` feature in the right click menu
+                
+            """.trimIndent().lineSequence().forEach(logger::warning)
+
+        }
+        if (configManager.chat.webhooks.isEmpty()) {
+            """
+                No webhooks have been added in field `chat.webhooks`
+                Visit https://github.com/dominik-korsa/discord-integration/wiki/Configuring-a-Discord-bot#configuring-webhooks
+                for configuration instructions
+
+            """.trimIndent().lineSequence().forEach(logger::warning)
+        }
+
         try {
-            client.connect()
+            client.connect(token)
             this@DiscordIntegration.launch {
                 client.initListeners()
             }
@@ -103,9 +131,6 @@ class DiscordIntegration: JavaPlugin() {
                 }
             }
             Bukkit.broadcastMessage(messages.connected)
-        } catch (error: ConfigNotSetException) {
-            Bukkit.broadcastMessage(messages.connectionFailed)
-            logger.severe(error.message)
         } catch (error: Exception) {
             Bukkit.broadcastMessage(messages.connectionFailed)
             error.printStackTrace()
@@ -167,7 +192,7 @@ class DiscordIntegration: JavaPlugin() {
 
     private fun notifyInsecure() {
         if (!Bukkit.getOnlineMode() && linking.mandatory) {
-            val message = """
+            """
                 **** SERIOUS SECURITY ISSUE:
                 Server is running in offline mode and mandatory linking is enabled
                 Because the verification code is generated and displayed
@@ -175,8 +200,7 @@ class DiscordIntegration: JavaPlugin() {
                 lets players link before authenticating with a login plugin!
                 This allows impersonators to link Minecraft profiles
                 of other players to their Discord account.
-            """.trimIndent()
-            message.lineSequence().forEach(logger::severe)
+            """.trimIndent().lineSequence().forEach(logger::severe)
         }
     }
 
