@@ -148,7 +148,7 @@ class Client(private val plugin: DiscordIntegration) {
     private suspend fun handleLinkMinecraftCommand(event: ChatInputInteractionEvent) {
         event.deferReply().withEphemeral(true).awaitFirstOrNull()
         val player = plugin.linking.link(
-            event.getOption("code").orElseThrow().value.orElseThrow().asString(),
+            event.getOption("code").get().value.get().asString(),
             event.interaction.user
         )
 
@@ -242,10 +242,12 @@ class Client(private val plugin: DiscordIntegration) {
         }
     }
 
+    private val webhookRegex = Regex("/api/webhooks/([^/]+)/([^/]+)\$")
+
     private suspend fun getWebhooks() = gateway?.let { gateway ->
         plugin.configManager.chat.webhooks
             .mapNotNull {
-                Regex("/api/webhooks/([^/]+)/([^/]+)\$").find(it)?.let { result ->
+                webhookRegex.find(it)?.let { result ->
                     gateway
                         .getWebhookByIdWithToken(
                             Snowflake.of(result.groupValues[1]),

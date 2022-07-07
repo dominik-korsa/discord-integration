@@ -1,6 +1,7 @@
 package com.dominikkorsa.discordintegration.formatter
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
+import com.dominikkorsa.discordintegration.utils.replaceAll
 import java.util.regex.Pattern
 
 class EmojiFormatter(private val plugin: DiscordIntegration) {

@@ -8,6 +8,7 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import net.md_5.bungee.api.ChatColor
 import reactor.math.MathFlux
 import java.util.stream.Stream
+
 fun Color.toChatColor() = "x${rgb.toString(16).padStart(6, '0')}"
     .map { "${ChatColor.COLOR_CHAR}$it" }.joinToString("")
 
@@ -16,4 +17,5 @@ suspend fun PartialMember.getColorOrNull(): Color? =
         .map { obj: Role -> obj.color }
         .awaitFirstOrNull()
 
-fun extractColorCodes(input: String): Stream<String> = ChatColor.STRIP_COLOR_PATTERN.matcher(input).results().map { it.group() }
+fun extractColorCodes(input: String): Stream<String> =
+    ChatColor.STRIP_COLOR_PATTERN.matcher(input).results().map { it.group() }

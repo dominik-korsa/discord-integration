@@ -3,7 +3,7 @@ package com.dominikkorsa.discordintegration.formatter
 import com.dominikkorsa.discordintegration.DiscordIntegration
 import com.dominikkorsa.discordintegration.compatibility.Compatibility.setCopyToClipboard
 import com.dominikkorsa.discordintegration.replace.Replacer
-import com.dominikkorsa.discordintegration.replace.replaceTo
+import com.dominikkorsa.discordintegration.replace.Replacer.Companion.replaceTo
 import com.dominikkorsa.discordintegration.update.PendingUpdate
 import com.dominikkorsa.discordintegration.utils.*
 import discord4j.common.util.Snowflake
@@ -150,7 +150,7 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
                     hoverEvent = prefixHoverEvent
                 }
             }, {
-                TextComponent.fromLegacyText(extractColorCodes(it).toList().joinToString()).last().apply {
+                TextComponent.fromLegacyText(extractColorCodes(it).toList().joinToString("")).last().apply {
                     content.forEach(::addExtra)
                 }
             })
@@ -186,7 +186,7 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
     fun formatLinkCommandMessage(code: String) = plugin.messages.commands.linkMessage
         .split("%code%")
         .mapAndJoin({ TextComponent(*TextComponent.fromLegacyText(it)) }, {
-            TextComponent.fromLegacyText(extractColorCodes(it).toList().joinToString()).last().apply {
+            TextComponent.fromLegacyText(extractColorCodes(it).toList().joinToString("")).last().apply {
                 addExtra(code)
                 setCopyToClipboard(code, TextComponent.fromLegacyText(plugin.messages.commands.linkCodeTooltip))
             }
