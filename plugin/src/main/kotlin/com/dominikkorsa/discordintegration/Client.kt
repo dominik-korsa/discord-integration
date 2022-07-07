@@ -354,7 +354,7 @@ class Client(private val plugin: DiscordIntegration) {
                 if (member.roleIds.contains(it.id)) member.removeRole(it.id).awaitFirstOrNull()
             }
         }, async {
-            if (!plugin.configManager.linking.syncNicknames) return@async
+            if (!plugin.configManager.linking.enabled || !plugin.configManager.linking.syncNicknames) return@async
             val name = playerId?.let(Bukkit::getOfflinePlayer)?.name
             if (member.nickname.orNull() == name) return@async
             try {
@@ -362,7 +362,7 @@ class Client(private val plugin: DiscordIntegration) {
                     GuildMemberEditSpec.create().withNicknameOrNull(name)
                 ).awaitFirstOrNull()
             } catch (error: ClientException) {
-                plugin.logger.warning("Cannot change nickname of user @${member.tag} to ${name ?: "null"}, reason:\n${error.message}")
+                plugin.logger.warning("Cannot change nickname of user @${member.tag} to ${name ?: "(none)"}, reason:\n${error.message}")
             }
         })
     }
