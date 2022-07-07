@@ -96,7 +96,9 @@ class Db(private val plugin: DiscordIntegration) {
     private suspend fun load() {
         withContext(IO) {
             if (file.exists()) {
-                players = HashMap(Yaml.default.decodeFromStream(playerMapSerializer, file.inputStream()))
+                val text = file.readText()
+                players = if (text.trim().isEmpty()) HashMap()
+                else HashMap(Yaml.default.decodeFromString(playerMapSerializer, text))
             } else save()
         }
     }
