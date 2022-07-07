@@ -60,6 +60,7 @@ class DiscordIntegration: JavaPlugin() {
 
         initCommands()
         registerAllEvents()
+        notifyInsecure()
 
         this.launch {
             db.init()
@@ -115,6 +116,7 @@ class DiscordIntegration: JavaPlugin() {
         messages.reload()
         db.reload()
         linking.kickUnlinked()
+        notifyInsecure()
         updateCheckerService.stop()
         connectionLock.withLock {
             disconnect()
@@ -154,6 +156,21 @@ class DiscordIntegration: JavaPlugin() {
 
     private fun registerEvents(listener: Listener) {
         server.pluginManager.registerEvents(listener, this)
+    }
+
+    private fun notifyInsecure() {
+        if (!Bukkit.getOnlineMode() && linking.mandatory) {
+            val message = """
+                **** SERIOUS SECURITY ISSUE:
+                Server is running in offline mode and mandatory linking is enabled
+                Because the verification code is generated and displayed
+                immediately after trying to join the server, this plugin
+                lets players link before authenticating with a login plugin!
+                This allows impersonators to link Minecraft profiles
+                of other players to their Discord account.
+            """.trimIndent()
+            message.lineSequence().forEach(logger::severe)
+        }
     }
 
     fun runTask(fn: () -> Unit) {
