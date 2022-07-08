@@ -108,7 +108,6 @@ class DiscordIntegration : JavaPlugin() {
                 to get access to `Copy ID` feature in the right click menu
                 
             """.trimIndent().lineSequence().forEach(logger::warning)
-
         }
         if (configManager.chat.webhooks.isEmpty()) {
             """

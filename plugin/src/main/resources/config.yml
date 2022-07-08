@@ -1,5 +1,5 @@
 # Do not edit the file-version!
-file-version: 2
+file-version: 3
 
 discord-token: # YOUR DISCORD TOKEN HERE
 chat:
@@ -75,3 +75,6 @@ linking:
   # You should remove "Change Nickname" permission from users
   # if this setting is enabled
   sync-nicknames: false
+debug:
+  # Will output each message received from Discord in server console
+  log-discord-messages: false

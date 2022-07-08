@@ -32,8 +32,6 @@ import discord4j.rest.util.Color
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.reactive.*
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -86,6 +84,11 @@ class Client(private val plugin: DiscordIntegration) {
         return ImmutableMap.copyOf(map)
     }
 
+    private fun messagesDebug(log: String) {
+        if (!plugin.configManager.debug.logDiscordMessages) return
+        plugin.logger.info(log)
+    }
+
     suspend fun initListeners() = coroutineScope {
         gateway?.apply {
             awaitAll(
@@ -93,12 +96,16 @@ class Client(private val plugin: DiscordIntegration) {
                     eventDispatcher
                         .on(MessageCreateEvent::class.java)
                         .asFlow()
-                        .filter { plugin.configManager.chat.channels.contains(it.message.channelId.asString()) }
-                        .filterNot { it.message.content.isNullOrEmpty() }
-                        .filter { it.message.author.isPresent }
-                        .filterNot { it.message.author.get().isBot }
                         .collect {
-                            plugin.broadcastDiscordMessage(it.message)
+                            messagesDebug("Received message ${it.message.id.asString()} on channel ${it.message.channelId.asString()}")
+                            when {
+                                !plugin.configManager.chat.channels.map(Snowflake::of).contains(it.message.channelId) ->
+                                    messagesDebug("Ignoring message, channel not configured in chat.channels")
+                                !it.message.author.isPresent -> messagesDebug("Ignoring message, cannot get message author")
+                                it.message.author.get().isBot -> messagesDebug("Ignoring message, author is a bot")
+                                it.message.content.isNullOrEmpty() -> messagesDebug("Ignoring message, content empty")
+                                else -> plugin.broadcastDiscordMessage(it.message)
+                            }
                         }
                 },
                 async {

@@ -7,15 +7,15 @@ class ConfigManager(plugin: DiscordIntegration): CustomConfig(plugin, "config.ym
 
     class Chat(private val section: Section) {
         class Embed(private val section: Section) {
-            val enabled get() = section.getBooleanSafe("enabled")
+            val enabled get() = section.requireBoolean("enabled")
             val color get() = section.getColor("color")
         }
 
-        val channels get() = section.getStringListSafe("channels")
-        val webhooks get() = section.getStringListSafe("webhooks")
-        val playerAsStatusAuthor get() = section.getBooleanSafe("player-as-status-author")
-        val avatarOfflineMode get() = section.getBooleanSafe("avatar.offline-mode")
-        val avatarUrl get() = section.getTrimmedString("avatar.url")
+        val channels get() = section.requireStringList("channels")
+        val webhooks get() = section.requireStringList("webhooks")
+        val playerAsStatusAuthor get() = section.requireBoolean("player-as-status-author")
+        val avatarOfflineMode get() = section.requireBoolean("avatar.offline-mode")
+        val avatarUrl get() = section.requireTrimmedString("avatar.url")
         val joinEmbed get() = Embed(section.getSection("join-embed"))
         val quitEmbed get() = Embed(section.getSection("quit-embed"))
         val deathEmbed get() = Embed(section.getSection("death-embed"))
@@ -23,19 +23,23 @@ class ConfigManager(plugin: DiscordIntegration): CustomConfig(plugin, "config.ym
     }
 
     class Activity(private val section: Section) {
-        val updateInterval get() = section.getIntSafe("update-interval")
-        val timeWorld get() = section.getTrimmedString("time.world")
-        val timeRound get() = section.getIntSafe("time.round")
-        val time24h get() = section.getBooleanSafe("time.24h")
-        val idle get() = section.getBooleanSafe("idle-when-no-players-online")
+        val updateInterval get() = section.requireInt("update-interval")
+        val timeWorld get() = section.requireTrimmedString("time.world")
+        val timeRound get() = section.requireInt("time.round")
+        val time24h get() = section.requireBoolean("time.24h")
+        val idle get() = section.requireBoolean("idle-when-no-players-online")
     }
 
     class Linking(private val section: Section) {
-        val enabled get() = section.getBooleanSafe("enabled")
-        val mandatory get() = section.getBooleanSafe("mandatory")
-        val linkedRoles get() = section.getStringListSafe("linked-roles")
-        val notLinkedRoles get() = section.getStringListSafe("not-linked-roles")
-        val syncNicknames get() = section.getBooleanSafe("sync-nicknames")
+        val enabled get() = section.requireBoolean("enabled")
+        val mandatory get() = section.requireBoolean("mandatory")
+        val linkedRoles get() = section.requireStringList("linked-roles")
+        val notLinkedRoles get() = section.requireStringList("not-linked-roles")
+        val syncNicknames get() = section.requireBoolean("sync-nicknames")
+    }
+
+    class Debug(private val section: Section) {
+        val logDiscordMessages get() = section.requireBoolean("log-discord-messages")
     }
 
     val discordToken get() = config.getString("discord-token")?.trim()
@@ -43,4 +47,5 @@ class ConfigManager(plugin: DiscordIntegration): CustomConfig(plugin, "config.ym
     val chat get() = Chat(config.getSection("chat"))
     val activity get() = Activity(config.getSection("activity"))
     val linking get() = Linking(config.getSection("linking"))
+    val debug get() = Debug(config.getSection("debug"))
 }
