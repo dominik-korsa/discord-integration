@@ -17,10 +17,8 @@ import com.dominikkorsa.discordintegration.update.UpdateCheckerService
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.registerSuspendingEvents
 import discord4j.core.`object`.entity.Message
-import discord4j.core.`object`.entity.channel.GuildMessageChannel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -169,12 +167,7 @@ class DiscordIntegration : JavaPlugin() {
     }
 
     suspend fun broadcastDiscordMessage(message: Message) {
-        val channel = message.channel.awaitFirstOrNull()
-        if (channel == null || channel !is GuildMessageChannel) return
-        val parts = minecraftFormatter.formatDiscordMessage(
-            message,
-            channel,
-        ).toTypedArray()
+        val parts = minecraftFormatter.formatDiscordMessage(message).toTypedArray()
         server.onlinePlayers.forEach {
             Compatibility.sendChatMessage(it, *parts)
         }
