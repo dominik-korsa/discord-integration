@@ -199,4 +199,8 @@ class DiscordIntegration : JavaPlugin() {
     fun runTask(fn: () -> Unit) {
         Bukkit.getScheduler().runTask(this, Runnable(fn))
     }
+
+    fun runConsoleCommand(command: String) {
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command)
+    }
 }

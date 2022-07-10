@@ -16,10 +16,7 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.event.domain.interaction.UserInteractionEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.`object`.command.ApplicationCommandOption
-import discord4j.core.`object`.entity.Guild
-import discord4j.core.`object`.entity.GuildEmoji
-import discord4j.core.`object`.entity.Member
-import discord4j.core.`object`.entity.Role
+import discord4j.core.`object`.entity.*
 import discord4j.core.`object`.presence.ClientActivity
 import discord4j.core.`object`.presence.ClientPresence
 import discord4j.core.`object`.presence.Status
@@ -112,20 +109,16 @@ class Client(private val plugin: DiscordIntegration) {
                         .collect {
                             messagesDebug("Received message ${it.message.id.asString()} on channel ${it.message.channelId.asString()}")
                             when {
-                                !plugin.configManager.chat.channels.map(Snowflake::of).contains(it.message.channelId) ->
-                                    messagesDebug("Ignoring message, channel not configured in chat.channels")
                                 !it.message.author.isPresent -> messagesDebug("Ignoring message, cannot get message author")
                                 it.message.author.get().isBot -> messagesDebug("Ignoring message, author is a bot")
                                 it.message.content.isNullOrEmpty() -> messagesDebug("Ignoring message, content empty")
-                                else -> {
-                                    val timeStart = now()
-                                    plugin.broadcastDiscordMessage(it.message)
-                                    messagesDebug(
-                                        "Processing message took ${
-                                            Duration.between(timeStart, now()).toMillis()
-                                        } milliseconds"
-                                    )
-                                }
+                                plugin.configManager.chat.channels.map(Snowflake::of).contains(it.message.channelId) ->
+                                    onSyncedMessage(it.message)
+                                plugin.configManager.chat.consoleChannels.map(Snowflake::of)
+                                    .contains(it.message.channelId) ->
+                                    onConsoleMessage(it.message)
+                                else ->
+                                    messagesDebug("Ignoring message, channel not configured in chat.channels or chat.console-channels")
                             }
                         }
                 },
@@ -177,6 +170,21 @@ class Client(private val plugin: DiscordIntegration) {
                 }
             )
         }
+    }
+
+    private suspend fun onSyncedMessage(message: Message) {
+        val timeStart = now()
+        plugin.broadcastDiscordMessage(message)
+        messagesDebug(
+            "Processing chat message took ${
+                Duration.between(timeStart, now()).toMillis()
+            } milliseconds"
+        )
+    }
+
+    private fun onConsoleMessage(message: Message) {
+        messagesDebug("Received console command message")
+        plugin.runConsoleCommand(message.content)
     }
 
     private suspend fun handleLinkMinecraftCommand(event: ChatInputInteractionEvent) {

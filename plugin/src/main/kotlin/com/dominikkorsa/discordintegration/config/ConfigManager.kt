@@ -13,6 +13,7 @@ class ConfigManager(plugin: DiscordIntegration): CustomConfig(plugin, "config.ym
 
         val channels get() = section.requireStringList("channels")
         val webhooks get() = section.requireStringList("webhooks")
+        val consoleChannels get() = section.requireStringList("console-channels")
         val playerAsStatusAuthor get() = section.requireBoolean("player-as-status-author")
         val avatarOfflineMode get() = section.requireBoolean("avatar.offline-mode")
         val avatarUrl get() = section.requireTrimmedString("avatar.url")

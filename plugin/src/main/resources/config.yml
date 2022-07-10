@@ -1,5 +1,5 @@
 # Do not edit the file-version!
-file-version: 3
+file-version: 4
 
 discord-token: # YOUR DISCORD TOKEN HERE
 chat:
@@ -8,6 +8,8 @@ chat:
   # - 01248163264128256
   webhooks:
   # - https://discord.com/api/webhooks/...
+  console-channels:
+  # - 0123456789
   join-embed:
     enabled: true
     color: 0x06d6a0
