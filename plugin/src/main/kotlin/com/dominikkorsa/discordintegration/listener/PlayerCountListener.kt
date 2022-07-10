@@ -6,6 +6,7 @@ import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.delay
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
@@ -39,14 +40,14 @@ class PlayerCountListener(private val plugin: DiscordIntegration) : Listener {
         plugin.client.updateActivity()
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     suspend fun onPlayerJoin(event: PlayerJoinEvent) {
         val content = plugin.discordFormatter.formatJoinInfo(event.player)
         sendStatus(content, event.player, plugin.configManager.chat.joinEmbed)
         plugin.updateCheckerService.notify(event.player)
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     suspend fun onPlayerQuit(event: PlayerQuitEvent) {
         val content = plugin.discordFormatter.formatQuitInfo(event.player)
         sendStatus(content, event.player, plugin.configManager.chat.quitEmbed)

@@ -3,11 +3,12 @@ package com.dominikkorsa.discordintegration.listener
 import com.dominikkorsa.discordintegration.DiscordIntegration
 import discord4j.core.spec.EmbedCreateSpec
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.PlayerDeathEvent
 
 class DeathListener(private val plugin: DiscordIntegration) : Listener {
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     suspend fun onDeath(event: PlayerDeathEvent) {
         val content = plugin.discordFormatter.formatDeathMessage(event)
         val webhookBuilder =
