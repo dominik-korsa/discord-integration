@@ -3,6 +3,8 @@ package com.dominikkorsa.discordintegration
 import com.dominikkorsa.discordintegration.utils.orNull
 import com.dominikkorsa.discordintegration.utils.swapped
 import com.google.common.collect.ImmutableMap
+import discord4j.common.store.Store
+import discord4j.common.store.impl.LocalStoreLayout
 import discord4j.common.util.Snowflake
 import discord4j.core.DiscordClient
 import discord4j.core.GatewayDiscordClient
@@ -32,10 +34,16 @@ import discord4j.rest.util.Color
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.reactive.*
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.collect
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import reactor.core.CorePublisher
+import java.time.Duration
+import java.time.LocalDateTime.now
 
 
 @Suppress("ReactiveStreamsUnusedPublisher")
@@ -54,6 +62,7 @@ class Client(private val plugin: DiscordIntegration) {
         val client = DiscordClient.create(token)
         gateway = client
             .gateway()
+            .setStore(Store.fromLayout(LocalStoreLayout.create()))
             .setEnabledIntents(IntentSet.of(Intent.GUILD_MEMBERS, Intent.GUILD_MESSAGES))
             .login()
             .awaitFirstOrNull() ?: throw Exception("Failed to connect to Discord")
@@ -70,10 +79,14 @@ class Client(private val plugin: DiscordIntegration) {
         gateway = null
     }
 
-    private suspend fun initEmojis() {
+    private suspend fun initEmojis() = coroutineScope {
         gateway?.let { it ->
             val result = HashMap<Snowflake, ImmutableMap<String, String>>()
-            it.guilds.collect { result[it.id] = mapEmojis(it.emojis.collectList().awaitFirst()) }
+            it.guilds
+                .asFlow()
+                .map { async { result[it.id] = mapEmojis(it.emojis.asFlow().toList()) } }
+                .toList()
+                .awaitAll()
             guildEmojis = result
         }
     }
@@ -104,7 +117,15 @@ class Client(private val plugin: DiscordIntegration) {
                                 !it.message.author.isPresent -> messagesDebug("Ignoring message, cannot get message author")
                                 it.message.author.get().isBot -> messagesDebug("Ignoring message, author is a bot")
                                 it.message.content.isNullOrEmpty() -> messagesDebug("Ignoring message, content empty")
-                                else -> plugin.broadcastDiscordMessage(it.message)
+                                else -> {
+                                    val timeStart = now()
+                                    plugin.broadcastDiscordMessage(it.message)
+                                    messagesDebug(
+                                        "Processing message took ${
+                                            Duration.between(timeStart, now()).toMillis()
+                                        } milliseconds"
+                                    )
+                                }
                             }
                         }
                 },
@@ -112,6 +133,12 @@ class Client(private val plugin: DiscordIntegration) {
                     eventDispatcher.on(GuildCreateEvent::class.java)
                         .collect {
                             guildEmojis?.set(it.guild.id, mapEmojis(it.guild.emojis.collectList().awaitFirst()))
+                            val roles = getLinkingRoles(it.guild)
+                            it.guild.members
+                                .asFlow()
+                                .map { member -> async { updateMember(member, roles) } }
+                                .toList()
+                                .awaitAll()
                             registerCommands(it.guild.id)
                         }
                 },
@@ -252,17 +279,14 @@ class Client(private val plugin: DiscordIntegration) {
     private val webhookRegex = Regex("/api/webhooks/([^/]+)/([^/]+)\$")
 
     private suspend fun getWebhooks() = gateway?.let { gateway ->
-        plugin.configManager.chat.webhooks
-            .mapNotNull {
-                webhookRegex.find(it)?.let { result ->
-                    gateway
-                        .getWebhookByIdWithToken(
-                            Snowflake.of(result.groupValues[1]),
-                            result.groupValues[2],
-                        )
-                        .awaitFirstOrNull()
-                }
+        plugin.configManager.chat.webhooks.asFlow().map {
+            webhookRegex.find(it)?.let { result ->
+                gateway.getWebhookByIdWithToken(
+                    Snowflake.of(result.groupValues[1]),
+                    result.groupValues[2],
+                ).awaitFirstOrNull()
             }
+        }.filterNotNull()
     }
 
     fun getWebhookBuilder(): WebhookExecuteSpec.Builder = WebhookExecuteSpec.builder()
@@ -272,18 +296,22 @@ class Client(private val plugin: DiscordIntegration) {
         .username(player.name)
         .avatarUrl(plugin.avatarService.getAvatarUrl(player))
 
-    suspend fun sendWebhook(spec: WebhookExecuteSpec) {
-        getWebhooks()?.forEach {
-            it.execute(spec).awaitFirstOrNull()
-        }
+    suspend fun sendWebhook(spec: WebhookExecuteSpec) = coroutineScope {
+        getWebhooks()?.map {
+            async {
+                it.execute(spec).awaitFirstOrNull()
+            }
+        }?.toList()?.awaitAll()
     }
 
     fun getEmojiFormat(name: String) = guildEmojis?.firstNotNullOfOrNull { it.value[name] }
 
-    private suspend fun initCommands() {
-        gateway?.guilds?.collect {
-            registerCommands(it.id)
-        }
+    private suspend fun initCommands(): Unit = coroutineScope {
+        gateway?.guilds?.asFlow()?.map {
+            async {
+                registerCommands(it.id)
+            }
+        }?.toList()?.awaitAll()
     }
 
     private suspend fun registerCommands(guildId: Snowflake) {
@@ -332,21 +360,26 @@ class Client(private val plugin: DiscordIntegration) {
     suspend fun getRole(guildId: Snowflake, roleId: Snowflake) =
         gateway?.getRoleById(guildId, roleId)?.handleNotFound()
 
-    suspend fun getChannel(channelId: Snowflake) = gateway?.getChannelById(channelId)?.handleNotFound()
+    suspend fun getChannel(channelId: Snowflake) =
+        gateway?.getChannelById(channelId)?.handleNotFound()
 
-    private suspend fun getLinkingRoles(guild: Guild, linked: Boolean): MutableList<Role> {
+    private suspend fun getLinkingRoles(guild: Guild, linked: Boolean): List<Role> {
         val roleIds = when {
             linked -> plugin.configManager.linking.linkedRoles
             else -> plugin.configManager.linking.notLinkedRoles
         }
         return guild.roles
+            .asFlow()
             .filter { roleIds.contains(it.id.asString()) }
-            .collectList()
-            .awaitSingle()
+            .toList()
     }
 
-    private suspend fun getLinkingRoles(guild: Guild): Pair<MutableList<Role>, MutableList<Role>> {
-        return Pair(getLinkingRoles(guild, true), getLinkingRoles(guild, false))
+    private suspend fun getLinkingRoles(guild: Guild): Pair<List<Role>, List<Role>> = coroutineScope {
+        val (linked, notLinked) = awaitAll(
+            async { getLinkingRoles(guild, true) },
+            async { getLinkingRoles(guild, false) },
+        )
+        Pair(linked, notLinked)
     }
 
     private suspend fun updateMember(member: Member, roles: Pair<List<Role>, List<Role>>) = coroutineScope {
@@ -388,19 +421,38 @@ class Client(private val plugin: DiscordIntegration) {
         if (showWarning) plugin.logger.warning("Make sure to put the bot's role on the top of the role list")
     }
 
-    private suspend fun updateAllMembers() {
-        gateway?.guilds?.collect { guild ->
-            val roles = getLinkingRoles(guild)
-            guild.members.collect { updateMember(it, roles) }
-        }
+    private suspend fun updateAllMembers(): Unit = coroutineScope {
+        gateway
+            ?.guilds
+            ?.asFlow()
+            ?.map { guild ->
+                async {
+                    val roles = getLinkingRoles(guild)
+                    guild
+                        .members
+                        .asFlow()
+                        .map { async { updateMember(it, roles) } }
+                        .toList()
+                        .awaitAll()
+                }
+            }
+            ?.toList()
+            ?.awaitAll()
     }
 
-    suspend fun updateMember(memberId: Snowflake) {
-        gateway?.guilds?.collect { guild ->
-            updateMember(
-                guild.getMemberById(memberId).handleNotFound() ?: return@collect,
-                getLinkingRoles(guild)
-            )
-        }
+    suspend fun updateMember(memberId: Snowflake): Unit = coroutineScope {
+        gateway
+            ?.guilds
+            ?.asFlow()
+            ?.map { guild ->
+                async {
+                    updateMember(
+                        guild.getMemberById(memberId).handleNotFound() ?: return@async,
+                        getLinkingRoles(guild)
+                    )
+                }
+            }
+            ?.toList()
+            ?.awaitAll()
     }
 }
