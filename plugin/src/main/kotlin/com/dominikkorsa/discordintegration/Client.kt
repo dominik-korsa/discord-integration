@@ -1,7 +1,9 @@
 package com.dominikkorsa.discordintegration
 
+import com.dominikkorsa.discordintegration.utils.getEffectiveEveryonePermissions
 import com.dominikkorsa.discordintegration.utils.orNull
 import com.dominikkorsa.discordintegration.utils.swapped
+import com.dominikkorsa.discordintegration.utils.tryCast
 import com.google.common.collect.ImmutableMap
 import discord4j.common.store.Store
 import discord4j.common.store.impl.LocalStoreLayout
@@ -18,6 +20,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.`object`.command.ApplicationCommandOption
 import discord4j.core.`object`.entity.*
 import discord4j.core.`object`.entity.channel.Channel
+import discord4j.core.`object`.entity.channel.GuildMessageChannel
 import discord4j.core.`object`.presence.ClientActivity
 import discord4j.core.`object`.presence.ClientPresence
 import discord4j.core.`object`.presence.Status
@@ -29,6 +32,7 @@ import discord4j.gateway.intent.IntentSet
 import discord4j.rest.http.client.ClientException
 import discord4j.rest.util.AllowedMentions
 import discord4j.rest.util.Color
+import discord4j.rest.util.Permission
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -37,6 +41,7 @@ import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.collect
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import reactor.core.CorePublisher
@@ -102,6 +107,7 @@ class Client(private val plugin: DiscordIntegration) {
 
     suspend fun initListeners() = coroutineScope {
         gateway?.apply {
+            val allowedConsoleChannels = checkForConsolePermissionIssues()
             awaitAll(
                 async {
                     eventDispatcher
@@ -113,7 +119,10 @@ class Client(private val plugin: DiscordIntegration) {
                             val channelId = it.message.channelId
                             when {
                                 chatChannels.contains(channelId) -> onSyncedMessage(it.message)
-                                consoleChannels.contains(channelId) -> onConsoleMessage(it.message)
+                                consoleChannels.contains(channelId) -> onConsoleMessage(
+                                    it.message,
+                                    allowedConsoleChannels
+                                )
                                 else -> messagesDebug(
                                     "Ignoring message ${it.message.id.asString()}, channel ${
                                         it.message.channelId.asString()
@@ -190,9 +199,19 @@ class Client(private val plugin: DiscordIntegration) {
         }
     }
 
-    private fun onConsoleMessage(message: Message) {
+    private suspend fun onConsoleMessage(message: Message, allowedConsoleChannels: List<Snowflake>) {
         if (message.author.orNull()?.isBot != false) return
         if (message.content.isEmpty()) return
+        if (!allowedConsoleChannels.contains(message.channelId)) {
+            message.channel.awaitFirstOrNull()?.let {
+                it.createMessage(
+                    MessageCreateSpec.create()
+                        .withEmbeds(getExecutionDisabledSpec(it))
+                        .withMessageReference(message.id)
+                )
+            }?.awaitFirstOrNull()
+            return
+        }
         plugin.runConsoleCommand(message.content)
     }
 
@@ -479,11 +498,59 @@ class Client(private val plugin: DiscordIntegration) {
                 async {
                     getChannelById(Snowflake.of(channelId))
                         .awaitFirstOrNull<Channel?>()
-                        ?.restChannel
+                        ?.tryCast<GuildMessageChannel>()
                         ?.createMessage(message)
                         ?.awaitFirstOrNull()
                 }
             }.awaitAll()
         }
+    }
+
+    private fun getExecutionDisabledSpec(channel: Channel) = EmbedCreateSpec.create()
+        .withColor(Color.of(0xef476f))
+        .withTitle("Command execution disabled")
+        .withDescription(
+            """
+                Console channel <#${channel.id.asString()}> allows @everyone to send messages.
+                
+                To prevent unauthorized access, the ability to execute commands has been disabled.
+                
+                Please remove the `Send messages` or `View channel` permission from the @everyone role in the console channel and run `/di reload`
+            """.trimIndent()
+        )
+
+    private suspend fun checkForConsolePermissionIssues(): List<Snowflake> = coroutineScope {
+        gateway?.run {
+            plugin.configManager.chat.consoleChannels
+                .map(Snowflake::of)
+                .map { id ->
+                    id to async {
+                        val channel = getChannelById(id).awaitSingleOrNull()?.tryCast<GuildMessageChannel>()
+                        if (channel == null) {
+                            plugin.logger.severe("Console channel with id ${id.asString()} not found")
+                            return@async false
+                        }
+                        val permissions = channel.getEffectiveEveryonePermissions()
+                        if (permissions.contains(Permission.SEND_MESSAGES) && permissions.contains(Permission.VIEW_CHANNEL)) {
+                            """
+                                Console channel #${channel.name} with id ${id.asString()}
+                                allows @everyone to send messages.
+                                
+                                To prevent unauthorized access,
+                                the ability to execute commands has been disabled.
+                                
+                                Please remove the Send messages or View channel permission
+                                from the @everyone role in the console channel
+                                and run /di reload
+                            """.trimIndent().lines().forEach(plugin.logger::severe)
+                            channel.createMessage(getExecutionDisabledSpec(channel)).awaitFirstOrNull()
+                            return@async false
+                        }
+                        return@async true
+                    }
+                }
+                .filter { it.second.await() }
+                .map { it.first }
+        } ?: emptyList()
     }
 }

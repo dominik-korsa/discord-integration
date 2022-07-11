@@ -15,10 +15,10 @@ class ConsoleAppender(private val listener: (message: String) -> Unit) : Abstrac
         .withRegexReplacement(RegexReplacement.createRegexReplacement(pattern, ""))
         .withPatternSelector { event ->
             val emoji = when {
-                event.level.isMoreSpecificThan(Level.ERROR) -> "‼️"
-                event.level.isMoreSpecificThan(Level.WARN) -> "⚠️"
-                event.level.isMoreSpecificThan(Level.INFO) -> "ℹ️"
-                else -> "\uD83D\uDD27"
+                event.level.isMoreSpecificThan(Level.ERROR) -> "\uD83D\uDFE5"
+                event.level.isMoreSpecificThan(Level.WARN) -> "\uD83D\uDFE8"
+                event.level.isMoreSpecificThan(Level.INFO) -> "\uD83D\uDFE6"
+                else -> "⬜"
             }
             PatternLayout.createPatternParser(null).parse(buildString {
                 append(emoji)
