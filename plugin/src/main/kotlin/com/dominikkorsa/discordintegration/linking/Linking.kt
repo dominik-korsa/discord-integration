@@ -17,7 +17,6 @@ class Linking(private val plugin: DiscordIntegration) {
     private val linkingCodeQueue = Channel<LinkingCode>(8192)
 
     val mandatory get() = plugin.configManager.linking.enabled && plugin.configManager.linking.mandatory
-
     fun startJob() {
         plugin.launch {
             linkingCodeQueue.consumeEach {
@@ -31,9 +30,7 @@ class Linking(private val plugin: DiscordIntegration) {
         val allowedChars = ('a'..'z') + ('0'..'9')
         var code: String
         do {
-            code = (1..6)
-                .map { allowedChars.random() }
-                .joinToString("")
+            code = (1..6).map { allowedChars.random() }.joinToString("")
         } while (linkingCodes.containsKey(code))
         val linkingCode = LinkingCode(code, player)
         linkingCodes[code] = linkingCode
@@ -65,8 +62,7 @@ class Linking(private val plugin: DiscordIntegration) {
 
     suspend fun unlink(player: OfflinePlayer): Boolean {
         if (mandatory) player.player?.let(::kickPlayer)
-        return plugin.db.resetDiscordId(player.uniqueId)
-            ?.also { plugin.client.updateMember(it) } != null
+        return plugin.db.resetDiscordId(player.uniqueId)?.also { plugin.client.updateMember(it) } != null
     }
 
     private fun kickPlayer(player: Player) {
@@ -76,9 +72,9 @@ class Linking(private val plugin: DiscordIntegration) {
 
     suspend fun kickUnlinked() {
         if (!mandatory) return
-        Bukkit.getOnlinePlayers()
-            .asFlow()
-            .filter { plugin.db.getDiscordId(it.uniqueId) == null }
-            .collect(::kickPlayer)
+        Bukkit.getOnlinePlayers().asFlow().filter(::shouldKick).collect(::kickPlayer)
     }
+
+    fun shouldKick(player: Player) =
+        mandatory && !player.hasPermission("discordintegration.bypasslinking") && plugin.db.getDiscordId(player.uniqueId) == null
 }

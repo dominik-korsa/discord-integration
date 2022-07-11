@@ -21,3 +21,6 @@ permissions:
   discordintegration.notifyupdates:
     description: Users with this permission will get messages about Discord Integration updates when joining the server
     default: op
+  discordintegration.bypasslinking:
+    description: Users with this permission can access the server without linking (only applies to mandatory mode)
+    default: false
