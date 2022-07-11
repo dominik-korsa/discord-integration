@@ -15,6 +15,7 @@ import com.dominikkorsa.discordintegration.listener.DeathListener
 import com.dominikkorsa.discordintegration.listener.LoginListener
 import com.dominikkorsa.discordintegration.listener.PlayerCountListener
 import com.dominikkorsa.discordintegration.update.UpdateCheckerService
+import com.dominikkorsa.discordintegration.utils.bunchLines
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.registerSuspendingEvents
 import discord4j.core.`object`.entity.Message
@@ -32,6 +33,7 @@ import org.bukkit.Bukkit
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import java.time.Duration
+import kotlin.time.toKotlinDuration
 
 class DiscordIntegration : JavaPlugin() {
     val client = Client(this)
@@ -66,7 +68,7 @@ class DiscordIntegration : JavaPlugin() {
 
         initCommands()
         registerAllEvents()
-        notifyInsecure()
+        startLogging()
 
         this.launch {
             db.init()
@@ -74,10 +76,8 @@ class DiscordIntegration : JavaPlugin() {
             linking.kickUnlinked()
             lockFileService.start()
             connectionLock.withLock { connect() }
+            showWarnings()
             updateCheckerService.start()
-        }
-        this.launch {
-            console.start().collect(::onLogMessage)
         }
     }
 
@@ -103,25 +103,6 @@ class DiscordIntegration : JavaPlugin() {
             )
             return
         }
-        if (configManager.chat.channels.isEmpty()) {
-            """
-                No Discord channels have been added in field `chat.channels`
-                Put the IDs of the channels you want to be forwarded to Minecraft
-                as entries in that list
-                TIP: Enable `Advanced/Developer Mode` setting in Discord
-                to get access to `Copy ID` feature in the right click menu
-                
-            """.trimIndent().lineSequence().forEach(logger::warning)
-        }
-        if (configManager.chat.webhooks.isEmpty()) {
-            """
-                No webhooks have been added in field `chat.webhooks`
-                Visit https://github.com/dominik-korsa/discord-integration/wiki/Configuring-a-Discord-bot#configuring-webhooks
-                for configuration instructions
-
-            """.trimIndent().lineSequence().forEach(logger::warning)
-        }
-
         try {
             client.connect(token)
             this@DiscordIntegration.launch {
@@ -151,12 +132,12 @@ class DiscordIntegration : JavaPlugin() {
         messages.reload()
         db.reload()
         linking.kickUnlinked()
-        notifyInsecure()
         updateCheckerService.stop()
         connectionLock.withLock {
             disconnect()
             connect()
         }
+        showWarnings()
         updateCheckerService.start()
     }
 
@@ -188,7 +169,7 @@ class DiscordIntegration : JavaPlugin() {
         server.pluginManager.registerEvents(listener, this)
     }
 
-    private fun notifyInsecure() {
+    private fun showWarnings() {
         if (!Bukkit.getOnlineMode() && linking.mandatory) {
             """
                 **** SERIOUS SECURITY ISSUE:
@@ -199,6 +180,32 @@ class DiscordIntegration : JavaPlugin() {
                 This allows impersonators to link Minecraft profiles
                 of other players to their Discord account.
             """.trimIndent().lineSequence().forEach(logger::severe)
+        }
+        if (configManager.chat.channels.isEmpty()) {
+            """
+                No Discord channels have been added in field `chat.channels`
+                Put the IDs of the channels you want to be forwarded to Minecraft
+                as entries in that list
+                TIP: Enable `Advanced/Developer Mode` setting in Discord
+                to get access to `Copy ID` feature in the right click menu
+                
+            """.trimIndent().lineSequence().forEach(logger::warning)
+        }
+        if (configManager.chat.webhooks.isEmpty()) {
+            """
+                No webhooks have been added in field `chat.webhooks`
+                Visit https://github.com/dominik-korsa/discord-integration/wiki/Configuring-a-Discord-bot#configuring-webhooks
+                for configuration instructions
+
+            """.trimIndent().lineSequence().forEach(logger::warning)
+        }
+    }
+
+    private fun startLogging() {
+        launch {
+            console.start()
+                .bunchLines(Duration.ofMillis(200).toKotlinDuration(), 1900)
+                .collect(::onLogMessage)
         }
     }
 

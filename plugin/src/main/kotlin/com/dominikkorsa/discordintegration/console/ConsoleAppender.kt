@@ -23,8 +23,9 @@ class ConsoleAppender(private val listener: (message: String) -> Unit) : Abstrac
             PatternLayout.createPatternParser(null).parse(buildString {
                 append(emoji)
                 append(" %p")
-                if (event.loggerName.isNotEmpty()) append(" [%c]")
-                append(""": ``%replace{%m}{`}{`​}``%n""")
+                if (event.loggerName.isNotBlank()) append(" [%c]")
+                if (event.message.formattedMessage.isBlank()) append(":")
+                else append(""": ``%replace{%m}{`}{`​}``""")
             }).toTypedArray()
         }
         .build(),
