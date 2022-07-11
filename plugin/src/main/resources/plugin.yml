@@ -5,6 +5,7 @@ main: com.dominikkorsa.discordintegration.DiscordIntegration
 api-version: 1.13
 softdepend:
   - PlaceholderAPI
+load: STARTUP
 
 permissions:
   discordintegration.command.reload:

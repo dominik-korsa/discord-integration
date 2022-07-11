@@ -5,6 +5,7 @@ import com.dominikkorsa.discordintegration.command.DiscordIntegrationCommand
 import com.dominikkorsa.discordintegration.compatibility.Compatibility
 import com.dominikkorsa.discordintegration.config.ConfigManager
 import com.dominikkorsa.discordintegration.config.MessageManager
+import com.dominikkorsa.discordintegration.console.Console
 import com.dominikkorsa.discordintegration.formatter.DiscordFormatter
 import com.dominikkorsa.discordintegration.formatter.EmojiFormatter
 import com.dominikkorsa.discordintegration.formatter.MinecraftFormatter
@@ -46,6 +47,7 @@ class DiscordIntegration : JavaPlugin() {
     lateinit var messages: MessageManager
     private var activityJob: Job? = null
     private val connectionLock = Mutex()
+    private val console = Console()
 
     override fun onEnable() {
         super.onEnable()
@@ -74,12 +76,16 @@ class DiscordIntegration : JavaPlugin() {
             connectionLock.withLock { connect() }
             updateCheckerService.start()
         }
+        this.launch {
+            console.start().collect(::onLogMessage)
+        }
     }
 
     override fun onDisable() {
         super.onDisable()
         lockFileService.stop()
         updateCheckerService.stop()
+        console.stop()
         runBlocking {
             withTimeout(Duration.ofSeconds(5)) {
                 connectionLock.withLock { disconnect() }
@@ -196,11 +202,15 @@ class DiscordIntegration : JavaPlugin() {
         }
     }
 
-    fun runTask(fn: () -> Unit) {
-        Bukkit.getScheduler().runTask(this, Runnable(fn))
+    private suspend fun onLogMessage(message: String) {
+        client.sendConsoleMessage(message)
     }
 
     fun runConsoleCommand(command: String) {
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command)
+    }
+
+    fun runTask(fn: () -> Unit) {
+        Bukkit.getScheduler().runTask(this, Runnable(fn))
     }
 }
