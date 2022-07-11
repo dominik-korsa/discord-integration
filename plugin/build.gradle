@@ -1,20 +1,10 @@
-buildscript {
-    dependencies {
-        classpath 'org.codehaus.groovy:groovy-yaml:3.0.11'
-    }
-}
-
 plugins {
     id 'com.github.johnrengelman.shadow' version '6.1.0'
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.6.21'
 }
 
-import groovy.yaml.YamlSlurper
-
 group 'com.dominikkorsa.discordintegration'
-
-def pluginYaml = new YamlSlurper().parse file("$projectDir/src/main/resources/plugin.yml")
-version pluginYaml.version
+version '3.0.1'
 
 ext {
     ktor_version = '2.0.3'
@@ -58,11 +48,20 @@ test {
     useJUnitPlatform()
 }
 
+processResources {
+    outputs.upToDateWhen { false }
+
+    with copySpec {
+        from 'src/main/resource-templates/plugin.yml'
+        filter { line -> line.replace("%plugin-version%", version) }
+    }
+}
+
 shadowJar {
     relocate 'io.netty', 'com.discord4j.shaded.io.netty'
     relocate 'co.aikar.commands', 'com.dominikkorsa.discordintegration.acf'
     relocate 'co.aikar.locales', 'com.dominikkorsa.discordintegration.locales'
     relocate 'org.bstats', 'com.dominikkorsa.discordintegration'
-    archiveBaseName.set(pluginYaml.name)
+    archiveBaseName.set("DiscordIntegration")
     archiveClassifier.set('')
 }

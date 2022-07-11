@@ -1,12 +1,12 @@
 name: DiscordIntegration
-version: 3.0.1
+version: %plugin-version%
 author: Dominik Korsa
 main: com.dominikkorsa.discordintegration.DiscordIntegration
 api-version: 1.13
 softdepend:
   - PlaceholderAPI
 load: STARTUP
-prefix: Discord Integration v3.0.1
+prefix: Discord Integration %plugin-version%
 
 permissions:
   discordintegration.command.reload:
