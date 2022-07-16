@@ -31,22 +31,28 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
         role.color.takeUnless { it == Role.DEFAULT_COLOR }?.toHtml()?.let(Compatibility::hexChatColor)
 
     private fun String.formatUser(user: User, userColor: Color?, defaultColor: String) =
-        replace("%username%", user.username)
-            .replace("%user-tag%", user.tag)
-            .replace("%user-id%", user.id.asString())
-            .replace("%nickname%", if (user is Member) user.displayName else user.username)
-            .replace("%user-color%", userColor?.toHtml()?.let(Compatibility::hexChatColor) ?: defaultColor)
+        plugin.emojiFormatter.replaceEmojis(
+            replace("%username%", user.username)
+                .replace("%user-tag%", user.tag)
+                .replace("%user-id%", user.id.asString())
+                .replace("%nickname%", if (user is Member) user.displayName else user.username)
+                .replace("%user-color%", userColor?.toHtml()?.let(Compatibility::hexChatColor) ?: defaultColor)
+        )
 
     private fun String.formatRole(role: Role) =
-        replace("%role-name%", role.name)
-            .replace("%role-id%", role.id.asString())
-            .replace("%role-color%", formatRoleColor(role) ?: plugin.messages.minecraft.roleMentionDefaultColor)
+        plugin.emojiFormatter.replaceEmojis(
+            replace("%role-name%", role.name)
+                .replace("%role-id%", role.id.asString())
+                .replace("%role-color%", formatRoleColor(role) ?: plugin.messages.minecraft.roleMentionDefaultColor)
+        )
 
     private fun String.formatChannel(channel: GuildMessageChannel, category: Category?, guild: Guild) =
-        replace("%channel-name%", channel.name)
-            .replace("%channel-id%", channel.id.asString())
-            .replace("%channel-category%", category?.name ?: plugin.messages.minecraft.noCategory)
-            .replace("%guild-name%", guild.name)
+        plugin.emojiFormatter.replaceEmojis(
+            replace("%channel-name%", channel.name)
+                .replace("%channel-id%", channel.id.asString())
+                .replace("%channel-category%", category?.name ?: plugin.messages.minecraft.noCategory)
+                .replace("%guild-name%", guild.name)
+        )
 
     private suspend fun formatDiscordMessageContent(message: Message) = coroutineScope {
         plugin.emojiFormatter
