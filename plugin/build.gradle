@@ -40,7 +40,7 @@ dependencies {
     implementation "org.jetbrains.exposed:exposed-dao:$exposed_version"
     implementation "org.jetbrains.exposed:exposed-jdbc:$exposed_version"
     implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
-    implementation 'dev.dejvokep:boosted-yaml:1.2'
+    implementation 'dev.dejvokep:boosted-yaml:1.3'
     implementation 'org.bstats:bstats-bukkit:3.0.0'
 }
 

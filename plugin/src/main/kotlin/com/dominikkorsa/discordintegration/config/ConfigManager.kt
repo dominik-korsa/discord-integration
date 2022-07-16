@@ -2,24 +2,51 @@ package com.dominikkorsa.discordintegration.config
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
 import dev.dejvokep.boostedyaml.block.implementation.Section
+import dev.dejvokep.boostedyaml.route.Route
+import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings
 
-class ConfigManager(plugin: DiscordIntegration): CustomConfig(plugin, "config.yml") {
+class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.yml") {
+    override fun setUpdateSettings(builder: UpdaterSettings.Builder) {
+        setUpdate5Settings(builder)
+    }
+
+    private fun setUpdate5Settings(builder: UpdaterSettings.Builder) {
+        builder.apply {
+            fun addEmbedRelocation(key: String) {
+                addRelocation("5", Route.from("chat", "${key}-embed"), Route.from("chat", key))
+                addRelocation("5", Route.from("chat", key, "enabled"), Route.from("chat", key, "as-embed"))
+                addCustomLogic("5") {
+                    it.set(
+                        Route.from("chat", key, "player-as-author"),
+                        it.getBoolean(Route.from("chat", "player-as-status-author"))
+                    )
+                }
+            }
+            addEmbedRelocation("join")
+            addEmbedRelocation("quit")
+            addEmbedRelocation("death")
+        }
+    }
 
     class Chat(private val section: Section) {
-        class Embed(private val section: Section) {
+        open class Embed(private val section: Section) {
             val enabled get() = section.requireBoolean("enabled")
             val color get() = section.getColor("color")
+        }
+
+        class EmbedOrMessage(private val section: Section) : Embed(section) {
+            val asEmbed get() = section.requireBoolean("as-embed")
+            val playerAsAuthor get() = section.requireBoolean("player-as-author")
         }
 
         val channels get() = section.requireStringList("channels")
         val webhooks get() = section.requireStringList("webhooks")
         val consoleChannels get() = section.requireStringList("console-channels")
-        val playerAsStatusAuthor get() = section.requireBoolean("player-as-status-author")
         val avatarOfflineMode get() = section.requireBoolean("avatar.offline-mode")
         val avatarUrl get() = section.requireTrimmedString("avatar.url")
-        val joinEmbed get() = Embed(section.getSection("join-embed"))
-        val quitEmbed get() = Embed(section.getSection("quit-embed"))
-        val deathEmbed get() = Embed(section.getSection("death-embed"))
+        val join get() = EmbedOrMessage(section.getSection("join"))
+        val quit get() = EmbedOrMessage(section.getSection("quit"))
+        val death get() = EmbedOrMessage(section.getSection("death"))
         val crashEmbed get() = Embed(section.getSection("crash-embed"))
     }
 

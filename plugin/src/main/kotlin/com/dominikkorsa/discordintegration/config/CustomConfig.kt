@@ -19,10 +19,14 @@ open class CustomConfig(
         GeneralSettings.DEFAULT,
         LoaderSettings.DEFAULT,
         DumperSettings.DEFAULT,
-        UpdaterSettings.builder().setVersioning(BasicVersioning("file-version")).build()
+        UpdaterSettings.builder().setVersioning(BasicVersioning("file-version")).also(::setUpdateSettings).build()
     )
 
-    init { reload() }
+    init {
+        reload()
+    }
+
+    protected open fun setUpdateSettings(builder: UpdaterSettings.Builder) {}
 
     fun reload() {
         config.reload()

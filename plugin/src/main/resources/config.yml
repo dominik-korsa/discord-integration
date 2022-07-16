@@ -1,5 +1,5 @@
 # Do not edit the file-version!
-file-version: 4
+file-version: 5
 
 discord-token: # YOUR DISCORD TOKEN HERE
 chat:
@@ -10,19 +10,27 @@ chat:
   # - https://discord.com/api/webhooks/...
   console-channels:
   # - 0123456789
-  join-embed:
+  join:
     enabled: true
+    as-embed: true
     color: 0x06d6a0
-  quit-embed:
+    # Whether to use player avatar and name as join message author
+    player-as-author: true
+  quit:
     enabled: true
+    as-embed: true
     color: 0xef476f
-  death-embed:
+    # Whether to use player avatar and name as quit message author
+    player-as-author: true
+  death:
     enabled: true
+    as-embed: true
     color: 0xffd166
+    # Whether to use player avatar and name as death message author
+    player-as-author: true
   crash-embed:
     enabled: true
     color: 0xff8d0a
-  player-as-status-author: false
   avatar:
     # Set to true on cracked servers,
     # for premium player heads to work:

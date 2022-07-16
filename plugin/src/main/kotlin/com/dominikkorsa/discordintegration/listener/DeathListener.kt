@@ -10,18 +10,20 @@ import org.bukkit.event.entity.PlayerDeathEvent
 class DeathListener(private val plugin: DiscordIntegration) : Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     suspend fun onDeath(event: PlayerDeathEvent) {
+        val embedConfig = plugin.configManager.chat.death
+        if (!embedConfig.enabled) return
         val content = plugin.discordFormatter.formatDeathMessage(event)
         val webhookBuilder =
-            if (plugin.configManager.chat.playerAsStatusAuthor) plugin.client.getPlayerWebhookBuilder(event.entity)
+            if (embedConfig.playerAsAuthor) plugin.client.getPlayerWebhookBuilder(event.entity)
             else plugin.client.getWebhookBuilder()
-        if (plugin.configManager.chat.deathEmbed.enabled) {
+        if (embedConfig.asEmbed) {
             plugin.client.sendWebhook(
                 webhookBuilder
                     .addEmbed(
                         EmbedCreateSpec.builder()
                             .title(plugin.discordFormatter.formatDeathEmbedTitle(event))
                             .description(content)
-                            .color(plugin.configManager.chat.deathEmbed.color)
+                            .color(embedConfig.color)
                             .build()
                     )
                     .build()

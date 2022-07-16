@@ -15,12 +15,13 @@ class PlayerCountListener(private val plugin: DiscordIntegration) : Listener {
     private suspend fun sendStatus(
         content: String,
         player: Player,
-        embedConfig: ConfigManager.Chat.Embed,
+        embedConfig: ConfigManager.Chat.EmbedOrMessage,
     ) {
+        if (!embedConfig.enabled) return
         val webhookBuilder =
-            if (plugin.configManager.chat.playerAsStatusAuthor) plugin.client.getPlayerWebhookBuilder(player)
+            if (embedConfig.playerAsAuthor) plugin.client.getPlayerWebhookBuilder(player)
             else plugin.client.getWebhookBuilder()
-        if (embedConfig.enabled) {
+        if (embedConfig.asEmbed) {
             plugin.client.sendWebhook(
                 webhookBuilder
                     .addEmbed(
@@ -43,13 +44,13 @@ class PlayerCountListener(private val plugin: DiscordIntegration) : Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     suspend fun onPlayerJoin(event: PlayerJoinEvent) {
         val content = plugin.discordFormatter.formatJoinInfo(event.player)
-        sendStatus(content, event.player, plugin.configManager.chat.joinEmbed)
+        sendStatus(content, event.player, plugin.configManager.chat.join)
         plugin.updateCheckerService.notify(event.player)
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     suspend fun onPlayerQuit(event: PlayerQuitEvent) {
         val content = plugin.discordFormatter.formatQuitInfo(event.player)
-        sendStatus(content, event.player, plugin.configManager.chat.quitEmbed)
+        sendStatus(content, event.player, plugin.configManager.chat.quit)
     }
 }
