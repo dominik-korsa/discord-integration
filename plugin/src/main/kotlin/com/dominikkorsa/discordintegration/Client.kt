@@ -1,10 +1,12 @@
 package com.dominikkorsa.discordintegration
 
+import com.dominikkorsa.discordintegration.exception.MissingIntentsException
 import com.dominikkorsa.discordintegration.utils.getEffectiveEveryonePermissions
 import com.dominikkorsa.discordintegration.utils.orNull
 import com.dominikkorsa.discordintegration.utils.swapped
 import com.dominikkorsa.discordintegration.utils.tryCast
 import com.google.common.collect.ImmutableMap
+import discord4j.common.close.CloseException
 import discord4j.common.store.Store
 import discord4j.common.store.impl.LocalStoreLayout
 import discord4j.common.util.Snowflake
@@ -63,12 +65,17 @@ class Client(private val plugin: DiscordIntegration) {
 
     suspend fun connect(token: String) {
         val client = DiscordClient.create(token)
-        gateway = client
-            .gateway()
-            .setStore(Store.fromLayout(LocalStoreLayout.create()))
-            .setEnabledIntents(IntentSet.of(Intent.GUILD_MEMBERS, Intent.GUILD_MESSAGES))
-            .login()
-            .awaitFirstOrNull() ?: throw Exception("Failed to connect to Discord")
+        try {
+            gateway = client
+                .gateway()
+                .setStore(Store.fromLayout(LocalStoreLayout.create()))
+                .setEnabledIntents(IntentSet.of(Intent.GUILD_MEMBERS, Intent.GUILD_MESSAGES))
+                .login()
+                .awaitFirstOrNull() ?: throw Exception("Failed to connect to Discord")
+        } catch (error: CloseException) {
+            if (error.closeStatus.code == 4014) throw MissingIntentsException(client.applicationId.awaitFirst())
+            throw error
+        }
         initEmojis()
         initCommands()
         updateAllMembers()

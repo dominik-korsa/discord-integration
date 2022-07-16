@@ -6,6 +6,7 @@ import com.dominikkorsa.discordintegration.compatibility.Compatibility
 import com.dominikkorsa.discordintegration.config.ConfigManager
 import com.dominikkorsa.discordintegration.config.MessageManager
 import com.dominikkorsa.discordintegration.console.Console
+import com.dominikkorsa.discordintegration.exception.MissingIntentsException
 import com.dominikkorsa.discordintegration.formatter.DiscordFormatter
 import com.dominikkorsa.discordintegration.formatter.EmojiFormatter
 import com.dominikkorsa.discordintegration.formatter.MinecraftFormatter
@@ -115,6 +116,15 @@ class DiscordIntegration : JavaPlugin() {
                 }
             }
             Bukkit.broadcastMessage(messages.connected)
+        } catch (error: MissingIntentsException) {
+            Bukkit.broadcastMessage(messages.connectionFailed)
+            """
+                Missing intents!
+                Please enabled the "Server members intent" and "Message content intent"
+                in Discord bot settings:
+                https://discord.com/developers/applications/${error.applicationId}/bot 
+                
+            """.trimIndent().lines().forEach(logger::severe)
         } catch (error: Exception) {
             Bukkit.broadcastMessage(messages.connectionFailed)
             error.printStackTrace()
