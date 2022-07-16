@@ -4,9 +4,11 @@ import com.dominikkorsa.discordintegration.DiscordIntegration
 import dev.dejvokep.boostedyaml.block.implementation.Section
 import dev.dejvokep.boostedyaml.route.Route
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings
+import java.util.regex.Pattern
 
 class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.yml") {
     override fun setUpdateSettings(builder: UpdaterSettings.Builder) {
+        super.setUpdateSettings(builder)
         setUpdate5Settings(builder)
     }
 
@@ -26,6 +28,27 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
             addEmbedRelocation("quit")
             addEmbedRelocation("death")
         }
+    }
+
+    private fun fixStringList(route: Route) {
+        if (config.isList(route)) return
+        config.set(route, listOf(config.getString(route)))
+    }
+
+    private fun fixChannelListURL(route: Route) {
+        config.set(route, config.getStringList(route).map {
+            val matcher = channelUrlPattern.matcher(it)
+            if (matcher.matches()) matcher.group(1) else it
+        })
+    }
+
+    override fun applyFixes() {
+        super.applyFixes()
+        fixStringList(Route.from("chat", "channels"))
+        fixStringList(Route.from("chat", "webhooks"))
+        fixStringList(Route.from("chat", "console-channels"))
+        fixChannelListURL(Route.from("chat", "channels"))
+        fixChannelListURL(Route.from("chat", "console-channels"))
     }
 
     class Chat(private val section: Section) {
@@ -76,4 +99,8 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
     val activity get() = Activity(config.getSection("activity"))
     val linking get() = Linking(config.getSection("linking"))
     val debug get() = Debug(config.getSection("debug"))
+
+    companion object {
+        private val channelUrlPattern = Pattern.compile("""^https://(?:ptb\.)?discord\.com/channels/\d+/(\d+)$""")
+    }
 }

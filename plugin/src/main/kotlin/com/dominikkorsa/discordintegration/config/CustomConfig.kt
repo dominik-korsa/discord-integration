@@ -28,8 +28,12 @@ open class CustomConfig(
 
     protected open fun setUpdateSettings(builder: UpdaterSettings.Builder) {}
 
+    protected open fun applyFixes() {}
+
     fun reload() {
         config.reload()
+        applyFixes()
         config.update()
+        config.save()
     }
 }
