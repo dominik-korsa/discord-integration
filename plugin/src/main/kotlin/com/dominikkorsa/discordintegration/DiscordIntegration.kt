@@ -6,15 +6,13 @@ import com.dominikkorsa.discordintegration.compatibility.Compatibility
 import com.dominikkorsa.discordintegration.config.ConfigManager
 import com.dominikkorsa.discordintegration.config.MessageManager
 import com.dominikkorsa.discordintegration.console.Console
+import com.dominikkorsa.discordintegration.dynmap.DynmapIntegration
 import com.dominikkorsa.discordintegration.exception.MissingIntentsException
 import com.dominikkorsa.discordintegration.formatter.DiscordFormatter
 import com.dominikkorsa.discordintegration.formatter.EmojiFormatter
 import com.dominikkorsa.discordintegration.formatter.MinecraftFormatter
 import com.dominikkorsa.discordintegration.linking.Linking
-import com.dominikkorsa.discordintegration.listener.ChatListener
-import com.dominikkorsa.discordintegration.listener.DeathListener
-import com.dominikkorsa.discordintegration.listener.LoginListener
-import com.dominikkorsa.discordintegration.listener.PlayerCountListener
+import com.dominikkorsa.discordintegration.listener.*
 import com.dominikkorsa.discordintegration.update.UpdateCheckerService
 import com.dominikkorsa.discordintegration.utils.bunchLines
 import com.github.shynixn.mccoroutine.bukkit.launch
@@ -48,6 +46,7 @@ class DiscordIntegration : JavaPlugin() {
     val updateCheckerService = UpdateCheckerService(this)
     lateinit var configManager: ConfigManager
     lateinit var messages: MessageManager
+    private var dynmap: DynmapIntegration? = null
     private var activityJob: Job? = null
     private val connectionLock = Mutex()
     private val console = Console()
@@ -57,6 +56,7 @@ class DiscordIntegration : JavaPlugin() {
         dataFolder.mkdirs()
         configManager = ConfigManager(this)
         messages = MessageManager(this)
+        dynmap = DynmapIntegration.create()
 
         val metrics = Metrics(this, 15660)
         metrics.addCustomChart(SimplePie("linking") {
@@ -157,10 +157,11 @@ class DiscordIntegration : JavaPlugin() {
     }
 
     private fun registerAllEvents() {
-        registerSuspendingEvents(PlayerCountListener(this@DiscordIntegration))
-        registerSuspendingEvents(ChatListener(this@DiscordIntegration))
-        registerSuspendingEvents(DeathListener(this@DiscordIntegration))
-        registerEvents(LoginListener(this@DiscordIntegration))
+        registerSuspendingEvents(PlayerCountListener(this))
+        registerSuspendingEvents(ChatListener(this))
+        registerSuspendingEvents(DeathListener(this))
+        registerEvents(LoginListener(this))
+        if (dynmap != null) registerSuspendingEvents(DynmapChatListener(this))
     }
 
     suspend fun broadcastDiscordMessage(message: Message) {
@@ -169,6 +170,7 @@ class DiscordIntegration : JavaPlugin() {
             Compatibility.sendChatMessage(it, *parts)
         }
         Bukkit.getConsoleSender().sendMessage(TextComponent(*parts).toLegacyText())
+        dynmap?.sendMessage(TextComponent.toPlainText(*parts))
     }
 
     private fun registerSuspendingEvents(listener: Listener) {
