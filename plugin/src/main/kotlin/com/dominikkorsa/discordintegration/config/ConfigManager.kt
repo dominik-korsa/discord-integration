@@ -71,6 +71,7 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
         val quit get() = EmbedOrMessage(section.getSection("quit"))
         val death get() = EmbedOrMessage(section.getSection("death"))
         val crashEmbed get() = Embed(section.getSection("crash-embed"))
+        val ignoreCancelledChatEvents get() = section.requireBoolean("ignore-cancelled-chat-events")
     }
 
     class Activity(private val section: Section) {
@@ -90,7 +91,25 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
     }
 
     class Debug(private val section: Section) {
+        enum class CancelledChatEventsMode {
+            DISABLE,
+            AUTO,
+            ALL;
+
+            companion object {
+                fun parse(value: String): CancelledChatEventsMode? = when (value.lowercase()) {
+                    "disable" -> DISABLE
+                    "auto" -> AUTO
+                    "all" -> ALL
+                    else -> null
+                }
+            }
+        }
+
         val logDiscordMessages get() = section.requireBoolean("log-discord-messages")
+        val logCancelledChatEvents
+            get() = CancelledChatEventsMode.parse(section.requireTrimmedString("log-discord-messages"))
+                ?: throw Exception("debug.log-discord-messages config field only accepts values of: `disable`, `auto`, `all`")
     }
 
     val discordToken get() = config.getString("discord-token")?.trim()
