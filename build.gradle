@@ -3,6 +3,9 @@ plugins {
 }
 
 allprojects {
+    group 'com.github.dominik-korsa.discord-integration'
+    version '3.3.0'
+
     apply plugin: 'kotlin'
     ext.discord4j_version = '3.2.2'
 

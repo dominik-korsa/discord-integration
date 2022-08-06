@@ -3,9 +3,6 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.6.21'
 }
 
-group 'com.dominikkorsa.discordintegration'
-version '3.3.0'
-
 ext {
     ktor_version = '2.0.3'
     exposed_version = '0.38.2'
