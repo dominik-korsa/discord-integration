@@ -2,4 +2,4 @@ rootProject.name = 'discord-integration'
 
 include 'plugin'
 include 'compatibility'
-
+include 'api'

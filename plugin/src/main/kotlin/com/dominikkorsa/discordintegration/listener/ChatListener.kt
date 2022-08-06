@@ -31,10 +31,6 @@ class ChatListener(private val plugin: DiscordIntegration) : Listener {
             }
         } else anyNonCancelledReceived = true
 
-        plugin.client.sendWebhook(
-            plugin.client.getPlayerWebhookBuilder(event.player)
-                .content(plugin.discordFormatter.formatMessageContent(event.message))
-                .build(),
-        )
+        plugin.sendChatToDiscord(event.player, event.message)
     }
 }

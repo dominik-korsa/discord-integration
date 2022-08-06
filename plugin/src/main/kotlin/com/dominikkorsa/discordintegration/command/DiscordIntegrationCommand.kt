@@ -23,8 +23,8 @@ class DiscordIntegrationCommand(val plugin: DiscordIntegration): BaseCommand() {
             sender.sendMessage(plugin.messages.commands.linkDisabled)
             return
         }
-        val linkingCode = plugin.linking.generateLinkingCode(sender)
-        val parts = plugin.minecraftFormatter.formatLinkCommandMessage(linkingCode.code).toTypedArray()
+        val code = plugin.linking.generateLinkingCode(sender)
+        val parts = plugin.minecraftFormatter.formatLinkCommandMessage(code).toTypedArray()
         Compatibility.sendSystemMessage(sender, *parts)
     }
 

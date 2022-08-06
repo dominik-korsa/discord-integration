@@ -1,6 +1,7 @@
 package com.dominikkorsa.discordintegration
 
 import co.aikar.commands.PaperCommandManager
+import com.dominikkorsa.discordintegration.api.DiscordIntegrationAPI
 import com.dominikkorsa.discordintegration.command.DiscordIntegrationCommand
 import com.dominikkorsa.discordintegration.compatibility.Compatibility
 import com.dominikkorsa.discordintegration.config.ConfigManager
@@ -18,6 +19,8 @@ import com.dominikkorsa.discordintegration.utils.bunchLines
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.registerSuspendingEvents
 import discord4j.core.`object`.entity.Message
+import discord4j.core.spec.EmbedCreateSpec
+import discord4j.discordjson.possible.Possible
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.runBlocking
@@ -29,19 +32,20 @@ import net.md_5.bungee.api.chat.TextComponent
 import org.bstats.bukkit.Metrics
 import org.bstats.charts.SimplePie
 import org.bukkit.Bukkit
+import org.bukkit.entity.Player
 import org.bukkit.event.Listener
+import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.plugin.java.JavaPlugin
 import java.time.Duration
 import kotlin.time.toKotlinDuration
 
-class DiscordIntegration : JavaPlugin() {
+class DiscordIntegration : JavaPlugin(), DiscordIntegrationAPI {
     val client = Client(this)
     val discordFormatter = DiscordFormatter(this)
     val minecraftFormatter = MinecraftFormatter(this)
     val emojiFormatter = EmojiFormatter(this)
     val avatarService = AvatarService(this)
     val db = Db(this)
-    val linking = Linking(this)
     private val lockFileService = LockFileService(this)
     val updateCheckerService = UpdateCheckerService(this)
     lateinit var configManager: ConfigManager
@@ -50,6 +54,8 @@ class DiscordIntegration : JavaPlugin() {
     private var activityJob: Job? = null
     private val connectionLock = Mutex()
     private val console = Console()
+
+    override val linking = Linking(this)
 
     override fun onEnable() {
         super.onEnable()
@@ -137,20 +143,6 @@ class DiscordIntegration : JavaPlugin() {
         client.disconnect()
     }
 
-    suspend fun reload() {
-        configManager.reload()
-        messages.reload()
-        db.reload()
-        linking.kickUnlinked()
-        updateCheckerService.stop()
-        connectionLock.withLock {
-            disconnect()
-            connect()
-        }
-        showWarnings()
-        updateCheckerService.start()
-    }
-
     private fun initCommands() {
         val manager = PaperCommandManager(this)
         manager.registerCommand(DiscordIntegrationCommand(this))
@@ -160,17 +152,9 @@ class DiscordIntegration : JavaPlugin() {
         registerSuspendingEvents(PlayerCountListener(this))
         registerSuspendingEvents(ChatListener(this))
         registerSuspendingEvents(DeathListener(this))
+        registerSuspendingEvents(DiscordMessageListener(this))
         registerEvents(LoginListener(this))
         if (dynmap != null) registerSuspendingEvents(DynmapChatListener(this))
-    }
-
-    suspend fun broadcastDiscordMessage(message: Message) {
-        val parts = minecraftFormatter.formatDiscordMessage(message).toTypedArray()
-        server.onlinePlayers.forEach {
-            Compatibility.sendChatMessage(it, *parts)
-        }
-        Bukkit.getConsoleSender().sendMessage(TextComponent(*parts).toLegacyText())
-        dynmap?.sendMessage(TextComponent.toPlainText(*parts))
     }
 
     private fun registerSuspendingEvents(listener: Listener) {
@@ -182,7 +166,7 @@ class DiscordIntegration : JavaPlugin() {
     }
 
     private fun showWarnings() {
-        if (!Bukkit.getOnlineMode() && linking.mandatory) {
+        if (!Bukkit.getOnlineMode() && linking.isMandatory) {
             """
                 **** SERIOUS SECURITY ISSUE:
                 Server is running in offline mode and mandatory linking is enabled
@@ -225,11 +209,89 @@ class DiscordIntegration : JavaPlugin() {
         client.sendConsoleMessage(message)
     }
 
-    fun runConsoleCommand(command: String) {
+    internal fun runConsoleCommand(command: String) {
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command)
     }
 
-    fun runTask(fn: () -> Unit) {
+    internal fun runTask(fn: () -> Unit) {
         Bukkit.getScheduler().runTask(this, Runnable(fn))
+    }
+
+    private suspend fun sendStatus(
+        content: String,
+        player: Player,
+        embedConfig: ConfigManager.Chat.EmbedOrMessage,
+        title: String? = null,
+    ) {
+        if (!embedConfig.enabled) return
+        val webhookBuilder =
+            if (embedConfig.playerAsAuthor) client.getPlayerWebhookBuilder(player)
+            else client.getWebhookBuilder()
+        if (embedConfig.asEmbed) {
+            client.sendWebhook(
+                webhookBuilder
+                    .addEmbed(
+                        EmbedCreateSpec.builder()
+                            .title(title ?: content)
+                            .description(if (title !== null) Possible.of(content) else Possible.absent())
+                            .color(embedConfig.color)
+                            .build()
+                    )
+                    .build()
+            )
+        } else client.sendWebhook(
+            webhookBuilder
+                .content(content)
+                .build()
+        )
+        kotlinx.coroutines.delay(500)
+    }
+
+    override suspend fun reload() {
+        configManager.reload()
+        messages.reload()
+        db.reload()
+        linking.kickUnlinked()
+        updateCheckerService.stop()
+        connectionLock.withLock {
+            disconnect()
+            connect()
+        }
+        showWarnings()
+        updateCheckerService.start()
+    }
+
+    override suspend fun sendChatToDiscord(player: Player, message: String) {
+        client.sendWebhook(
+            client.getPlayerWebhookBuilder(player)
+                .content(discordFormatter.formatMessageContent(message))
+                .build(),
+        )
+    }
+
+    override suspend fun sendJoinMessageToDiscord(player: Player) {
+        sendStatus(discordFormatter.formatJoinInfo(player), player, configManager.chat.join)
+    }
+
+    override suspend fun sendQuitMessageToDiscord(player: Player) {
+        sendStatus(discordFormatter.formatQuitInfo(player), player, configManager.chat.quit)
+    }
+
+    override suspend fun sendDeathMessageToDiscord(event: PlayerDeathEvent) {
+        sendStatus(
+            discordFormatter.formatDeathMessage(event),
+            event.entity,
+            configManager.chat.death,
+            discordFormatter.formatDeathEmbedTitle(event)
+        )
+    }
+
+    override suspend fun sendDiscordMessageToChat(message: Message) {
+        val parts = minecraftFormatter.formatDiscordMessage(message).toTypedArray()
+        server.onlinePlayers.forEach {
+            Compatibility.sendChatMessage(it, *parts)
+        }
+        Bukkit.getConsoleSender().sendMessage(TextComponent(*parts).toLegacyText())
+        dynmap?.sendMessage(TextComponent.toPlainText(*parts))
     }
 }

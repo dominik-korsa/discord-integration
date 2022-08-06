@@ -22,7 +22,7 @@ import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
-import org.bukkit.entity.Player
+import org.bukkit.OfflinePlayer
 import java.util.regex.Pattern
 import kotlin.streams.toList
 
@@ -214,8 +214,8 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
             }
         })
 
-    fun formatClaimedByOtherMessage(player: Player, user: User) = plugin.messages.minecraft.linkingClaimedByOther
-        .replace("%player-name%", player.name)
+    fun formatClaimedByOtherMessage(player: OfflinePlayer, user: User) = plugin.messages.minecraft.linkingClaimedByOther
+        .replace("%player-name%", player.name ?: player.uniqueId.toString())
         .replace("%user-tag%", user.tag)
 
     fun formatLinkingSuccess(user: User) = plugin.messages.minecraft.linkingSuccess

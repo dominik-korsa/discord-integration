@@ -1,5 +1,6 @@
 package com.dominikkorsa.discordintegration
 
+import com.dominikkorsa.discordintegration.api.DiscordIntegrationMessageEvent
 import com.dominikkorsa.discordintegration.exception.MissingIntentsException
 import com.dominikkorsa.discordintegration.utils.getEffectiveEveryonePermissions
 import com.dominikkorsa.discordintegration.utils.orNull
@@ -47,8 +48,6 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import reactor.core.CorePublisher
-import java.time.Duration
-import java.time.LocalDateTime.now
 
 
 @Suppress("ReactiveStreamsUnusedPublisher")
@@ -188,20 +187,14 @@ class Client(private val plugin: DiscordIntegration) {
         }
     }
 
-    private suspend fun onSyncedMessage(message: Message) {
+    private fun onSyncedMessage(message: Message) {
         messagesDebug("Received message ${message.id.asString()} on channel ${message.channelId.asString()}")
         when {
             !message.author.isPresent -> messagesDebug("Ignoring message, cannot get message author")
             message.author.get().isBot -> messagesDebug("Ignoring message, author is a bot")
             message.content.isNullOrEmpty() -> messagesDebug("Ignoring message, content empty")
             else -> {
-                val timeStart = now()
-                plugin.broadcastDiscordMessage(message)
-                messagesDebug(
-                    "Processing chat message took ${
-                        Duration.between(timeStart, now()).toMillis()
-                    } milliseconds"
-                )
+                Bukkit.getPluginManager().callEvent(DiscordIntegrationMessageEvent(message))
             }
         }
     }
@@ -396,6 +389,9 @@ class Client(private val plugin: DiscordIntegration) {
             throw exception
         }
     }
+
+    suspend fun getUser(userId: Snowflake) =
+        gateway?.getUserById(userId)?.handleNotFound()
 
     suspend fun getMember(guildId: Snowflake, userId: Snowflake) =
         gateway?.getMemberById(guildId, userId)?.handleNotFound()

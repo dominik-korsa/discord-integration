@@ -1,6 +1,4 @@
-package com.dominikkorsa.discordintegration.update
-
-import com.dominikkorsa.discordintegration.utils.tryCompare
+package com.dominikkorsa.discordintegration.api
 
 data class Version constructor(
     val major: Int,
@@ -24,8 +22,18 @@ data class Version constructor(
         }
     }
 
+    private fun <T : Comparable<T>> T.tryCompare(other: T) = if (this == other) null else this > other
+
     fun isNeverThan(other: Version) = major.tryCompare(other.major)
         ?: minor.tryCompare(other.minor)
         ?: patch.tryCompare(other.patch)
         ?: (preRelease == null && other.preRelease !== null)
+
+    override fun toString(): String {
+        return buildString {
+            append("$major.$minor.$patch")
+            preRelease?.let { if (it.isNotBlank()) append("-$it") }
+            buildMetadata?.let { if (it.isNotBlank()) append("+$it") }
+        }
+    }
 }

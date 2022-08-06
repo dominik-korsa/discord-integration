@@ -1,0 +1,11 @@
+group 'com.dominikkorsa.discordintegration'
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot-api:1.16.1-R0.1-SNAPSHOT'
+    compileOnly "com.discord4j:discord4j-core:$discord4j_version"
+}
+
+test {
+    useJUnitPlatform()
+}
+

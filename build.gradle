@@ -4,6 +4,7 @@ plugins {
 
 allprojects {
     apply plugin: 'kotlin'
+    ext.discord4j_version = '3.2.2'
 
     repositories {
         mavenCentral()

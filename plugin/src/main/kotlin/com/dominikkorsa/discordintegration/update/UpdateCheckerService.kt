@@ -1,6 +1,7 @@
 package com.dominikkorsa.discordintegration.update
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
+import com.dominikkorsa.discordintegration.api.Version
 import com.dominikkorsa.discordintegration.response.GitHubRelease
 import com.github.shynixn.mccoroutine.bukkit.launch
 import io.ktor.client.*
