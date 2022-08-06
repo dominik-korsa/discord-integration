@@ -1,7 +1,7 @@
 name: DiscordIntegration
 version: %plugin-version%
 author: Dominik Korsa
-main: com.dominikkorsa.discordintegration.DiscordIntegration
+main: com.dominikkorsa.discordintegration.plugin.DiscordIntegration
 api-version: 1.13
 softdepend:
   - PlaceholderAPI

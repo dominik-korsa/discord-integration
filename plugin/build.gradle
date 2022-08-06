@@ -59,9 +59,9 @@ processResources {
 
 shadowJar {
     relocate 'io.netty', 'com.discord4j.shaded.io.netty'
-    relocate 'co.aikar.commands', 'com.dominikkorsa.discordintegration.acf'
-    relocate 'co.aikar.locales', 'com.dominikkorsa.discordintegration.locales'
-    relocate 'org.bstats', 'com.dominikkorsa.discordintegration'
+    relocate 'co.aikar.commands', 'com.dominikkorsa.discordintegration.plugin.acf'
+    relocate 'co.aikar.locales', 'com.dominikkorsa.discordintegration.plugin.locales'
+    relocate 'org.bstats', 'com.dominikkorsa.discordintegration.plugin'
     archiveBaseName.set("DiscordIntegration")
     archiveClassifier.set('')
 }

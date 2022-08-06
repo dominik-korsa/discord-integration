@@ -7,6 +7,8 @@
     <bytecodeTargetLevel target="15">
       <module name="com.dominikkorsa.discordintegration.discord-integration.compatibility.main" target="1.8" />
       <module name="com.dominikkorsa.discordintegration.discord-integration.plugin.main" target="1.8" />
+      <module name="com.github.dominik-korsa.discord-integration.discord-integration.compatibility.main" target="1.8" />
+      <module name="com.github.dominik-korsa.discord-integration.discord-integration.plugin.main" target="1.8" />
       <module name="com.github.dominik-korsa.discordintegration.discord-integration.compatibility.main" target="1.8" />
       <module name="com.github.dominik-korsa.discordintegration.discord-integration.plugin.main" target="1.8" />
     </bytecodeTargetLevel>
