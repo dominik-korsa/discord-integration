@@ -108,8 +108,8 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
 
         val logDiscordMessages get() = section.requireBoolean("log-discord-messages")
         val logCancelledChatEvents
-            get() = CancelledChatEventsMode.parse(section.requireTrimmedString("log-discord-messages"))
-                ?: throw Exception("debug.log-discord-messages config field only accepts values of: `disable`, `auto`, `all`")
+            get() = CancelledChatEventsMode.parse(section.requireTrimmedString("log-cancelled-chat-events"))
+                ?: throw Exception("debug.log-cancelled-chat-events config field only accepts values of: `disable`, `auto`, `all`")
     }
 
     val discordToken get() = config.getString("discord-token")?.trim()
