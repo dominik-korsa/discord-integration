@@ -1,5 +1,5 @@
 # Do not edit the file-version!
-file-version: 6
+file-version: 7
 
 # Put your Discord token here:
 discord-token:
@@ -51,6 +51,13 @@ chat:
   # do not appear on Discord
   # This might be the case if you are using chat plugins, like VentureChat
   ignore-cancelled-chat-events: true
+  emoji:
+    # Show emojis from Discord in Minecraft chat as their unicode symbols
+    # Possible values:
+    #   true  - emojis will be displayed as ❤️
+    #   false - emojis will be displayed as :heart:
+    # Players can override this setting using /di unicode
+    unicode: false
 activity:
   # Interval (in seconds) of Discord activity updates
   # Activity is also updated every time a player enters or leaves the server

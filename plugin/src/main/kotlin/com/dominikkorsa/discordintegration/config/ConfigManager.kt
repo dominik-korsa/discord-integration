@@ -62,6 +62,10 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
             val playerAsAuthor get() = section.requireBoolean("player-as-author")
         }
 
+        class Emoji(private val section: Section) {
+            val unicode get() = section.requireBoolean("unicode")
+        }
+
         val channels get() = section.requireStringList("channels")
         val webhooks get() = section.requireStringList("webhooks")
         val consoleChannels get() = section.requireStringList("console-channels")
@@ -72,6 +76,7 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
         val death get() = EmbedOrMessage(section.getSection("death"))
         val crashEmbed get() = Embed(section.getSection("crash-embed"))
         val ignoreCancelledChatEvents get() = section.requireBoolean("ignore-cancelled-chat-events")
+        val emoji get() = Emoji(section.getSection("emojis"))
     }
 
     class Activity(private val section: Section) {
