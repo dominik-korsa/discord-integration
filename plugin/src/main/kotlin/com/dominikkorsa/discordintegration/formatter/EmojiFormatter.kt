@@ -23,15 +23,13 @@ class EmojiFormatter(private val plugin: DiscordIntegration) {
         unicodeEmojiPattern = Pattern.compile(unicodeToName.keys.joinToString("|") { Pattern.quote(it) })
     }
 
-    private fun replaceUnicodeEmojis(input: String) = unicodeEmojiPattern.matcher(input)
+    fun replaceUnicodeEmojis(input: String) = unicodeEmojiPattern.matcher(input)
         .replaceAll { result ->
             unicodeToName[result.group()]?.let { ":${it.first()}:" } ?: result.group()
         }
 
-    private fun replaceGuildEmojis(input: String) = serverEmojiPattern.matcher(input)
+    fun replaceGuildEmojis(input: String) = serverEmojiPattern.matcher(input)
         .replaceAll { result -> ":${result.group(1)}:" }
-
-    fun replaceEmojis(input: String): String = replaceGuildEmojis(replaceUnicodeEmojis(input))
 
     fun replaceEmojiNames(input: String): String = emojiNamePattern.matcher(input).replaceAll {
         nameToMarkdown[it.group(1)]

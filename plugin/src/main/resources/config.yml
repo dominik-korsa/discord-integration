@@ -57,6 +57,7 @@ chat:
     #   true  - emojis will be displayed as ❤️
     #   false - emojis will be displayed as :heart:
     # Players can override this setting using /di unicode
+    # This setting has no effect for server or nitro emojis
     unicode: false
 activity:
   # Interval (in seconds) of Discord activity updates

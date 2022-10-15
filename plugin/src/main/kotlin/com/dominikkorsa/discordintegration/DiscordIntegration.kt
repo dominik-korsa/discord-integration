@@ -16,6 +16,7 @@ import com.dominikkorsa.discordintegration.listener.*
 import com.dominikkorsa.discordintegration.luckperms.registerLuckPerms
 import com.dominikkorsa.discordintegration.update.UpdateCheckerService
 import com.dominikkorsa.discordintegration.utils.bunchLines
+import com.dominikkorsa.discordintegration.utils.mapText
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.registerSuspendingEvents
 import discord4j.core.`object`.entity.Message
@@ -168,12 +169,18 @@ class DiscordIntegration : JavaPlugin() {
     }
 
     suspend fun broadcastDiscordMessage(message: Message) {
-        val parts = minecraftFormatter.formatDiscordMessage(message).toTypedArray()
+        val parts = minecraftFormatter.formatDiscordMessage(message)
+            .mapText(emojiFormatter::replaceGuildEmojis)
+        val partsWithEmojis = parts.mapText(emojiFormatter::replaceUnicodeEmojis)
         server.onlinePlayers.forEach {
-            Compatibility.sendChatMessage(it, *parts)
+            Compatibility.sendChatMessage(
+                it,
+                *(if (db.getUseUnicodeEmoji(it.uniqueId) ?: configManager.chat.emoji.unicode) parts
+                else partsWithEmojis).toTypedArray()
+            )
         }
-        Bukkit.getConsoleSender().sendMessage(TextComponent(*parts).toLegacyText())
-        dynmap?.sendMessage(TextComponent.toPlainText(*parts))
+        Bukkit.getConsoleSender().sendMessage(TextComponent(*parts.toTypedArray()).toLegacyText())
+        dynmap?.sendMessage(TextComponent.toPlainText(*parts.toTypedArray()))
     }
 
     private fun registerSuspendingEvents(listener: Listener) {
