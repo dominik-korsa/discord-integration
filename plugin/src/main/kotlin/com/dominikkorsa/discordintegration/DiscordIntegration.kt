@@ -13,6 +13,7 @@ import com.dominikkorsa.discordintegration.formatter.EmojiFormatter
 import com.dominikkorsa.discordintegration.formatter.MinecraftFormatter
 import com.dominikkorsa.discordintegration.linking.Linking
 import com.dominikkorsa.discordintegration.listener.*
+import com.dominikkorsa.discordintegration.luckperms.registerLuckPerms
 import com.dominikkorsa.discordintegration.update.UpdateCheckerService
 import com.dominikkorsa.discordintegration.utils.bunchLines
 import com.github.shynixn.mccoroutine.bukkit.launch
@@ -70,6 +71,8 @@ class DiscordIntegration : JavaPlugin() {
         initCommands()
         registerAllEvents()
         startLogging()
+        if (registerLuckPerms(this)) logger.info("Luck Perms integration enabled")
+        else logger.info("Luck Perms not available")
 
         this.launch {
             db.init()
