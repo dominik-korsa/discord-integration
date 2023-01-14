@@ -103,3 +103,13 @@ debug:
   #     if chat.ignore-cancelled-chat-events is set to false
   #   all: Logs all cancelled chat events
   log-cancelled-chat-events: auto
+# integration with imagemaps
+imagemap:
+  enabled: false
+  # channels that allow processing of attachments to be inputted into the imagemaps images folder
+  channels: []
+  # -
+  # path to imagemaps folder: example <serverDir>/plugins/ImageMaps/images/
+  path: ""
+  # if debug set to true the bot will respond to the user with updates on their upload
+  debug: true
