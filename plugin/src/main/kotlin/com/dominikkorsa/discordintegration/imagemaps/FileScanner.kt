@@ -3,7 +3,6 @@ package com.dominikkorsa.discordintegration.imagemaps
 import com.dominikkorsa.discordintegration.DiscordIntegration
 import java.io.File
 import javax.imageio.ImageIO
-import com.dominikkorsa.discordintegration.exception.NotAnImageException
 import java.nio.file.Path
 
 /* This class will scan files submitted by the user to make sure
@@ -20,11 +19,8 @@ class FileScanner(private val plugin: DiscordIntegration) {
         try {
             // verify it's an image, and then verify it has .PNG extension
             ImageIO.read(file).toString()
-            if (file.extension != ".png") {
-                throw NotAnImageException("This file: " + file.name + " is not a PNG (or extension is incorrect)")
-            }
         } catch (e: Exception) {
-            plugin.logger.info(e.toString())
+            plugin.logger.warning(e.toString())
             return false
         }
         return true

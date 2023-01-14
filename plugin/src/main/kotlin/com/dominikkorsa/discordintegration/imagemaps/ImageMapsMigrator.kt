@@ -9,18 +9,14 @@ import java.nio.file.Path
 * the filename provided by the user (modified to be lower and spaces repalced with _) */
 class ImageMapsMigrator(private val plugin: DiscordIntegration) {
 
-    // config options
-    var imenabled = plugin.configManager.imagemaps.imenabled
-    var imchannels = plugin.configManager.imagemaps.imchannels.map(Snowflake::of)
-    var imdebug = plugin.configManager.imagemaps.imdebug
-
-    private var imPath = plugin.configManager.imagemaps.impath
-    fun migrateImage(file: Path, filename: String) {
+    fun migrateImage(file: Path, filename: String, basePath: String): Boolean {
         // will catch exceptions related to copying the file over (in case config is not setup correctly)
         try {
-            file.toFile().copyTo(File(imPath + filename))
+            file.toFile().copyTo(File(basePath + filename))
         } catch (e: Exception) {
-            plugin.logger.info(e.toString())
+            plugin.logger.warning(e.toString())
+            return false
         }
+        return true
     }
 }

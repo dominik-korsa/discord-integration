@@ -215,24 +215,28 @@ class Client(private val plugin: DiscordIntegration) {
         when {
             !message.author.isPresent -> messagesDebug("Ignoring message, cannot get message author")
             message.author.get().isBot -> messagesDebug("Ignoring message, author is a bot")
-            message.content.isNullOrEmpty() -> messagesDebug("Ignoring message, content empty")
+            message.content.isNullOrEmpty() && message.attachments.isEmpty() -> messagesDebug("Ignoring message, content empty")
             /* Here is where we'll check for messages containing files */
             message.attachments.isNotEmpty() -> {
                 // verify imageMap integration is enabled
-                if (!plugin.imageMapMigrator.imenabled) {
+                if (!plugin.configManager.imagemaps.imenabled) {
                     messagesDebug("Ignoring attachments, imagemaps integration not enabled")
                     return
                 }
                 /* verify this message was sent in a imchannel */
-                if (!plugin.imageMapMigrator.imchannels.contains(message.channelId))
+                if (!plugin.configManager.imagemaps.imchannels.map(Snowflake::of).contains(message.channelId)) {
                     messagesDebug("Ignoring attachment, not part of one of the imagemap channels")
+                    return
+                }
 
                 // communicate that we're processing players file
-                if (plugin.imageMapMigrator.imdebug)
-                    this.sendWebhook(this.getWebhookBuilder()
-                        .content("Processing attachments @%s".format(message.author))
-                        .build()
-                    )
+                if (plugin.configManager.imagemaps.imdebug) {
+                    message.channel.awaitFirstOrNull()?.let {
+                        it.createMessage(
+                            "Processing attachments %s".format(message.author.get().mention)
+                        ).withAllowedMentions(AllowedMentions.builder().allowUser(message.author.get().id).build())
+                    }?.awaitFirstOrNull()
+                }
 
 
                 /* Go through each attachment, download and scan for image */
@@ -245,26 +249,38 @@ class Client(private val plugin: DiscordIntegration) {
                     /* if not a PNG file then we stop execution */
                     if (!plugin.fileScanner.scan(pathToFile)) {
                         // communicate with player that this attachement is not a PNG
-                        if (plugin.imageMapMigrator.imdebug) {
-                            this.sendWebhook(this.getWebhookBuilder()
-                                .content("This is not a PNG image! @%s %s".format(message.author, filename))
-                                .build()
-                            )
+                        if (plugin.configManager.imagemaps.imdebug) {
+                            message.channel.awaitFirstOrNull()?.let {
+                                it.createMessage(
+                                    "This is not a PNG image! %s %s".format(message.author.get().mention, filename)
+                                ).withAllowedMentions(AllowedMentions.builder().allowUser(message.author.get().id).build())
+                            }?.awaitFirstOrNull()
                         }
                         messagesDebug("This is not a PNG file!")
                         return
                     }
 
-                    /* if no issue with file, upload */
-                    plugin.imageMapMigrator.migrateImage(pathToFile, filename)
-
-                    // communicate upload complete, use /imagemaps place <filename>
-                    if (plugin.imageMapMigrator.imdebug) {
-                        this.sendWebhook(this.getWebhookBuilder()
-                            .content("Upload complete, use /imagemaps place %s to place the image @%s!"
-                                .format(message.author, filename))
-                            .build()
-                        )
+                    /* if no issue with file, attempt migration */
+                    if(!plugin.imageMapMigrator
+                        .migrateImage(pathToFile, filename, plugin.configManager.imagemaps.impath)) {
+                        message.channel.awaitFirstOrNull()?.let {
+                            it.
+                            createMessage(
+                                "Upload failed for file: %s %s".format(filename, message.author.get().mention)
+                            ).withAllowedMentions(AllowedMentions.builder().allowUser(message.author.get().id).build())
+                        }?.awaitFirstOrNull()
+                    }
+                    else {
+                        // communicate upload complete, use /imagemaps place <filename>
+                        if (plugin.configManager.imagemaps.imdebug) {
+                            message.channel.awaitFirstOrNull()?.let {
+                                it.createMessage(
+                                    "Upload complete, you may use '/imagemap place %s' to place your image %s".format(
+                                        filename,
+                                        message.author.get().mention)
+                                ).withAllowedMentions(AllowedMentions.builder().allowUser(message.author.get().id).build())
+                            }?.awaitFirstOrNull()
+                        }
                     }
 
                 }

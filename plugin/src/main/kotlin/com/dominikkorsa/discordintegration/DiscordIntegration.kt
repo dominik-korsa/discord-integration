@@ -44,13 +44,14 @@ class DiscordIntegration : JavaPlugin() {
     val minecraftFormatter = MinecraftFormatter(this)
     val emojiFormatter = EmojiFormatter(this)
     val avatarService = AvatarService(this)
-    val imageMapMigrator = ImageMapsMigrator(this)
-    val fileScanner = FileScanner(this)
     val db = Db(this)
     val linking = Linking(this)
     private val lockFileService = LockFileService(this)
     val updateCheckerService = UpdateCheckerService(this)
     lateinit var configManager: ConfigManager
+    /* two object classes needed for imagemaps */
+    val imageMapMigrator = ImageMapsMigrator(this)
+    val fileScanner = FileScanner(this)
     lateinit var messages: MessageManager
     private var dynmap: DynmapIntegration? = null
     private var activityJob: Job? = null
