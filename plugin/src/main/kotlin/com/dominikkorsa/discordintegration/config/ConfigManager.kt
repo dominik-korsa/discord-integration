@@ -119,6 +119,16 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
     val linking get() = Linking(config.getSection("linking"))
     val debug get() = Debug(config.getSection("debug"))
 
+    /* config for ImageMaps integration */
+    class ImageMaps(private val section: Section) {
+        val imenabled get() = section.requireBoolean("enabled")
+        val imchannels get() = section.requireStringList("channels")
+        val impath get() = section.requireString("path")
+        val imdebug get() = section.requireBoolean("debug")
+    }
+    val imagemaps get() = ImageMaps(config.getSection("imagemap"))
+
+
     companion object {
         private val channelUrlPattern = Pattern.compile("""^https://(?:ptb\.)?discord\.com/channels/\d+/(\d+)$""")
     }

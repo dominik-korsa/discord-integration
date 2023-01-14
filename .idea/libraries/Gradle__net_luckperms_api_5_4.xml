@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: net.luckperms:api:5.4">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.luckperms/api/5.4/7b07573b0c9f06a1e5ddfc6b0042d04759d0ba8a/api-5.4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.luckperms/api/5.4/5d15cdf3d525089c1c70b38cc530d153679c6d2e/api-5.4-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

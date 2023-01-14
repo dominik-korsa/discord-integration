@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: com.discord4j:discord4j-voice:3.2.2">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.discord4j/discord4j-voice/3.2.2/78538bd6efa6cfe77e2a6dd03a6455f069dbb9/discord4j-voice-3.2.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.discord4j/discord4j-voice/3.2.2/6534f9abc04e12904a452d6d4de9c13dd08b0200/discord4j-voice-3.2.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -35,12 +35,17 @@ import org.bukkit.plugin.java.JavaPlugin
 import java.time.Duration
 import kotlin.time.toKotlinDuration
 
+import com.dominikkorsa.discordintegration.imagemaps.FileScanner
+import com.dominikkorsa.discordintegration.imagemaps.ImageMapsMigrator
+
 class DiscordIntegration : JavaPlugin() {
     val client = Client(this)
     val discordFormatter = DiscordFormatter(this)
     val minecraftFormatter = MinecraftFormatter(this)
     val emojiFormatter = EmojiFormatter(this)
     val avatarService = AvatarService(this)
+    val imageMapMigrator = ImageMapsMigrator(this)
+    val fileScanner = FileScanner(this)
     val db = Db(this)
     val linking = Linking(this)
     private val lockFileService = LockFileService(this)

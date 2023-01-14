@@ -13,6 +13,8 @@ fun Section.requireTrimmedString(route: Route) =
 
 fun Section.requireBoolean(route: String) = getBoolean(route) ?: throw ConfigNotSetException(routeAsString, route)
 
+fun Section.requireString(route: String) = getString(route) ?: throw ConfigNotSetException(routeAsString, route)
+
 fun Section.requireInt(route: String) = getInt(route) ?: throw ConfigNotSetException(routeAsString, route)
 
 fun Section.requireStringList(route: String): List<String> =

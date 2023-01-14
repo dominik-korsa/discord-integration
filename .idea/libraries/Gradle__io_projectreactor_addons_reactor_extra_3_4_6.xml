@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: io.projectreactor.addons:reactor-extra:3.4.6">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.projectreactor.addons/reactor-extra/3.4.6/eba37d446b72863bd22f8387c605f84f5bd1114f/reactor-extra-3.4.6.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.projectreactor.addons/reactor-extra/3.4.6/adbae1896782f91ba1de6fdc45acec1050ae35dd/reactor-extra-3.4.6-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

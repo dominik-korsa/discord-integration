@@ -5,6 +5,12 @@ import com.dominikkorsa.discordintegration.utils.getEffectiveEveryonePermissions
 import com.dominikkorsa.discordintegration.utils.orNull
 import com.dominikkorsa.discordintegration.utils.swapped
 import com.dominikkorsa.discordintegration.utils.tryCast
+
+/* imports for imagemaps */
+import com.dominikkorsa.discordintegration.imagemaps.FileScanner
+import java.net.URL
+import kotlin.io.path.outputStream
+
 import com.google.common.collect.ImmutableMap
 import discord4j.common.close.CloseException
 import discord4j.common.store.Store
@@ -47,8 +53,11 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import reactor.core.CorePublisher
+import java.io.File
+import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime.now
+
 
 
 @Suppress("ReactiveStreamsUnusedPublisher")
@@ -62,6 +71,18 @@ class Client(private val plugin: DiscordIntegration) {
 
     private var gateway: GatewayDiscordClient? = null
     private var guildEmojis: HashMap<Snowflake, ImmutableMap<String, String>>? = null
+    /* this function downloads the file from the URL provided in the attachments under discords API
+    * it saves the file to a temporary file that is deleted regardless if it's an image or not
+    * */
+    private fun downloadFile(url: URL): Path {
+        val file = kotlin.io.path.createTempFile()
+        url.openStream().use { input ->
+            file.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+        return file
+    }
 
     suspend fun connect(token: String) {
         val client = DiscordClient.create(token)
@@ -188,12 +209,68 @@ class Client(private val plugin: DiscordIntegration) {
         }
     }
 
+    /* listening in for discord messages at a channel with webhooks */
     private suspend fun onSyncedMessage(message: Message) {
         messagesDebug("Received message ${message.id.asString()} on channel ${message.channelId.asString()}")
         when {
             !message.author.isPresent -> messagesDebug("Ignoring message, cannot get message author")
             message.author.get().isBot -> messagesDebug("Ignoring message, author is a bot")
             message.content.isNullOrEmpty() -> messagesDebug("Ignoring message, content empty")
+            /* Here is where we'll check for messages containing files */
+            message.attachments.isNotEmpty() -> {
+                // verify imageMap integration is enabled
+                if (!plugin.imageMapMigrator.imenabled) {
+                    messagesDebug("Ignoring attachments, imagemaps integration not enabled")
+                    return
+                }
+                /* verify this message was sent in a imchannel */
+                if (!plugin.imageMapMigrator.imchannels.contains(message.channelId))
+                    messagesDebug("Ignoring attachment, not part of one of the imagemap channels")
+
+                // communicate that we're processing players file
+                if (plugin.imageMapMigrator.imdebug)
+                    this.sendWebhook(this.getWebhookBuilder()
+                        .content("Processing attachments @%s".format(message.author))
+                        .build()
+                    )
+
+
+                /* Go through each attachment, download and scan for image */
+                for (attachment in message.attachments) {
+                    /* gets the URL of the attachment for download */
+                    var url = attachment.url
+                    var filename = attachment.filename.lowercase().replace(" ", "_")
+                    var pathToFile = downloadFile(URL(url))
+
+                    /* if not a PNG file then we stop execution */
+                    if (!plugin.fileScanner.scan(pathToFile)) {
+                        // communicate with player that this attachement is not a PNG
+                        if (plugin.imageMapMigrator.imdebug) {
+                            this.sendWebhook(this.getWebhookBuilder()
+                                .content("This is not a PNG image! @%s %s".format(message.author, filename))
+                                .build()
+                            )
+                        }
+                        messagesDebug("This is not a PNG file!")
+                        return
+                    }
+
+                    /* if no issue with file, upload */
+                    plugin.imageMapMigrator.migrateImage(pathToFile, filename)
+
+                    // communicate upload complete, use /imagemaps place <filename>
+                    if (plugin.imageMapMigrator.imdebug) {
+                        this.sendWebhook(this.getWebhookBuilder()
+                            .content("Upload complete, use /imagemaps place %s to place the image @%s!"
+                                .format(message.author, filename))
+                            .build()
+                        )
+                    }
+
+                }
+
+
+            }
             else -> {
                 val timeStart = now()
                 plugin.broadcastDiscordMessage(message)
