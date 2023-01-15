@@ -110,6 +110,7 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
         val logCancelledChatEvents
             get() = CancelledChatEventsMode.parse(section.requireTrimmedString("log-cancelled-chat-events"))
                 ?: throw Exception("debug.log-cancelled-chat-events config field only accepts values of: `disable`, `auto`, `all`")
+        val imagemaps = section.requireBoolean("imagemaps")
     }
 
     val discordToken get() = config.getString("discord-token")?.trim()
@@ -121,12 +122,11 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
 
     /* config for ImageMaps integration */
     class ImageMaps(private val section: Section) {
-        val imenabled get() = section.requireBoolean("enabled")
-        val imchannels get() = section.requireStringList("channels")
-        val impath get() = section.requireString("path")
-        val imdebug get() = section.requireBoolean("debug")
+        val enabled get() = section.requireBoolean("enabled")
+        val channels get() = section.requireStringList("channels")
+        val path get() = section.requireTrimmedString("path")
     }
-    val imagemaps get() = ImageMaps(config.getSection("imagemap"))
+    val imagemaps get() = ImageMaps(config.getSection("imagemaps"))
 
 
     companion object {

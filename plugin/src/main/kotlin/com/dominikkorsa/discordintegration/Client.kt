@@ -1,16 +1,12 @@
 package com.dominikkorsa.discordintegration
 
+/* imports for imagemaps */
+
 import com.dominikkorsa.discordintegration.exception.MissingIntentsException
 import com.dominikkorsa.discordintegration.utils.getEffectiveEveryonePermissions
 import com.dominikkorsa.discordintegration.utils.orNull
 import com.dominikkorsa.discordintegration.utils.swapped
 import com.dominikkorsa.discordintegration.utils.tryCast
-
-/* imports for imagemaps */
-import com.dominikkorsa.discordintegration.imagemaps.FileScanner
-import java.net.URL
-import kotlin.io.path.outputStream
-
 import com.google.common.collect.ImmutableMap
 import discord4j.common.close.CloseException
 import discord4j.common.store.Store
@@ -53,10 +49,11 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import reactor.core.CorePublisher
-import java.io.File
+import java.net.URL
 import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime.now
+import kotlin.io.path.outputStream
 
 
 
@@ -219,18 +216,18 @@ class Client(private val plugin: DiscordIntegration) {
             /* Here is where we'll check for messages containing files */
             message.attachments.isNotEmpty() -> {
                 // verify imageMap integration is enabled
-                if (!plugin.configManager.imagemaps.imenabled) {
+                if (!plugin.configManager.imagemaps.enabled) {
                     messagesDebug("Ignoring attachments, imagemaps integration not enabled")
                     return
                 }
                 /* verify this message was sent in a imchannel */
-                if (!plugin.configManager.imagemaps.imchannels.map(Snowflake::of).contains(message.channelId)) {
+                if (!plugin.configManager.imagemaps.channels.map(Snowflake::of).contains(message.channelId)) {
                     messagesDebug("Ignoring attachment, not part of one of the imagemap channels")
                     return
                 }
 
                 // communicate that we're processing players file
-                if (plugin.configManager.imagemaps.imdebug) {
+                if (plugin.configManager.debug.imagemaps) {
                     message.channel.awaitFirstOrNull()?.let {
                         it.createMessage(
                             "Processing attachments %s".format(message.author.get().mention)
@@ -249,7 +246,7 @@ class Client(private val plugin: DiscordIntegration) {
                     /* if not a PNG file then we stop execution */
                     if (!plugin.fileScanner.scan(pathToFile)) {
                         // communicate with player that this attachement is not a PNG
-                        if (plugin.configManager.imagemaps.imdebug) {
+                        if (plugin.configManager.debug.imagemaps) {
                             message.channel.awaitFirstOrNull()?.let {
                                 it.createMessage(
                                     "This is not a PNG image! %s %s".format(message.author.get().mention, filename)
@@ -262,7 +259,7 @@ class Client(private val plugin: DiscordIntegration) {
 
                     /* if no issue with file, attempt migration */
                     if(!plugin.imageMapMigrator
-                        .migrateImage(pathToFile, filename, plugin.configManager.imagemaps.impath)) {
+                        .migrateImage(pathToFile, filename, plugin.configManager.imagemaps.path)) {
                         message.channel.awaitFirstOrNull()?.let {
                             it.
                             createMessage(
@@ -272,7 +269,7 @@ class Client(private val plugin: DiscordIntegration) {
                     }
                     else {
                         // communicate upload complete, use /imagemaps place <filename>
-                        if (plugin.configManager.imagemaps.imdebug) {
+                        if (plugin.configManager.debug.imagemaps) {
                             message.channel.awaitFirstOrNull()?.let {
                                 it.createMessage(
                                     "Upload complete, you may use '/imagemap place %s' to place your image %s".format(
