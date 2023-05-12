@@ -45,8 +45,8 @@ chat:
     # the Mojang's API to get the correct UUID
     #
     # Use this url to show faces instead of heads:
-    # https://crafatar.com/avatars/%uuid%?overlay
-    url: https://crafatar.com/renders/head/%uuid%?overlay
+    # https://cravatar.eu/helmavatar/%uuid%/256
+    url: https://cravatar.eu/helmhead/%uuid%/256
   # You could try setting this to false, if messages sent by players
   # do not appear on Discord
   # This might be the case if you are using chat plugins, like VentureChat
