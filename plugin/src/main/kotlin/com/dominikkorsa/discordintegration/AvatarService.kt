@@ -8,13 +8,18 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.json.Json
 import org.bukkit.entity.Player
 import java.util.*
 
 class AvatarService(private val plugin: DiscordIntegration) {
     private val uuids = HashMap<String, String>()
     private val client =  HttpClient(CIO) {
-        install(ContentNegotiation) { json() }
+        install(ContentNegotiation) {
+            json(Json {
+                ignoreUnknownKeys = true
+            })
+        }
     }
 
     private suspend fun updateNicknameUUID(playerName: String) {
