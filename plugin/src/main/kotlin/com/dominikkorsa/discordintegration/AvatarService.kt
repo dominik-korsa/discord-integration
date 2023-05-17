@@ -4,6 +4,7 @@ import com.dominikkorsa.discordintegration.response.NameToUUIDResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -15,6 +16,7 @@ import java.util.*
 class AvatarService(private val plugin: DiscordIntegration) {
     private val uuids = HashMap<String, String>()
     private val client =  HttpClient(CIO) {
+        expectSuccess = true
         install(ContentNegotiation) {
             json(Json {
                 ignoreUnknownKeys = true
@@ -27,9 +29,10 @@ class AvatarService(private val plugin: DiscordIntegration) {
             val response = client.get(
                 "https://api.mojang.com/users/profiles/minecraft/${playerName}"
             )
-            if (response.status == HttpStatusCode.NoContent) return
             uuids[playerName] = response.body<NameToUUIDResponse>().id
         } catch (error: Exception) {
+            if (error is ClientRequestException && error.response.status == HttpStatusCode.NoContent) return
+            if (error is ClientRequestException && error.response.status == HttpStatusCode.NotFound) return
             plugin.logger.warning("Failed to get UUID of player $playerName")
             plugin.logger.warning(error.message)
         }
