@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/compatibility/com.dominikkorsa.discordintegration.discord-integration.compatibility.main.iml" filepath="$PROJECT_DIR$/.idea/modules/compatibility/com.dominikkorsa.discordintegration.discord-integration.compatibility.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/plugin/com.dominikkorsa.discordintegration.discord-integration.plugin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/plugin/com.dominikkorsa.discordintegration.discord-integration.plugin.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/compatibility/discord-integration.compatibility.main.iml" filepath="$PROJECT_DIR$/.idea/modules/compatibility/discord-integration.compatibility.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/discord-integration.main.iml" filepath="$PROJECT_DIR$/.idea/modules/discord-integration.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/plugin/discord-integration.plugin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/plugin/discord-integration.plugin.main.iml" />
     </modules>
   </component>
