@@ -52,8 +52,13 @@ class Db(private val plugin: DiscordIntegration) {
     data class Player(
         @Serializable(with = SnowflakeSerializer::class)
         val discordId: Snowflake?,
+        val useUnicodeEmoji: Boolean?,
     ) {
-        fun withDiscordId(discordId: Snowflake?) = Player(discordId)
+        constructor() : this(null, null)
+
+        fun withDiscordId(discordId: Snowflake?) = Player(discordId, useUnicodeEmoji)
+
+        fun withUseUnicodeEmoji(useUnicodeEmoji: Boolean?) = Player(discordId, useUnicodeEmoji)
     }
 
     private val playerMapSerializer = MapSerializer(UUIDSerializer, Player.serializer())
@@ -70,7 +75,7 @@ class Db(private val plugin: DiscordIntegration) {
                 Database.connect("jdbc:sqlite:$legacyDbFile", "org.sqlite.JDBC")
                 newSuspendedTransaction {
                     players.putAll(LegacyPlayerEntity.all().map {
-                        Pair(it.id.value, Player(it.discordId?.let(Snowflake::of)))
+                        Pair(it.id.value, Player(it.discordId?.let(Snowflake::of), null))
                     })
                 }
                 save()
@@ -135,14 +140,14 @@ class Db(private val plugin: DiscordIntegration) {
         }
     }
 
-    private fun getOrCreatePlayer(playerId: UUID) = players.getOrPut(playerId) { Player(null) }
-
     fun getDiscordId(playerId: UUID) = players[playerId]?.discordId
+
+    fun getUseUnicodeEmoji(playerId: UUID) = players[playerId]?.useUnicodeEmoji
 
     fun playerIdOfMember(discordId: Snowflake) = playerOfMember[discordId]
 
     suspend fun resetDiscordId(playerId: UUID): Snowflake? {
-        val previousPlayer = getOrCreatePlayer(playerId)
+        val previousPlayer = players[playerId] ?: Player()
         if (previousPlayer.discordId == null) return null
         playerOfMember.remove(previousPlayer.discordId)
         players[playerId] = previousPlayer.withDiscordId(null)
@@ -154,10 +159,16 @@ class Db(private val plugin: DiscordIntegration) {
         val previouslyLinkedPlayerId = playerOfMember.put(discordId, playerId)
         if (previouslyLinkedPlayerId == playerId) return null
 
-        val playerBefore = getOrCreatePlayer(playerId)
+        val playerBefore = players[playerId] ?: Player()
         playerBefore.discordId?.let(playerOfMember::remove)
         players[playerId] = playerBefore.withDiscordId(discordId)
         save()
         return Pair(previouslyLinkedPlayerId, playerBefore.discordId)
+    }
+
+    suspend fun setUseDiscordEmoji(playerId: UUID, useDiscordEmoji: Boolean?) {
+        val playerBefore = players[playerId] ?: Player()
+        players[playerId] = playerBefore.withUseUnicodeEmoji(useDiscordEmoji)
+        save()
     }
 }
