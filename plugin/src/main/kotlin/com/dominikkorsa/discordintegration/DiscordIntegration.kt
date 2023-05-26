@@ -35,6 +35,9 @@ import org.bukkit.plugin.java.JavaPlugin
 import java.time.Duration
 import kotlin.time.toKotlinDuration
 
+import com.dominikkorsa.discordintegration.imagemaps.FileScanner
+import com.dominikkorsa.discordintegration.imagemaps.ImageMapsMigrator
+
 class DiscordIntegration : JavaPlugin() {
     val client = Client(this)
     val discordFormatter = DiscordFormatter(this)
@@ -46,6 +49,9 @@ class DiscordIntegration : JavaPlugin() {
     private val lockFileService = LockFileService(this)
     val updateCheckerService = UpdateCheckerService(this)
     lateinit var configManager: ConfigManager
+    /* two object classes needed for imagemaps */
+    val imageMapMigrator = ImageMapsMigrator(this)
+    val fileScanner = FileScanner(this)
     lateinit var messages: MessageManager
     private var dynmap: DynmapIntegration? = null
     private var activityJob: Job? = null

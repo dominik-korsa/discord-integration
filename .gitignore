@@ -11,6 +11,11 @@ gradle-app.setting
 # Cache of project
 .gradletasknamecache
 
+# ignore my gradle properties
+gradle.properties
+.idea
+
+bin/
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
 

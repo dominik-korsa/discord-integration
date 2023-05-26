@@ -1,5 +1,7 @@
 package com.dominikkorsa.discordintegration
 
+/* imports for imagemaps */
+
 import com.dominikkorsa.discordintegration.exception.MissingIntentsException
 import com.dominikkorsa.discordintegration.utils.getEffectiveEveryonePermissions
 import com.dominikkorsa.discordintegration.utils.orNull
@@ -47,8 +49,12 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import reactor.core.CorePublisher
+import java.net.URL
+import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime.now
+import kotlin.io.path.outputStream
+
 
 
 @Suppress("ReactiveStreamsUnusedPublisher")
@@ -62,6 +68,18 @@ class Client(private val plugin: DiscordIntegration) {
 
     private var gateway: GatewayDiscordClient? = null
     private var guildEmojis: HashMap<Snowflake, ImmutableMap<String, String>>? = null
+    /* this function downloads the file from the URL provided in the attachments under discords API
+    * it saves the file to a temporary file that is deleted regardless if it's an image or not
+    * */
+    private fun downloadFile(url: URL): Path {
+        val file = kotlin.io.path.createTempFile()
+        url.openStream().use { input ->
+            file.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+        return file
+    }
 
     suspend fun connect(token: String) {
         val client = DiscordClient.create(token)
@@ -188,12 +206,84 @@ class Client(private val plugin: DiscordIntegration) {
         }
     }
 
+    /* listening in for discord messages at a channel with webhooks */
     private suspend fun onSyncedMessage(message: Message) {
         messagesDebug("Received message ${message.id.asString()} on channel ${message.channelId.asString()}")
         when {
             !message.author.isPresent -> messagesDebug("Ignoring message, cannot get message author")
             message.author.get().isBot -> messagesDebug("Ignoring message, author is a bot")
-            message.content.isNullOrEmpty() -> messagesDebug("Ignoring message, content empty")
+            message.content.isNullOrEmpty() && message.attachments.isEmpty() -> messagesDebug("Ignoring message, content empty")
+            /* Here is where we'll check for messages containing files */
+            message.attachments.isNotEmpty() -> {
+                // verify imageMap integration is enabled
+                if (!plugin.configManager.imagemaps.enabled) {
+                    messagesDebug("Ignoring attachments, imagemaps integration not enabled")
+                    return
+                }
+                /* verify this message was sent in a imchannel */
+                if (!plugin.configManager.imagemaps.channels.map(Snowflake::of).contains(message.channelId)) {
+                    messagesDebug("Ignoring attachment, not part of one of the imagemap channels")
+                    return
+                }
+
+                // communicate that we're processing players file
+                if (plugin.configManager.debug.imagemaps) {
+                    message.channel.awaitFirstOrNull()?.let {
+                        it.createMessage(
+                            "Processing attachments %s".format(message.author.get().mention)
+                        ).withAllowedMentions(AllowedMentions.builder().allowUser(message.author.get().id).build())
+                    }?.awaitFirstOrNull()
+                }
+
+
+                /* Go through each attachment, download and scan for image */
+                for (attachment in message.attachments) {
+                    /* gets the URL of the attachment for download */
+                    var url = attachment.url
+                    var filename = attachment.filename.lowercase().replace(" ", "_")
+                    var pathToFile = downloadFile(URL(url))
+
+                    /* if not a PNG file then we stop execution */
+                    if (!plugin.fileScanner.scan(pathToFile)) {
+                        // communicate with player that this attachement is not a PNG
+                        if (plugin.configManager.debug.imagemaps) {
+                            message.channel.awaitFirstOrNull()?.let {
+                                it.createMessage(
+                                    "This is not a PNG image! %s %s".format(message.author.get().mention, filename)
+                                ).withAllowedMentions(AllowedMentions.builder().allowUser(message.author.get().id).build())
+                            }?.awaitFirstOrNull()
+                        }
+                        messagesDebug("This is not a PNG file!")
+                        return
+                    }
+
+                    /* if no issue with file, attempt migration */
+                    if(!plugin.imageMapMigrator
+                        .migrateImage(pathToFile, filename, plugin.configManager.imagemaps.path)) {
+                        message.channel.awaitFirstOrNull()?.let {
+                            it.
+                            createMessage(
+                                "Upload failed for file: %s %s".format(filename, message.author.get().mention)
+                            ).withAllowedMentions(AllowedMentions.builder().allowUser(message.author.get().id).build())
+                        }?.awaitFirstOrNull()
+                    }
+                    else {
+                        // communicate upload complete, use /imagemaps place <filename>
+                        if (plugin.configManager.debug.imagemaps) {
+                            message.channel.awaitFirstOrNull()?.let {
+                                it.createMessage(
+                                    "Upload complete, you may use '/imagemap place %s' to place your image %s".format(
+                                        filename,
+                                        message.author.get().mention)
+                                ).withAllowedMentions(AllowedMentions.builder().allowUser(message.author.get().id).build())
+                            }?.awaitFirstOrNull()
+                        }
+                    }
+
+                }
+
+
+            }
             else -> {
                 val timeStart = now()
                 plugin.broadcastDiscordMessage(message)

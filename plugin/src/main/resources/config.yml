@@ -1,8 +1,9 @@
 # Do not edit the file-version!
-file-version: 6
+file-version: 7
 
 # Put your Discord token here:
 discord-token:
+
 chat:
   channels:
   # - 0123456789
@@ -51,6 +52,7 @@ chat:
   # do not appear on Discord
   # This might be the case if you are using chat plugins, like VentureChat
   ignore-cancelled-chat-events: true
+
 activity:
   # Interval (in seconds) of Discord activity updates
   # Activity is also updated every time a player enters or leaves the server
@@ -67,6 +69,7 @@ activity:
     # Whether to use 24-hour clock (true) or 12-hour clock (false)
     24h: true
   idle-when-no-players-online: true
+
 linking:
   enabled: false
   # If set to true, users will now be able to join the game
@@ -90,6 +93,7 @@ linking:
   # You should remove "Change Nickname" permission from users
   # if this setting is enabled
   sync-nicknames: false
+
 debug:
   # Will output each message received from Discord in server console
   log-discord-messages: false
@@ -103,3 +107,13 @@ debug:
   #     if chat.ignore-cancelled-chat-events is set to false
   #   all: Logs all cancelled chat events
   log-cancelled-chat-events: auto
+  # If debug.imagemaps is set to true the bot will respond to the user with updates on their upload
+  imagemaps: true
+
+# Integration with the ImageMaps plugin
+imagemaps:
+  enabled: false
+  # Channels that allow processing of attachments to be saved into the imagemaps images folder
+  channels: []
+  # Path to the folder where image files will be saved
+  path: "plugins/ImageMaps/images/"

@@ -110,6 +110,7 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
         val logCancelledChatEvents
             get() = CancelledChatEventsMode.parse(section.requireTrimmedString("log-cancelled-chat-events"))
                 ?: throw Exception("debug.log-cancelled-chat-events config field only accepts values of: `disable`, `auto`, `all`")
+        val imagemaps = section.requireBoolean("imagemaps")
     }
 
     val discordToken get() = config.getString("discord-token")?.trim()
@@ -118,6 +119,15 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
     val activity get() = Activity(config.getSection("activity"))
     val linking get() = Linking(config.getSection("linking"))
     val debug get() = Debug(config.getSection("debug"))
+
+    /* config for ImageMaps integration */
+    class ImageMaps(private val section: Section) {
+        val enabled get() = section.requireBoolean("enabled")
+        val channels get() = section.requireStringList("channels")
+        val path get() = section.requireTrimmedString("path")
+    }
+    val imagemaps get() = ImageMaps(config.getSection("imagemaps"))
+
 
     companion object {
         private val channelUrlPattern = Pattern.compile("""^https://(?:ptb\.)?discord\.com/channels/\d+/(\d+)$""")
