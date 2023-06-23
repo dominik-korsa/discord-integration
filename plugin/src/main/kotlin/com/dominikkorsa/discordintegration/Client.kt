@@ -23,6 +23,7 @@ import discord4j.core.`object`.command.ApplicationCommandOption
 import discord4j.core.`object`.entity.*
 import discord4j.core.`object`.entity.channel.Channel
 import discord4j.core.`object`.entity.channel.GuildMessageChannel
+import discord4j.core.`object`.entity.channel.TopLevelGuildMessageChannel
 import discord4j.core.`object`.presence.ClientActivity
 import discord4j.core.`object`.presence.ClientPresence
 import discord4j.core.`object`.presence.Status
@@ -535,6 +536,10 @@ class Client(private val plugin: DiscordIntegration) {
                         val channel = getChannelById(id).awaitSingleOrNull()?.tryCast<GuildMessageChannel>()
                         if (channel == null) {
                             plugin.logger.severe("Console channel with id ${id.asString()} not found")
+                            return@async false
+                        }
+                        if (channel !is TopLevelGuildMessageChannel) {
+                            plugin.logger.severe("Thread \"${channel.name}\" with id ${id.asString()} cannot be used as a console channel")
                             return@async false
                         }
                         val permissions = channel.getEffectiveEveryonePermissions()
