@@ -23,7 +23,7 @@ dependencies {
 
     compileOnly 'org.spigotmc:spigot-api:1.8-R0.1-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.11.3'
-    compileOnly 'org.apache.logging.log4j:log4j-core:2.18.0'
+    compileOnly 'org.apache.logging.log4j:log4j-core:2.20.0'
     compileOnly 'org.dynmap:dynmap-api:2.0'
     compileOnly 'net.luckperms:api:5.4'
 
