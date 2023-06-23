@@ -1,9 +1,11 @@
 package com.dominikkorsa.discordintegration.config
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
+import com.dominikkorsa.discordintegration.utils.orNull
 import dev.dejvokep.boostedyaml.block.implementation.Section
 import dev.dejvokep.boostedyaml.route.Route
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings
+import java.util.*
 import java.util.regex.Pattern
 
 class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.yml") {
@@ -90,6 +92,13 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
         val syncNicknames get() = section.requireBoolean("sync-nicknames")
     }
 
+    class DateTime(private val section: Section) {
+        val timezone get() = section.getOptionalString("timezone").orNull()?.let {
+            TimeZone.getTimeZone(it)
+        } ?: TimeZone.getDefault()
+        val is24h get() = section.requireBoolean("24h")
+    }
+
     class Debug(private val section: Section) {
         enum class CancelledChatEventsMode {
             DISABLE,
@@ -117,6 +126,7 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
     val chat get() = Chat(config.getSection("chat"))
     val activity get() = Activity(config.getSection("activity"))
     val linking get() = Linking(config.getSection("linking"))
+    val dateTime get() = DateTime(config.getSection("date-time"))
     val debug get() = Debug(config.getSection("debug"))
 
     companion object {
