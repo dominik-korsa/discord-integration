@@ -1,5 +1,5 @@
-# Do not edit the file-version!
-file-version: 6
+# Don't edit file-version yourself unless you know what you are doing!
+file-version: 7
 
 # Put your Discord token here:
 discord-token:
@@ -65,6 +65,7 @@ activity:
     # If the number doesn't divide an hour (60) the results might be unexpected
     round: 1
     # Whether to use 24-hour clock (true) or 12-hour clock (false)
+    # for displaying Minecraft time
     24h: true
   idle-when-no-players-online: true
 linking:
@@ -90,6 +91,14 @@ linking:
   # You should remove "Change Nickname" permission from users
   # if this setting is enabled
   sync-nicknames: false
+date-time:
+  # Timezone used for formatting real time in Minecraft
+  # For example Europe/Amsterdam or America/New_York
+  # For the list of all time zone identifiers see:
+  # https://docs.oracle.com/middleware/12211/wcs/tag-ref/MISC/TimeZones.html
+  timezone: GMT
+  # Whether to use 24-hour clock (true) or 12-hour clock (false)
+  24h: true
 debug:
   # Will output each message received from Discord in server console
   log-discord-messages: false
