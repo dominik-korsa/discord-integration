@@ -123,7 +123,7 @@ class DiscordIntegration : JavaPlugin() {
             Bukkit.broadcastMessage(messages.connectionFailed)
             """
                 Missing intents!
-                Please enabled the "Server members intent" and "Message content intent"
+                Please enable the "Server members intent" and "Message content intent"
                 in Discord bot settings:
                 https://discord.com/developers/applications/${error.applicationId}/bot 
                 
