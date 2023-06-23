@@ -23,8 +23,11 @@ import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.entity.Player
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 import java.util.regex.Pattern
 import kotlin.streams.toList
+
 
 class MinecraftFormatter(val plugin: DiscordIntegration) {
     private fun formatRoleColor(role: Role) =
@@ -53,6 +56,20 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
                 .replace("%channel-category%", category?.name ?: plugin.messages.minecraft.noCategory)
                 .replace("%guild-name%", guild.name)
         )
+
+    private fun String.formatTime(time: Instant): String {
+        val zonedTime = time.atZone(plugin.configManager.dateTime.timezone.toZoneId())
+        val shortFormatter = DateTimeFormatter.ofPattern(when (plugin.configManager.dateTime.is24h) {
+            true -> "HH:mm"
+            false -> "hh:mm a"
+        })
+        val longFormatter = DateTimeFormatter.ofPattern(when (plugin.configManager.dateTime.is24h) {
+            true -> "HH:mm:ss"
+            false -> "hh:mm:ss a"
+        })
+        return replace("%time-short%", zonedTime.format(shortFormatter))
+            .replace("%time-long%", zonedTime.format(longFormatter))
+    }
 
     private suspend fun formatDiscordMessageContent(message: Message) = coroutineScope {
         plugin.emojiFormatter
@@ -184,6 +201,7 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
             )
         )
         plugin.messages.minecraft.message
+            .formatTime(message.timestamp)
             .split("%content%")
             .mapAndJoin({
                 TextComponent(
