@@ -1,6 +1,7 @@
 package com.dominikkorsa.discordintegration
 
 import co.aikar.commands.PaperCommandManager
+import com.dominikkorsa.discordintegration.client.Client
 import com.dominikkorsa.discordintegration.command.DiscordIntegrationCommand
 import com.dominikkorsa.discordintegration.compatibility.Compatibility
 import com.dominikkorsa.discordintegration.config.ConfigManager

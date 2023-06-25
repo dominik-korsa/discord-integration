@@ -1,5 +1,6 @@
-package com.dominikkorsa.discordintegration
+package com.dominikkorsa.discordintegration.client
 
+import com.dominikkorsa.discordintegration.DiscordIntegration
 import com.dominikkorsa.discordintegration.exception.MissingIntentsException
 import com.dominikkorsa.discordintegration.utils.getEffectiveEveryonePermissions
 import com.dominikkorsa.discordintegration.utils.orNull
