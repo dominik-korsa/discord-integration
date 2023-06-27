@@ -15,6 +15,7 @@ import com.dominikkorsa.discordintegration.formatter.MinecraftFormatter
 import com.dominikkorsa.discordintegration.linking.Linking
 import com.dominikkorsa.discordintegration.listener.*
 import com.dominikkorsa.discordintegration.luckperms.registerLuckPerms
+import com.dominikkorsa.discordintegration.playerlist.PlayerList
 import com.dominikkorsa.discordintegration.update.UpdateCheckerService
 import com.dominikkorsa.discordintegration.utils.bunchLines
 import com.github.shynixn.mccoroutine.bukkit.launch
@@ -44,8 +45,10 @@ class DiscordIntegration : JavaPlugin() {
     val avatarService = AvatarService(this)
     val db = Db(this)
     val linking = Linking(this)
-    private val lockFileService = LockFileService(this)
+    val playerList = PlayerList(this)
     val updateCheckerService = UpdateCheckerService(this)
+
+    private val lockFileService = LockFileService(this)
     lateinit var configManager: ConfigManager
     lateinit var messages: MessageManager
     private var dynmap: DynmapIntegration? = null
