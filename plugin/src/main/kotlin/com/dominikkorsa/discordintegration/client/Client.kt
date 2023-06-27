@@ -34,7 +34,6 @@ import discord4j.discordjson.json.ApplicationCommandRequest
 import discord4j.gateway.intent.Intent
 import discord4j.gateway.intent.IntentSet
 import discord4j.rest.http.client.ClientException
-import discord4j.rest.util.AllowedMentions
 import discord4j.rest.util.Color
 import discord4j.rest.util.Permission
 import kotlinx.coroutines.async
@@ -47,7 +46,6 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.collect
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.bukkit.Bukkit
-import org.bukkit.entity.Player
 import reactor.core.CorePublisher
 import java.time.Duration
 import java.time.LocalDateTime.now
@@ -56,8 +54,6 @@ import java.time.LocalDateTime.now
 @Suppress("ReactiveStreamsUnusedPublisher")
 class Client(private val plugin: DiscordIntegration) {
     companion object {
-        private val allowedMentionsNone = AllowedMentions.builder().build()
-
         private const val linkCommandName = "link-minecraft"
         private const val profileInfoCommandName = "Minecraft profile info"
     }
@@ -323,7 +319,7 @@ class Client(private val plugin: DiscordIntegration) {
 
     private val webhookRegex = Regex("/api/webhooks/([^/]+)/([^/]+)\$")
 
-    private suspend fun getWebhooks() = gateway?.let { gateway ->
+    suspend fun getWebhooks() = gateway?.let { gateway ->
         plugin.configManager.chat.webhooks.asFlow().map {
             webhookRegex.find(it)?.let { result ->
                 gateway.getWebhookByIdWithToken(
@@ -332,21 +328,6 @@ class Client(private val plugin: DiscordIntegration) {
                 ).awaitFirstOrNull()
             }
         }.filterNotNull()
-    }
-
-    fun getWebhookBuilder(): WebhookExecuteSpec.Builder = WebhookExecuteSpec.builder()
-        .allowedMentions(allowedMentionsNone)
-
-    suspend fun getPlayerWebhookBuilder(player: Player): WebhookExecuteSpec.Builder = getWebhookBuilder()
-        .username(player.name)
-        .avatarUrl(plugin.avatarService.getAvatarUrl(player))
-
-    suspend fun sendWebhook(spec: WebhookExecuteSpec) = coroutineScope {
-        getWebhooks()?.map {
-            async {
-                it.execute(spec).awaitFirstOrNull()
-            }
-        }?.toList()?.awaitAll()
     }
 
     fun getEmojiFormat(name: String) = guildEmojis?.firstNotNullOfOrNull { it.value[name] }

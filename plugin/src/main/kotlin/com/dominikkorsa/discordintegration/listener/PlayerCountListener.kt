@@ -16,6 +16,6 @@ class PlayerCountListener(private val plugin: DiscordIntegration) : Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     suspend fun onPlayerQuit(event: PlayerQuitEvent) {
-        plugin.playerList.onPlayerLeave(event.player)
+        plugin.playerList.onPlayerQuit(event.player)
     }
 }

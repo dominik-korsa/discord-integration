@@ -6,30 +6,29 @@ import me.clip.placeholderapi.PlaceholderAPI
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
-import org.bukkit.event.entity.PlayerDeathEvent
 import java.text.DecimalFormat
 
 class DiscordFormatter(val plugin: DiscordIntegration) {
     private val placeholderApiInstalled
         get() = Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null
 
-    private fun formatDeath(base: String, event: PlayerDeathEvent) = ChatColor.stripColor(base)
+    private fun formatDeath(base: String, player: Player) = ChatColor.stripColor(base)
         .orEmpty()
-        .replace("%player%", event.entity.name)
-        .replace("%pos-x%", event.entity.location.blockX.toString())
-        .replace("%pos-y%", event.entity.location.blockY.toString())
-        .replace("%pos-z%", event.entity.location.blockZ.toString())
+        .replace("%player%", player.name)
+        .replace("%pos-x%", player.location.blockX.toString())
+        .replace("%pos-y%", player.location.blockY.toString())
+        .replace("%pos-z%", player.location.blockZ.toString())
 
-    fun formatDeathMessage(event: PlayerDeathEvent): String {
-        val baseMessage = event.deathMessage?.let {
+    fun formatDeathMessage(deathMessage: String?, player: Player): String {
+        val baseMessage = deathMessage?.let {
             plugin.messages.discord.death
                 .replace("%death-message%", it)
         } ?: plugin.messages.discord.deathFallback
-        return formatDeath(baseMessage, event)
+        return formatDeath(baseMessage, player)
     }
 
-    fun formatDeathEmbedTitle(event: PlayerDeathEvent) =
-        formatDeath(plugin.messages.discord.deathEmbedTitle, event)
+    fun formatDeathEmbedTitle(player: Player) =
+        formatDeath(plugin.messages.discord.deathEmbedTitle, player)
 
     fun formatActivity(
         players: Collection<Player>,
