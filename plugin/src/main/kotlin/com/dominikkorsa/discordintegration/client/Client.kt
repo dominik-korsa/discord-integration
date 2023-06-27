@@ -2,10 +2,7 @@ package com.dominikkorsa.discordintegration.client
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
 import com.dominikkorsa.discordintegration.exception.MissingIntentsException
-import com.dominikkorsa.discordintegration.utils.getEffectiveEveryonePermissions
-import com.dominikkorsa.discordintegration.utils.orNull
-import com.dominikkorsa.discordintegration.utils.swapped
-import com.dominikkorsa.discordintegration.utils.tryCast
+import com.dominikkorsa.discordintegration.utils.*
 import com.google.common.collect.ImmutableMap
 import discord4j.common.close.CloseException
 import discord4j.common.store.Store
@@ -13,6 +10,8 @@ import discord4j.common.store.impl.LocalStoreLayout
 import discord4j.common.util.Snowflake
 import discord4j.core.DiscordClient
 import discord4j.core.GatewayDiscordClient
+import discord4j.core.event.EventDispatcher
+import discord4j.core.event.domain.Event
 import discord4j.core.event.domain.guild.EmojisUpdateEvent
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
@@ -36,14 +35,11 @@ import discord4j.gateway.intent.IntentSet
 import discord4j.rest.http.client.ClientException
 import discord4j.rest.util.Color
 import discord4j.rest.util.Permission
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactive.collect
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.bukkit.Bukkit
 import reactor.core.CorePublisher
@@ -56,6 +52,29 @@ class Client(private val plugin: DiscordIntegration) {
     companion object {
         private const val linkCommandName = "link-minecraft"
         private const val profileInfoCommandName = "Minecraft profile info"
+
+        private class AddListenersContext(
+            private val coroutineScope: CoroutineScope,
+            private val eventDispatcher: EventDispatcher,
+            private val deferredList: MutableList<Deferred<Unit>>,
+        ) {
+            fun <T: Event> on(event: Class<T>, listener: suspend (event: T) -> Unit) {
+                deferredList.add(coroutineScope.async {
+                    eventDispatcher
+                        .on(event)
+                        .asFlow()
+                        .collect {
+                            listener(it)
+                        }
+                })
+            }
+        }
+
+        private suspend fun GatewayDiscordClient.awaitListeners(callback: AddListenersContext.() -> Unit) = coroutineScope {
+            val deferredList: MutableList<Deferred<Unit>> = mutableListOf()
+            AddListenersContext(this, eventDispatcher, deferredList).apply(callback)
+            deferredList.awaitAll()
+        }
     }
 
     private var gateway: GatewayDiscordClient? = null
@@ -110,80 +129,67 @@ class Client(private val plugin: DiscordIntegration) {
         plugin.logger.info(log)
     }
 
-    suspend fun initListeners() = coroutineScope {
+    suspend fun initListeners() {
         gateway?.apply {
             val allowedConsoleChannels = checkForConsolePermissionIssues()
-            awaitAll(
-                async {
-                    eventDispatcher
-                        .on(MessageCreateEvent::class.java)
-                        .asFlow()
-                        .collect {
-                            val chatChannels = plugin.configManager.chat.channels.map(Snowflake::of)
-                            val consoleChannels = plugin.configManager.chat.consoleChannels.map(Snowflake::of)
-                            val channelId = it.message.channelId
-                            when {
-                                chatChannels.contains(channelId) -> onSyncedMessage(it.message)
-                                consoleChannels.contains(channelId) -> onConsoleMessage(
-                                    it.message,
-                                    allowedConsoleChannels
-                                )
-                                else -> messagesDebug(
-                                    "Ignoring message ${it.message.id.asString()}, channel ${
-                                        it.message.channelId.asString()
-                                    } not configured in chat.channels or chat.console-channels"
-                                )
-                            }
-                        }
-                },
-                async {
-                    eventDispatcher.on(GuildCreateEvent::class.java)
-                        .collect {
-                            guildEmojis?.set(it.guild.id, mapEmojis(it.guild.emojis.collectList().awaitFirst()))
-                            val roles = getLinkingRoles(it.guild)
-                            it.guild.members
-                                .asFlow()
-                                .map { member -> async { updateMember(member, roles) } }
-                                .toList()
-                                .awaitAll()
-                            registerCommands(it.guild.id)
-                        }
-                },
-                async {
-                    eventDispatcher.on(GuildDeleteEvent::class.java)
-                        .collect { guildEmojis?.remove(it.guildId) }
-                },
-                async {
-                    eventDispatcher.on(EmojisUpdateEvent::class.java)
-                        .collect { guildEmojis?.set(it.guildId, mapEmojis(it.emojis)) }
-                },
-                async {
-                    eventDispatcher.on(ChatInputInteractionEvent::class.java)
-                        .collect {
-                            when (it.commandName) {
-                                linkCommandName -> handleLinkMinecraftCommand(it)
-                                else -> it.deleteReply().awaitFirstOrNull()
-                            }
-                        }
-                },
-                async {
-                    eventDispatcher.on(UserInteractionEvent::class.java)
-                        .collect {
-                            when (it.commandName) {
-                                profileInfoCommandName -> handleProfileInfoCommand(it)
-                                else -> it.deleteReply().awaitFirstOrNull()
-                            }
-                        }
-                },
-                async {
-                    eventDispatcher.on(MemberJoinEvent::class.java)
-                        .collect {
-                            val roles = getLinkingRoles(it.guild.awaitFirst())
-                            updateMember(it.member, roles)
-                        }
+            awaitListeners {
+                on(MessageCreateEvent::class.java) {
+                    onMessageCreate(it.message, allowedConsoleChannels)
                 }
+                on(GuildCreateEvent::class.java) {
+                    onGuildCreate(it.guild)
+                }
+                on(GuildDeleteEvent::class.java) {
+                    guildEmojis?.remove(it.guildId)
+                }
+                on(EmojisUpdateEvent::class.java) {
+                    guildEmojis?.set(it.guildId, mapEmojis(it.emojis))
+                }
+                on(ChatInputInteractionEvent::class.java) {
+                    when (it.commandName) {
+                        linkCommandName -> handleLinkMinecraftCommand(it)
+                        else -> it.deleteReply().awaitFirstOrNull()
+                    }
+                }
+                on(UserInteractionEvent::class.java) {
+                    when (it.commandName) {
+                        profileInfoCommandName -> handleProfileInfoCommand(it)
+                        else -> it.deleteReply().awaitFirstOrNull()
+                    }
+                }
+                on(MemberJoinEvent::class.java) {
+                    val roles = getLinkingRoles(it.guild.awaitFirst())
+                    updateMember(it.member, roles)
+                }
+            }
+        }
+    }
+
+    private suspend fun onMessageCreate(message: Message, allowedConsoleChannels: List<Snowflake>) {
+        val chatChannels = plugin.configManager.chat.channels.map(Snowflake::of)
+        val consoleChannels = plugin.configManager.chat.consoleChannels.map(Snowflake::of)
+        val channelId = message.channelId
+        when {
+            chatChannels.contains(channelId) -> onSyncedMessage(message)
+            consoleChannels.contains(channelId) -> onConsoleMessage(
+                message,
+                allowedConsoleChannels
+            )
+            else -> messagesDebug(
+                "Ignoring message ${message.id.asString()}, channel ${
+                    message.channelId.asString()
+                } not configured in chat.channels or chat.console-channels"
             )
         }
+    }
+
+    private suspend fun onGuildCreate(guild: Guild) = coroutineScope {
+        guildEmojis?.set(guild.id, mapEmojis(guild.emojis.collectList().awaitFirst()))
+        val roles = getLinkingRoles(guild)
+        guild.members
+            .asFlow()
+            .mapConcurrently { member -> updateMember(member, roles) }
+        registerCommands(guild.id)
     }
 
     private suspend fun onSyncedMessage(message: Message) {

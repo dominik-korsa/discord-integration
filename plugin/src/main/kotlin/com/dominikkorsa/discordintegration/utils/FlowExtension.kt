@@ -3,9 +3,10 @@ package com.dominikkorsa.discordintegration.utils
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlin.time.Duration
 
-@OptIn(FlowPreview::class)
 fun Flow<String>.bunchLines(
     timeout: Duration,
     maxLength: Int,
@@ -35,4 +36,10 @@ fun Flow<String>.bunchLines(
             start()
         }
     }
+}
+
+suspend fun <T, R> Flow<T>.mapConcurrently(transform: suspend (T) -> R) = coroutineScope {
+    map { el -> async { transform(el) } }
+        .toList()
+        .awaitAll()
 }
