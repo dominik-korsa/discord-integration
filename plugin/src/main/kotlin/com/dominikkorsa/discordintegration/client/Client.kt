@@ -19,7 +19,6 @@ import discord4j.core.event.domain.guild.MemberJoinEvent
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.event.domain.interaction.UserInteractionEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
-import discord4j.core.`object`.command.ApplicationCommandOption
 import discord4j.core.`object`.entity.*
 import discord4j.core.`object`.entity.channel.Channel
 import discord4j.core.`object`.entity.channel.GuildMessageChannel
@@ -27,9 +26,9 @@ import discord4j.core.`object`.entity.channel.TopLevelGuildMessageChannel
 import discord4j.core.`object`.presence.ClientActivity
 import discord4j.core.`object`.presence.ClientPresence
 import discord4j.core.`object`.presence.Status
-import discord4j.core.spec.*
-import discord4j.discordjson.json.ApplicationCommandOptionData
-import discord4j.discordjson.json.ApplicationCommandRequest
+import discord4j.core.spec.EmbedCreateSpec
+import discord4j.core.spec.GuildMemberEditSpec
+import discord4j.core.spec.MessageCreateSpec
 import discord4j.gateway.intent.Intent
 import discord4j.gateway.intent.IntentSet
 import discord4j.rest.http.client.ClientException
@@ -50,9 +49,6 @@ import java.time.LocalDateTime.now
 @Suppress("ReactiveStreamsUnusedPublisher")
 class Client(private val plugin: DiscordIntegration) {
     companion object {
-        private const val linkCommandName = "link-minecraft"
-        private const val profileInfoCommandName = "Minecraft profile info"
-
         private class AddListenersContext(
             private val coroutineScope: CoroutineScope,
             private val eventDispatcher: EventDispatcher,
@@ -146,16 +142,10 @@ class Client(private val plugin: DiscordIntegration) {
                     guildEmojis?.set(it.guildId, mapEmojis(it.emojis))
                 }
                 on(ChatInputInteractionEvent::class.java) {
-                    when (it.commandName) {
-                        linkCommandName -> handleLinkMinecraftCommand(it)
-                        else -> it.deleteReply().awaitFirstOrNull()
-                    }
+                    plugin.discordCommands.handleChatInputInteraction(it)
                 }
                 on(UserInteractionEvent::class.java) {
-                    when (it.commandName) {
-                        profileInfoCommandName -> handleProfileInfoCommand(it)
-                        else -> it.deleteReply().awaitFirstOrNull()
-                    }
+                    plugin.discordCommands.handleUserInteraction(it)
                 }
                 on(MemberJoinEvent::class.java) {
                     val roles = getLinkingRoles(it.guild.awaitFirst())
@@ -226,90 +216,6 @@ class Client(private val plugin: DiscordIntegration) {
         plugin.runConsoleCommand(message.content)
     }
 
-    private suspend fun handleLinkMinecraftCommand(event: ChatInputInteractionEvent) {
-        event.deferReply().withEphemeral(true).awaitFirstOrNull()
-        val player = plugin.linking.link(
-            event.getOption("code").get().value.get().asString(),
-            event.interaction.user
-        )
-
-        if (player == null) {
-            event.editReply(
-                InteractionReplyEditSpec.create()
-                    .withEmbeds(
-                        EmbedCreateSpec.create()
-                            .withTitle(plugin.messages.discord.linkingUnknownCodeTitle)
-                            .withDescription(plugin.messages.discord.linkingUnknownCodeContent)
-                            .withColor(Color.of(0xef476f))
-                    )
-            ).awaitFirstOrNull()
-        } else {
-            event.editReply(
-                InteractionReplyEditSpec.create()
-                    .withEmbeds(
-                        EmbedCreateSpec.create()
-                            .withTitle(plugin.messages.discord.linkingSuccessTitle)
-                            .withThumbnail(plugin.avatarService.getAvatarUrl(player))
-                            .withFields(
-                                EmbedCreateFields.Field.of(
-                                    plugin.messages.discord.linkingSuccessPlayerNameHeader,
-                                    player.name,
-                                    false
-                                )
-                            )
-                            .withColor(Color.of(0x06d6a0))
-                    )
-            ).awaitFirstOrNull()
-        }
-    }
-
-    private suspend fun handleProfileInfoCommand(event: UserInteractionEvent) {
-        event.deferReply().withEphemeral(true).awaitFirstOrNull()
-        val playerId = plugin.db.playerIdOfMember(event.targetId)
-        if (playerId == null) {
-            event.editReply(
-                InteractionReplyEditSpec.create()
-                    .withEmbeds(
-                        EmbedCreateSpec.create()
-                            .withTitle(plugin.messages.discord.profileInfoNotLinked)
-                            .withColor(Color.of(0xef476f))
-                    )
-            ).awaitFirstOrNull()
-            return
-        }
-
-        val player = Bukkit.getOfflinePlayer(playerId)
-        val name = player.name
-        if (name == null) {
-            event.editReply(
-                InteractionReplyEditSpec.create()
-                    .withEmbeds(
-                        EmbedCreateSpec.create()
-                            .withTitle(plugin.messages.discord.profileInfoError)
-                            .withColor(Color.of(0xef476f))
-                    )
-            ).awaitFirstOrNull()
-            return
-        }
-
-        event.editReply(
-            InteractionReplyEditSpec.create()
-                .withEmbeds(
-                    EmbedCreateSpec.create()
-                        .withTitle(plugin.messages.discord.profileInfoTitle)
-                        .withFields(
-                            EmbedCreateFields.Field.of(
-                                plugin.messages.discord.profileInfoPlayerNameHeader,
-                                name,
-                                false
-                            )
-                        )
-                        .withThumbnail(plugin.avatarService.getAvatarUrl(playerId, name))
-                        .withColor(Color.of(0x06d6a0))
-                )
-        ).awaitFirstOrNull()
-    }
-
     suspend fun updateActivity() {
         gateway?.apply {
             val players = Bukkit.getOnlinePlayers()
@@ -347,26 +253,7 @@ class Client(private val plugin: DiscordIntegration) {
     }
 
     private suspend fun registerCommands(guildId: Snowflake) {
-        val linkMinecraftCommand = ApplicationCommandRequest.builder()
-            .name(linkCommandName)
-            .description("Link Minecraft account to your Discord account")
-            .addOption(
-                ApplicationCommandOptionData.builder()
-                    .name("code")
-                    .description("One-time code")
-                    .type(ApplicationCommandOption.Type.STRING.value)
-                    .required(true)
-                    .build()
-            )
-            .build()
-
-        val userInfoCommand = ApplicationCommandRequest.builder()
-            .type(2)
-            .name(profileInfoCommandName)
-            .build()
-
-        val commands =
-            if (plugin.configManager.linking.enabled) listOf(linkMinecraftCommand, userInfoCommand) else listOf()
+        val commands = plugin.discordCommands.createCommands()
 
         gateway?.restClient?.let {
             it.applicationService.bulkOverwriteGuildApplicationCommand(

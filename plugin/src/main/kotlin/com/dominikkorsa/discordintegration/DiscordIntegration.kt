@@ -2,6 +2,7 @@ package com.dominikkorsa.discordintegration
 
 import co.aikar.commands.PaperCommandManager
 import com.dominikkorsa.discordintegration.client.Client
+import com.dominikkorsa.discordintegration.client.DiscordCommands
 import com.dominikkorsa.discordintegration.client.Webhooks
 import com.dominikkorsa.discordintegration.command.DiscordIntegrationCommand
 import com.dominikkorsa.discordintegration.compatibility.Compatibility
@@ -41,6 +42,7 @@ import kotlin.time.toKotlinDuration
 class DiscordIntegration : JavaPlugin() {
     val client = Client(this)
     val webhooks = Webhooks(this)
+    val discordCommands = DiscordCommands(this)
     val discordFormatter = DiscordFormatter(this)
     val minecraftFormatter = MinecraftFormatter(this)
     val emojiFormatter = EmojiFormatter(this)

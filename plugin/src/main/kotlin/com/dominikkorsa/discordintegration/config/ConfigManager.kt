@@ -93,7 +93,7 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
     }
 
     class DateTime(private val section: Section) {
-        val timezone get() = section.getOptionalString("timezone").orNull()?.let {
+        val timezone: TimeZone get() = section.getOptionalString("timezone").orNull()?.let {
             TimeZone.getTimeZone(it)
         } ?: TimeZone.getDefault()
         val is24h get() = section.requireBoolean("24h")
