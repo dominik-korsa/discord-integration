@@ -2,7 +2,7 @@ package com.dominikkorsa.discordintegration.client
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
 import com.dominikkorsa.discordintegration.config.ConfigManager
-import discord4j.core.spec.EmbedCreateSpec
+import com.dominikkorsa.discordintegration.utils.addEmbed
 import discord4j.core.spec.WebhookExecuteSpec
 import discord4j.rest.util.AllowedMentions
 import kotlinx.coroutines.async
@@ -16,12 +16,6 @@ import org.bukkit.entity.Player
 class Webhooks(private val plugin: DiscordIntegration) {
     companion object {
         private val allowedMentionsNone = AllowedMentions.builder().build()
-
-        private fun WebhookExecuteSpec.Builder.addEmbed(build: EmbedCreateSpec.Builder.() -> Unit) {
-            addEmbed(
-                EmbedCreateSpec.builder().apply(build).build()
-            )
-        }
     }
 
     private suspend fun sendWebhook(

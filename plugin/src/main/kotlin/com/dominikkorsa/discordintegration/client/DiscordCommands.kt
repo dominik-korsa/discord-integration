@@ -1,14 +1,14 @@
 package com.dominikkorsa.discordintegration.client
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
+import com.dominikkorsa.discordintegration.utils.addOption
+import com.dominikkorsa.discordintegration.utils.createApplicationCommand
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.event.domain.interaction.UserInteractionEvent
 import discord4j.core.`object`.command.ApplicationCommandOption
 import discord4j.core.spec.EmbedCreateFields
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.core.spec.InteractionReplyEditSpec
-import discord4j.discordjson.json.ApplicationCommandOptionData
-import discord4j.discordjson.json.ApplicationCommandRequest
 import discord4j.discordjson.json.ImmutableApplicationCommandRequest
 import discord4j.rest.util.Color
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -121,23 +121,21 @@ class DiscordCommands(private val plugin: DiscordIntegration) {
     fun createCommands(): List<ImmutableApplicationCommandRequest> {
         if (!plugin.configManager.linking.enabled) return listOf()
 
-        val linkMinecraftCommand = ApplicationCommandRequest.builder()
-            .name(linkCommandName)
-            .description("Link Minecraft account to your Discord account")
-            .addOption(
-                ApplicationCommandOptionData.builder()
-                    .name("code")
-                    .description("One-time code")
-                    .type(ApplicationCommandOption.Type.STRING.value)
-                    .required(true)
-                    .build()
-            )
-            .build()
+        val linkMinecraftCommand = createApplicationCommand {
+            name(linkCommandName)
+            description("Link Minecraft account to your Discord account")
+            addOption {
+                name("code")
+                description("One-time code")
+                type(ApplicationCommandOption.Type.STRING.value)
+                required(true)
+            }
+        }
 
-        val userInfoCommand = ApplicationCommandRequest.builder()
-            .type(2)
-            .name(profileInfoCommandName)
-            .build()
+        val userInfoCommand = createApplicationCommand {
+            type(2)
+            name(profileInfoCommandName)
+        }
 
         return listOf(linkMinecraftCommand, userInfoCommand)
     }
