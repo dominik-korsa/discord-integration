@@ -42,8 +42,6 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.bukkit.Bukkit
 import reactor.core.CorePublisher
-import java.time.Duration
-import java.time.LocalDateTime.now
 
 
 @Suppress("ReactiveStreamsUnusedPublisher")
@@ -182,21 +180,13 @@ class Client(private val plugin: DiscordIntegration) {
         registerCommands(guild.id)
     }
 
-    private suspend fun onSyncedMessage(message: Message) {
+    private fun onSyncedMessage(message: Message) {
         messagesDebug("Received message ${message.id.asString()} on channel ${message.channelId.asString()}")
         when {
             !message.author.isPresent -> messagesDebug("Ignoring message, cannot get message author")
             message.author.get().isBot -> messagesDebug("Ignoring message, author is a bot")
             message.content.isNullOrEmpty() -> messagesDebug("Ignoring message, content empty")
-            else -> {
-                val timeStart = now()
-                plugin.broadcastDiscordMessage(message)
-                messagesDebug(
-                    "Processing chat message took ${
-                        Duration.between(timeStart, now()).toMillis()
-                    } milliseconds"
-                )
-            }
+            else -> plugin.raiseDiscordMessageEvent(message)
         }
     }
 
@@ -272,6 +262,9 @@ class Client(private val plugin: DiscordIntegration) {
             throw exception
         }
     }
+
+    suspend fun getUser(userId: Snowflake) =
+        gateway?.getUserById(userId)?.handleNotFound()
 
     suspend fun getMember(guildId: Snowflake, userId: Snowflake) =
         gateway?.getMemberById(guildId, userId)?.handleNotFound()

@@ -1,5 +1,6 @@
 package com.dominikkorsa.discordintegration.plugin.linking
 
+import com.dominikkorsa.discordintegration.api.v1.LinkingCode
 import kotlinx.coroutines.delay
 import org.bukkit.entity.Player
 import java.time.Duration
@@ -7,23 +8,22 @@ import java.time.LocalDateTime.now
 import kotlin.time.toKotlinDuration
 
 class LinkingCode(
-    val code: String,
-    val player: Player
-) {
+    override val code: String,
+    override val player: Player
+): LinkingCode {
     private val validUntil = now() + Duration.ofMinutes(10)
 
     private var used = false
 
-    fun isValid(): Boolean {
-        return !used && validUntil.isAfter(now())
-    }
+    override val isValid: Boolean
+        get() = !used && validUntil.isAfter(now())
 
-    suspend fun waitUntilInvalid() {
-        if (!isValid()) return
+    internal suspend fun waitUntilInvalid() {
+        if (!isValid) return
         delay(Duration.between(now(), validUntil).toKotlinDuration())
     }
 
-    fun use() {
+    internal fun use() {
         used = true
     }
 }

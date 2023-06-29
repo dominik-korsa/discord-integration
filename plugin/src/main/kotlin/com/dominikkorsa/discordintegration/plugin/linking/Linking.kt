@@ -1,7 +1,9 @@
 package com.dominikkorsa.discordintegration.plugin.linking
 
+import com.dominikkorsa.discordintegration.api.v1.Linking
 import com.dominikkorsa.discordintegration.plugin.DiscordIntegration
 import com.github.shynixn.mccoroutine.bukkit.launch
+import discord4j.common.util.Snowflake
 import discord4j.core.`object`.entity.User
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
@@ -10,13 +12,15 @@ import kotlinx.coroutines.flow.filter
 import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
+import java.util.*
 
 
-class Linking(private val plugin: DiscordIntegration) {
+class Linking(private val plugin: DiscordIntegration) : Linking {
     private val linkingCodes = HashMap<String, LinkingCode>()
     private val linkingCodeQueue = Channel<LinkingCode>(8192)
 
-    val mandatory get() = plugin.configManager.linking.enabled && plugin.configManager.linking.mandatory
+    override val isMandatory get() = plugin.configManager.linking.enabled && plugin.configManager.linking.mandatory
+
     fun startJob() {
         plugin.launch {
             linkingCodeQueue.consumeEach {
@@ -26,7 +30,7 @@ class Linking(private val plugin: DiscordIntegration) {
         }
     }
 
-    fun generateLinkingCode(player: Player): LinkingCode {
+    override fun generateLinkingCode(player: Player): LinkingCode {
         val allowedChars = ('a'..'z') + ('0'..'9')
         var code: String
         do {
@@ -43,38 +47,67 @@ class Linking(private val plugin: DiscordIntegration) {
         return linkingCode
     }
 
-    suspend fun link(code: String, user: User): Player? {
-        val linkingCode = linkingCodes[code.lowercase()] ?: return null
-        if (!linkingCode.isValid()) return null
-        linkingCode.use()
-        plugin.db.setDiscordId(linkingCode.player.uniqueId, user.id)?.let { (previousPlayerId, previousDiscordId) ->
+    override suspend fun link(offlinePlayer: OfflinePlayer, user: User) {
+        plugin.db.setDiscordId(offlinePlayer.uniqueId, user.id)?.let { (previousPlayerId, previousDiscordId) ->
             previousPlayerId?.let(Bukkit::getPlayer)?.let {
                 plugin.runTask {
-                    it.kickPlayer(plugin.minecraftFormatter.formatClaimedByOtherMessage(linkingCode.player, user))
+                    it.kickPlayer(plugin.minecraftFormatter.formatClaimedByOtherMessage(offlinePlayer, user))
                 }
             }
             previousDiscordId?.let { plugin.client.updateMember(it) }
             plugin.client.updateMember(user.id)
         }
-        linkingCode.player.sendMessage(plugin.minecraftFormatter.formatLinkingSuccess(user))
+        offlinePlayer.player?.sendMessage(plugin.minecraftFormatter.formatLinkingSuccess(user))
+    }
+
+    override suspend fun link(code: String, user: User): Player? {
+        val linkingCode = linkingCodes[code.lowercase()] ?: return null
+        if (!linkingCode.isValid) return null
+        linkingCode.use()
+        link(linkingCode.player, user)
         return linkingCode.player
     }
 
-    suspend fun unlink(player: OfflinePlayer): Boolean {
-        if (mandatory) player.player?.let(::kickPlayer)
-        return plugin.db.resetDiscordId(player.uniqueId)?.also { plugin.client.updateMember(it) } != null
+    override suspend fun link(code: String, userId: String): Player? {
+        val user = plugin.client.getUser(Snowflake.of(userId))
+            ?: throw Error("User with id \"$userId\" not found")
+        return link(code, user)
     }
+
+    override suspend fun link(offlinePlayer: OfflinePlayer, userId: String) {
+        val user = plugin.client.getUser(Snowflake.of(userId))
+            ?: throw Error("User with id \"$userId\" not found")
+        return link(offlinePlayer, user)
+    }
+
+    override suspend fun unlink(player: OfflinePlayer): UnlinkResult {
+        if (isMandatory) player.player?.let(::kickPlayer)
+        return UnlinkResult(
+            plugin.db.resetDiscordId(player.uniqueId)?.also { plugin.client.updateMember(it) }
+        )
+    }
+
+    override fun getLinkedUserId(playerId: UUID) =
+        plugin.db.getDiscordId(playerId)?.asString()
+
+    override suspend fun getLinkedUser(playerId: UUID) =
+        plugin.db.getDiscordId(playerId)
+            ?.let { plugin.client.getUser(it) }
+
+    override fun getLinkedPlayer(discordId: String) =
+        plugin.db.playerIdOfMember(Snowflake.of(discordId))
+            ?.let(Bukkit::getOfflinePlayer)
 
     private fun kickPlayer(player: Player) {
         val code = plugin.linking.generateLinkingCode(player)
         player.kickPlayer(plugin.messages.minecraft.kickMessage.replace("%code%", code.code))
     }
 
-    suspend fun kickUnlinked() {
-        if (!mandatory) return
+    internal suspend fun kickUnlinked() {
+        if (!isMandatory) return
         Bukkit.getOnlinePlayers().asFlow().filter(::shouldKick).collect(::kickPlayer)
     }
 
-    fun shouldKick(player: Player) =
-        mandatory && !player.hasPermission("discordintegration.bypasslinking") && plugin.db.getDiscordId(player.uniqueId) == null
+    internal fun shouldKick(player: Player) =
+        isMandatory && !player.hasPermission("discordintegration.bypasslinking") && plugin.db.getDiscordId(player.uniqueId) == null
 }

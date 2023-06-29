@@ -12,14 +12,16 @@ ext {
 }
 
 repositories {
-    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
     maven { url = 'https://repo.aikar.co/content/groups/aikar/' }
     maven { url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
     maven { url = 'https://repo.mikeprimm.com/' }
+    maven { url = 'https://repo.dk-gl.eu/snapshots' }
 }
 
 dependencies {
     implementation project(":compatibility")
+
+    implementation "com.dominikkorsa.discordintegration:api:1.0-rc.1"
 
     compileOnly 'org.spigotmc:spigot-api:1.8-R0.1-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.11.3'
@@ -27,7 +29,7 @@ dependencies {
     compileOnly 'org.dynmap:dynmap-api:2.0'
     compileOnly 'net.luckperms:api:5.4'
 
-    implementation 'com.discord4j:discord4j-core:3.3.0-M2'
+    implementation "com.discord4j:discord4j-core:$discord4j_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.6.2'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.2'

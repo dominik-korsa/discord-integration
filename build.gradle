@@ -5,9 +5,12 @@ plugins {
 allprojects {
     apply plugin: 'kotlin'
 
+    ext.discord4j_version = '3.3.0-M2'
+
     repositories {
         mavenCentral()
         maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+        maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
 
     dependencies {

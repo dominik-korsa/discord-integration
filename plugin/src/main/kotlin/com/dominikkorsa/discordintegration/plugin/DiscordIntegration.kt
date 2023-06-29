@@ -1,6 +1,8 @@
 package com.dominikkorsa.discordintegration.plugin
 
 import co.aikar.commands.PaperCommandManager
+import com.dominikkorsa.discordintegration.api.v1.DiscordIntegrationMessageEvent
+import com.dominikkorsa.discordintegration.api.v1.DiscordIntegrationServiceV1
 import com.dominikkorsa.discordintegration.compatibility.Compatibility
 import com.dominikkorsa.discordintegration.plugin.client.Client
 import com.dominikkorsa.discordintegration.plugin.client.DiscordCommands
@@ -18,6 +20,7 @@ import com.dominikkorsa.discordintegration.plugin.linking.Linking
 import com.dominikkorsa.discordintegration.plugin.listener.*
 import com.dominikkorsa.discordintegration.plugin.luckperms.registerLuckPerms
 import com.dominikkorsa.discordintegration.plugin.playerlist.PlayerList
+import com.dominikkorsa.discordintegration.plugin.service.ServiceV1
 import com.dominikkorsa.discordintegration.plugin.update.UpdateCheckerService
 import com.dominikkorsa.discordintegration.plugin.utils.bunchLines
 import com.github.shynixn.mccoroutine.bukkit.launch
@@ -35,6 +38,7 @@ import org.bstats.bukkit.Metrics
 import org.bstats.charts.SimplePie
 import org.bukkit.Bukkit
 import org.bukkit.event.Listener
+import org.bukkit.plugin.ServicePriority
 import org.bukkit.plugin.java.JavaPlugin
 import java.time.Duration
 import kotlin.time.toKotlinDuration
@@ -78,6 +82,7 @@ class DiscordIntegration : JavaPlugin() {
 
         initCommands()
         registerAllEvents()
+        registerService()
         startLogging()
         if (registerLuckPerms(this)) logger.info("Luck Perms integration enabled")
         else logger.info("Luck Perms not available")
@@ -171,8 +176,13 @@ class DiscordIntegration : JavaPlugin() {
         registerSuspendingEvents(PlayerCountListener(this))
         registerSuspendingEvents(ChatListener(this))
         registerSuspendingEvents(DeathListener(this))
+        registerSuspendingEvents(MessageEventListener(this))
         registerEvents(LoginListener(this))
         if (dynmap != null) registerSuspendingEvents(DynmapChatListener(this))
+    }
+
+    fun raiseDiscordMessageEvent(message: Message) {
+        Bukkit.getPluginManager().callEvent(DiscordIntegrationMessageEvent(message))
     }
 
     suspend fun broadcastDiscordMessage(message: Message) {
@@ -193,7 +203,7 @@ class DiscordIntegration : JavaPlugin() {
     }
 
     private fun showWarnings() {
-        if (!Bukkit.getOnlineMode() && linking.mandatory) {
+        if (!Bukkit.getOnlineMode() && linking.isMandatory) {
             """
                 **** SERIOUS SECURITY ISSUE:
                 Server is running in offline mode and mandatory linking is enabled
@@ -242,5 +252,14 @@ class DiscordIntegration : JavaPlugin() {
 
     fun runTask(fn: () -> Unit) {
         Bukkit.getScheduler().runTask(this, Runnable(fn))
+    }
+
+    private fun registerService() {
+        server.servicesManager.register(
+            DiscordIntegrationServiceV1::class.java,
+            ServiceV1(this),
+            this,
+            ServicePriority.Normal
+        )
     }
 }

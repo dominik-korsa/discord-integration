@@ -61,5 +61,10 @@
       <option name="name" value="maven5" />
       <option name="url" value="https://repo.mikeprimm.com/" />
     </remote-repository>
+    <remote-repository>
+      <option name="id" value="maven6" />
+      <option name="name" value="maven6" />
+      <option name="url" value="https://repo.dk-gl.eu/snapshots" />
+    </remote-repository>
   </component>
 </project>

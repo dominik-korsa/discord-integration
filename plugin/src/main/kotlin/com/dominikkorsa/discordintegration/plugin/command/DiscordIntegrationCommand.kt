@@ -33,7 +33,7 @@ class DiscordIntegrationCommand(val plugin: DiscordIntegration): BaseCommand() {
     fun onUnlink(sender: Player) {
         plugin.launch {
             sender.sendMessage(
-                when (plugin.linking.unlink(sender)) {
+                when (plugin.linking.unlink(sender).wasLinked) {
                     true -> plugin.messages.commands.unlinkSuccess
                     false -> plugin.messages.commands.alreadyUnlinked
                 }

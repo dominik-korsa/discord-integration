@@ -22,7 +22,7 @@ import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
-import org.bukkit.entity.Player
+import org.bukkit.OfflinePlayer
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.regex.Pattern
@@ -232,7 +232,7 @@ class MinecraftFormatter(val plugin: DiscordIntegration) {
             }
         })
 
-    fun formatClaimedByOtherMessage(player: Player, user: User) = plugin.messages.minecraft.linkingClaimedByOther
+    fun formatClaimedByOtherMessage(player: OfflinePlayer, user: User) = plugin.messages.minecraft.linkingClaimedByOther
         .replace("%player-name%", player.name)
         .replace("%user-tag%", user.tag)
 

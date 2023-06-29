@@ -9,6 +9,6 @@ import org.bukkit.event.entity.PlayerDeathEvent
 class DeathListener(private val plugin: DiscordIntegration) : Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     suspend fun onDeath(event: PlayerDeathEvent) {
-        plugin.webhooks.sendDeathMessage(event.deathMessage, event.entity)
+        plugin.webhooks.sendDeathMessage(event.entity, event.deathMessage)
     }
 }

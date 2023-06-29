@@ -69,7 +69,7 @@ class Webhooks(private val plugin: DiscordIntegration) {
         }
     }
 
-    suspend fun sendDeathMessage(deathMessage: String?, player: Player) {
+    suspend fun sendDeathMessage(player: Player, deathMessage: String?) {
         val embedConfig = plugin.configManager.chat.death
         if (!embedConfig.enabled) return
 
