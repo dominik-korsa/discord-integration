@@ -68,9 +68,9 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
             val enabled get() = section.requireBoolean("enabled")
         }
 
-        val channels get() = section.requireStringList("channels")
-        val webhooks get() = section.requireStringList("webhooks")
-        val consoleChannels get() = section.requireStringList("console-channels")
+        val channels get() = section.requireStringList("channels", "CHANNEL_ID_HERE")
+        val webhooks get() = section.requireStringList("webhooks", "WEBHOOK_ID_HERE")
+        val consoleChannels get() = section.requireStringList("console-channels", "CHANNEL_ID_HERE")
         val avatarOfflineMode get() = section.requireBoolean("avatar.offline-mode")
         val avatarUrl get() = section.requireTrimmedString("avatar.url")
         val messages get() = ChatMessages(section.getSection("messages"))
@@ -92,8 +92,8 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
     class Linking(private val section: Section) {
         val enabled get() = section.requireBoolean("enabled")
         val mandatory get() = section.requireBoolean("mandatory")
-        val linkedRoles get() = section.requireStringList("linked-roles")
-        val notLinkedRoles get() = section.requireStringList("not-linked-roles")
+        val linkedRoles get() = section.requireStringList("linked-roles", "ROLE_ID_HERE")
+        val notLinkedRoles get() = section.requireStringList("not-linked-roles", "ROLE_ID_HERE")
         val syncNicknames get() = section.requireBoolean("sync-nicknames")
     }
 
@@ -126,7 +126,7 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
                 ?: throw Exception("debug.log-cancelled-chat-events config field only accepts values of: `disable`, `auto`, `all`")
     }
 
-    val discordToken get() = config.getString("discord-token")?.trim()
+    val discordToken get() = config.getTrimmedString("discord-token", "DISCORD_TOKEN_HERE")
 
     val chat get() = Chat(config.getSection("chat"))
     val activity get() = Activity(config.getSection("activity"))
