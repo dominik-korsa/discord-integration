@@ -1,40 +1,57 @@
-# Don't edit file-version yourself unless you know what you are doing!
+# Don't edit file-version yourself, it will be changed automatically
 file-version: 8
 
-# Put your Discord token here:
-discord-token:
+# Discord bot token
+# KEEP IT SECRET - SOMEONE WITH ACCESS TO IT CAN DO ANYTHING THEY WANT ON YOUR DISCORD SERVER!
+discord-token: DISCORD_TOKEN_HERE
+
 chat:
+  # List of IDs of the Discord channels which will be forwarded to Minecraft chat
+  # You can also put a channel link here, it will be converted automatically
   channels:
-  # - 0123456789
-  # - 01248163264128256
+  - CHANNEL_ID_HERE
+
+  # List of webhook URLs for Discord channels which will receive Minecraft chat messages
+  # Example: https://discord.com/api/webhooks/...
   webhooks:
-  # - https://discord.com/api/webhooks/...
+  - WEBHOOK_URL_HERE
+
+  # List of IDs of the Discord channels for the server console
+  # All logs from the server console will be sent to this channel
+  # All Discord users with message send permission can execute admin commands
+  # You can also put a channel link here, it will be converted automatically
   console-channels:
-  # - 0123456789
+  - CHANNEL_ID_HERE
+
   messages:
     # Send chat messages from Minecraft to Discord
     enabled: true
+
   join:
     enabled: true
     as-embed: true
     color: 0x06d6a0
     # Whether to use player avatar and name as join message author
     player-as-author: true
+
   quit:
     enabled: true
     as-embed: true
     color: 0xef476f
     # Whether to use player avatar and name as quit message author
     player-as-author: true
+
   death:
     enabled: true
     as-embed: true
     color: 0xffd166
     # Whether to use player avatar and name as death message author
     player-as-author: true
+
   crash-embed:
     enabled: true
     color: 0xff8d0a
+
   avatar:
     # Set to true on cracked servers,
     # for premium player heads to work:
@@ -50,29 +67,37 @@ chat:
     # Use this url to show faces instead of heads:
     # https://cravatar.eu/helmavatar/%uuid%/256
     url: https://cravatar.eu/helmhead/%uuid%/256
+
   # You could try setting this to false, if messages sent by players
   # do not appear on Discord
   # This might be the case if you are using chat plugins, like VentureChat
   ignore-cancelled-chat-events: true
+
 activity:
   # Interval (in seconds) of Discord activity updates
   # Activity is also updated every time a player enters or leaves the server
   # Please note that Discord allows up to 5 updates per 20 seconds
   update-interval: 60
+
   # Settings for %time% template
   time:
     world: world
+
     # Time is rounded down to the nearest multiple of this value
     # For example setting this to 15 will round the time to:
     # 10:00, 10:15, 10:30, 10:45, 11:00, 11:15 etc.
     # If the number doesn't divide an hour (60) the results might be unexpected
     round: 1
+
     # Whether to use 24-hour clock (true) or 12-hour clock (false)
     # for displaying Minecraft time
     24h: true
+
   idle-when-no-players-online: true
+
 linking:
   enabled: false
+
   # If set to true, users will now be able to join the game
   # without linking their Discord account
   mandatory: true
@@ -85,26 +110,30 @@ linking:
   # than the linked and not linked roles, otherwise the bot
   # will not be able to assign them
   linked-roles:
-  # - 0123456789
+  - ROLE_ID_HERE
   not-linked-roles:
-  # - 0123456789
+  - ROLE_ID_HERE
 
   # If set to true, the bot automatically set the nicknames
   # of Discord members to names of linked Minecraft players
   # You should remove "Change Nickname" permission from users
   # if this setting is enabled
   sync-nicknames: false
+
 date-time:
   # Timezone used for formatting real time in Minecraft
   # For example Europe/Amsterdam or America/New_York
   # For the list of all time zone identifiers see:
   # https://docs.oracle.com/middleware/12211/wcs/tag-ref/MISC/TimeZones.html
   timezone: GMT
+
   # Whether to use 24-hour clock (true) or 12-hour clock (false)
   24h: true
+
 debug:
   # Will output each message received from Discord in server console
   log-discord-messages: false
+
   # Log a message each time a AsyncPlayerChatEvent is received,
   # but it has been cancelled by another plugin or because
   # chat.messages.enabled is set to false
