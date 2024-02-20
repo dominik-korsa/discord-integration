@@ -4,9 +4,9 @@
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
     </annotationProcessing>
-    <bytecodeTargetLevel target="15">
-      <module name="spigot-plugins.discord-integration.compatibility.main" target="1.8" />
-      <module name="spigot-plugins.discord-integration.plugin.main" target="1.8" />
+    <bytecodeTargetLevel target="1.8">
+      <module name="spigot-plugins.discord-integration.compatibility.main" target="17" />
+      <module name="spigot-plugins.discord-integration.plugin.main" target="17" />
     </bytecodeTargetLevel>
   </component>
 </project>
