@@ -1,5 +1,5 @@
 # Don't edit file-version yourself unless you know what you are doing!
-file-version: 7
+file-version: 8
 
 # Put your Discord token here:
 discord-token:
@@ -11,6 +11,9 @@ chat:
   # - https://discord.com/api/webhooks/...
   console-channels:
   # - 0123456789
+  messages:
+    # Send chat messages from Minecraft to Discord
+    enabled: true
   join:
     enabled: true
     as-embed: true
@@ -103,12 +106,15 @@ debug:
   # Will output each message received from Discord in server console
   log-discord-messages: false
   # Log a message each time a AsyncPlayerChatEvent is received,
-  # but it has been cancelled by another plugin
+  # but it has been cancelled by another plugin or because
+  # chat.messages.enabled is set to false
   # Possible values:
   #   disable: Doesn't log any cancelled events
   #   auto:
   #     Logs cancelled chat events until at least one
-  #     not-cancelled event is received, doesn't log anything
-  #     if chat.ignore-cancelled-chat-events is set to false
+  #     not-cancelled event is received.
+  #     Doesn't log anything if either:
+  #     - chat.ignore-cancelled-chat-events is set to false
+  #     - chat.messages.enabled is set to false
   #   all: Logs all cancelled chat events
   log-cancelled-chat-events: auto

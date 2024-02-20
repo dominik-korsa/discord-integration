@@ -64,11 +64,16 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
             val playerAsAuthor get() = section.requireBoolean("player-as-author")
         }
 
+        class ChatMessages(private val section: Section) {
+            val enabled get() = section.requireBoolean("enabled")
+        }
+
         val channels get() = section.requireStringList("channels")
         val webhooks get() = section.requireStringList("webhooks")
         val consoleChannels get() = section.requireStringList("console-channels")
         val avatarOfflineMode get() = section.requireBoolean("avatar.offline-mode")
         val avatarUrl get() = section.requireTrimmedString("avatar.url")
+        val messages get() = ChatMessages(section.getSection("messages"))
         val join get() = EmbedOrMessage(section.getSection("join"))
         val quit get() = EmbedOrMessage(section.getSection("quit"))
         val death get() = EmbedOrMessage(section.getSection("death"))
