@@ -32,10 +32,13 @@ open class CustomConfig(
 
     protected open fun applyFixes() {}
 
+    protected open fun loadExtra() {}
+
     fun reload() {
         config.reload()
         applyFixes()
         config.update()
         config.save()
+        loadExtra()
     }
 }

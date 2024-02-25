@@ -57,7 +57,8 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
             }
 
             addCustomLogic("9") {
-                val minecraftToDiscordIds = it.requireStringList(Route.from("chat", "channels"), "CHANNEL_ID_HERE").toHashSet()
+                val minecraftToDiscordIds =
+                    it.requireStringList(Route.from("chat", "channels"), "CHANNEL_ID_HERE").toSet()
 
                 val webhooksUrls = it.requireStringList(Route.from("chat", "webhooks"), "WEBHOOK_URL_HERE")
                 ListWithComments(plugin, "webhooks.txt", "webhooks.txt").add(webhooksUrls)
@@ -147,6 +148,14 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
         fixConsoleChannelListURL()
     }
 
+    override fun loadExtra() {
+        super.loadExtra()
+        val tokenFilename = config.requireTrimmedString(Route.from("files", "token"))
+        discordToken = ListWithComments(plugin, "config.yml", tokenFilename, "DISCORD_BOT_TOKEN_HERE")
+            .load()
+            .singleOrNull()
+    }
+
     class Chat(private val section: Section) {
         open class Embed(private val section: Section) {
             val enabled get() = section.requireBoolean("enabled")
@@ -192,9 +201,10 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
     }
 
     class DateTime(private val section: Section) {
-        val timezone: TimeZone get() = section.getOptionalString("timezone").orNull()?.let {
-            TimeZone.getTimeZone(it)
-        } ?: TimeZone.getDefault()
+        val timezone: TimeZone
+            get() = section.getOptionalString("timezone").orNull()?.let {
+                TimeZone.getTimeZone(it)
+            } ?: TimeZone.getDefault()
         val is24h get() = section.requireBoolean("24h")
     }
 
@@ -220,7 +230,7 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
                 ?: throw Exception("debug.log-cancelled-chat-events config field only accepts values of: `disable`, `auto`, `all`")
     }
 
-    val discordToken get() = config.getTrimmedString("discord-token", "DISCORD_TOKEN_HERE")
+    var discordToken: String? = null
 
     val chat get() = Chat(config.getSection("chat"))
     val activity get() = Activity(config.getSection("activity"))

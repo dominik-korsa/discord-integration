@@ -7,6 +7,7 @@ class ListWithComments(
     private val plugin: DiscordIntegration,
     private val resourceFileName: String,
     fileName: String,
+    private val placeholder: String? = null
 ) {
     private val file = File(plugin.dataFolder, fileName)
 
@@ -20,7 +21,7 @@ class ListWithComments(
         return file.readLines()
             .map { it.trim() }
             .filterNot {
-                it.isEmpty() || it.startsWith('#')
+                it.isEmpty() || it.startsWith('#') || it == placeholder
             }
     }
 
