@@ -229,15 +229,10 @@ class Client(private val plugin: DiscordIntegration) {
         }
     }
 
-    private val webhookRegex = Regex("/api/webhooks/([^/]+)/([^/]+)\$")
-
     suspend fun getWebhooks() = gateway?.let { gateway ->
         plugin.configManager.chat.webhooks.asFlow().map {
-            webhookRegex.find(it)?.let { result ->
-                gateway.getWebhookByIdWithToken(
-                    Snowflake.of(result.groupValues[1]),
-                    result.groupValues[2],
-                ).awaitFirstOrNull()
+            Webhooks.parseWebhookUrl(it)?.let { (id, token) ->
+                gateway.getWebhookByIdWithToken(id, token).awaitFirstOrNull()
             }
         }.filterNotNull()
     }

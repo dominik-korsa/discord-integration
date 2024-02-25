@@ -2,20 +2,47 @@ package com.dominikkorsa.discordintegration.client
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
 import com.dominikkorsa.discordintegration.config.ConfigManager
+import com.dominikkorsa.discordintegration.response.WebhookResponse
 import com.dominikkorsa.discordintegration.utils.addEmbed
+import discord4j.common.util.Snowflake
 import discord4j.core.spec.WebhookExecuteSpec
 import discord4j.rest.util.AllowedMentions
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.serialization.json.Json
 import org.bukkit.entity.Player
 
 class Webhooks(private val plugin: DiscordIntegration) {
     companion object {
         private val allowedMentionsNone = AllowedMentions.builder().build()
+        private val webhookRegex = Regex("/api/webhooks/([^/]+)/([^/]+)\$")
+        private val client =  HttpClient(CIO) {
+            expectSuccess = true
+            install(ContentNegotiation) {
+                json(Json {
+                    ignoreUnknownKeys = true
+                })
+            }
+        }
+
+        fun parseWebhookUrl(url: String) = webhookRegex.find(url)?.let {
+            Snowflake.of(it.groupValues[1]) to it.groupValues[2]
+        }
+
+        suspend fun getWebhookChannelId(url: String): String? {
+            val response = client.get(url)
+            return response.body<WebhookResponse>().channel_id
+        }
     }
 
     private suspend fun sendWebhook(
