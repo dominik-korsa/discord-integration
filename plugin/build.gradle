@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.dominikkorsa.discordintegration'
-version '3.5.1'
+version '3.5.2'
 
 ext {
     ktor_version = '2.3.1'
