@@ -24,15 +24,27 @@ class AvatarService(private val plugin: DiscordIntegration) {
         }
     }
 
+    private var lastCheckTooManyRequests = false
+
     private suspend fun updateNicknameUUID(playerName: String) {
         try {
             val response = client.get(
                 "https://api.mojang.com/users/profiles/minecraft/${playerName}"
             )
             uuids[playerName] = response.body<NameToUUIDResponse>().id
+            lastCheckTooManyRequests = false
         } catch (error: Exception) {
-            if (error is ClientRequestException && error.response.status == HttpStatusCode.NoContent) return
-            if (error is ClientRequestException && error.response.status == HttpStatusCode.NotFound) return
+            if (error is ClientRequestException) when (error.response.status) {
+                HttpStatusCode.NoContent -> return
+                HttpStatusCode.NotFound -> return
+                HttpStatusCode.TooManyRequests -> {
+                    if (!lastCheckTooManyRequests) {
+                        plugin.logger.warning("Failed to get UUID of player $playerName - Exceeded Mojang's API rate limit")
+                    }
+                    lastCheckTooManyRequests = true
+                    return
+                }
+            }
             plugin.logger.warning("Failed to get UUID of player $playerName")
             plugin.logger.warning(error.message)
         }
@@ -46,11 +58,16 @@ class AvatarService(private val plugin: DiscordIntegration) {
     }
 
     suspend fun getAvatarUrl(playerId: UUID, playerName: String): String {
-        var uuid = playerId.toString()
-        if (plugin.configManager.chat.avatarOfflineMode) getNicknameUUID(playerName)?.let { uuid = it }
-        return plugin.configManager.chat.avatarUrl
+        var result = plugin.configManager.chat.avatarUrl
             .replace("%player%", playerName)
-            .replace("%uuid%", uuid)
+
+        if (result.contains("%uuid")) {
+            var uuid = playerId.toString()
+            if (plugin.configManager.chat.avatarOfflineMode) getNicknameUUID(playerName)?.let { uuid = it }
+            result = result.replace("%uuid%", uuid)
+        }
+
+        return result
     }
 
     suspend fun getAvatarUrl(player: Player) = getAvatarUrl(player.uniqueId, player.name)
