@@ -1,0 +1,4 @@
+# This file lists all webhook URLs used to send messages or embeds to Discord channels
+# Discord Integration will try to automatically create all needed webhooks
+# You can also manually add them here
+

@@ -109,7 +109,7 @@ class DiscordIntegration : JavaPlugin() {
         val token = configManager.discordToken
         if (token == null) {
             Bukkit.broadcastMessage(messages.connectionFailed)
-            logger.severe("Field `discord-token` in config.yml has not been set")
+            logger.severe("Discord bot token has not been set in token.txt")
             logger.severe(
                 "Visit https://github.com/dominik-korsa/discord-integration/wiki/Configuring-a-Discord-bot for the configuration guide"
             )

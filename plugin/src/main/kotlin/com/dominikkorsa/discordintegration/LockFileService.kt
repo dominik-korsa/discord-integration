@@ -9,7 +9,7 @@ import java.util.*
 
 class LockFileService(private val plugin: DiscordIntegration) {
     private var job: Job? = null
-    private val file = plugin.dataFolder.resolve("lock.txt")
+    private val file = plugin.dataFolder.resolve(".lock.txt")
 
     suspend fun start() {
         if (job !== null) return

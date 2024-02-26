@@ -1,20 +1,40 @@
 # Don't edit file-version yourself, it will be changed automatically
-file-version: 8
+file-version: 9
 
-# Discord bot token
-# KEEP IT SECRET - SOMEONE WITH ACCESS TO IT CAN DO ANYTHING THEY WANT ON YOUR DISCORD SERVER!
-discord-token: DISCORD_TOKEN_HERE
+files:
+  # Put your Discord bot token in plugins/DiscordIntegration/token.txt
+  token: ./token.txt
+  # Webhooks will be created automatically
+  webhooks: ./webhooks.txt
 
 chat:
-  # List of IDs of the Discord channels which will be forwarded to Minecraft chat
-  # You can also put a channel link here, it will be converted automatically
-  channels:
-  - CHANNEL_ID_HERE
-
-  # List of webhook URLs for Discord channels which will receive Minecraft chat messages
-  # Example: https://discord.com/api/webhooks/...
-  webhooks:
-  - WEBHOOK_URL_HERE
+  # List of Discord channels to sync
+  #
+  # channel_id - ID of synced channel
+  # You can also put a channel link instead of ID here, it will be converted automatically
+  #
+  # webhook_id - ID of the target webhook or "auto" to let Discord Integration create the webhook by itself
+  # You can also put the whole webhook here, it will be copied to webhooks.txt and replaced by its ID
+  #
+  # discord-to-minecraft - Show Discord messages on Minecraft chat
+  # minecraft-to-discord - Send Minecraft chat messages to Discord
+  # Possible values: disable, enable
+  #
+  # join - Send a message to Discord when a player joins the server
+  # quit - Send a message to Discord when a player leaves the server
+  # death - Send player death messages to Discord
+  # Possible values: disable, message, embed
+  #
+  # crash - Send a message to Discord when the server restarts after a crash
+  # Possible values: disable, embed
+  message-channels:
+  - channel-id: CHANNEL_ID_HERE
+    discord-to-minecraft: enable
+    minecraft-to-discord: enable
+    join: embed
+    quit: embed
+    death: embed
+    crash: embed
 
   # List of IDs of the Discord channels for the server console
   # All logs from the server console will be sent to this channel
@@ -23,34 +43,23 @@ chat:
   console-channels:
   - CHANNEL_ID_HERE
 
-  messages:
-    # Send chat messages from Minecraft to Discord
-    enabled: true
-
   join:
-    enabled: true
-    as-embed: true
-    color: 0x06d6a0
+    embed-color: 0x06d6a0
     # Whether to use player avatar and name as join message author
     player-as-author: true
 
   quit:
-    enabled: true
-    as-embed: true
-    color: 0xef476f
+    embed-color: 0xef476f
     # Whether to use player avatar and name as quit message author
     player-as-author: true
 
   death:
-    enabled: true
-    as-embed: true
-    color: 0xffd166
+    embed-color: 0xffd166
     # Whether to use player avatar and name as death message author
     player-as-author: true
 
-  crash-embed:
-    enabled: true
-    color: 0xff8d0a
+  crash:
+    embed-color: 0xff8d0a
 
   avatar:
     # Set to true on cracked servers,

@@ -1,17 +1,23 @@
 package com.dominikkorsa.discordintegration.config
 
 import com.dominikkorsa.discordintegration.DiscordIntegration
+import com.dominikkorsa.discordintegration.client.Webhooks
 import com.dominikkorsa.discordintegration.utils.orNull
+import com.dominikkorsa.discordintegration.utils.tryCast
 import dev.dejvokep.boostedyaml.block.implementation.Section
 import dev.dejvokep.boostedyaml.route.Route
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
+import java.io.File
 import java.util.*
-import java.util.regex.Pattern
 
 class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.yml") {
     override fun setUpdateSettings(builder: UpdaterSettings.Builder) {
         super.setUpdateSettings(builder)
         setUpdate5Settings(builder)
+        setUpdate9Settings(builder)
     }
 
     private fun setUpdate5Settings(builder: UpdaterSettings.Builder) {
@@ -32,25 +38,122 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
         }
     }
 
+    private fun setUpdate9Settings(builder: UpdaterSettings.Builder) {
+        builder.apply {
+            addRelocation("5", Route.from("chat", "crash-embed"), Route.from("chat", "crash"))
+            listOf("join", "quit", "death", "crash").forEach { key ->
+                addRelocation("5", Route.from("chat", key, "color"), Route.from("chat", key, "embed-color"))
+            }
+
+            addCustomLogic("9") {
+                it.getTrimmedString("discord-token", "DISCORD_TOKEN_HERE")?.let { token ->
+                    val file = File(plugin.dataFolder, "token.txt")
+                    val newContents = plugin.getResource("token.txt")
+                        .reader()
+                        .readText()
+                        .replace("DISCORD_BOT_TOKEN_HERE", token)
+                    file.writeText(newContents)
+                }
+            }
+
+            addCustomLogic("9") {
+                val minecraftToDiscordIds =
+                    it.requireStringList(Route.from("chat", "channels"), "CHANNEL_ID_HERE").toSet()
+
+                val webhooksUrls = it.requireStringList(Route.from("chat", "webhooks"), "WEBHOOK_URL_HERE")
+                ListWithComments(plugin, "webhooks.txt", "webhooks.txt").add(webhooksUrls)
+
+                val discordToMinecraftIds = runBlocking {
+                    webhooksUrls.map { webhookUrl ->
+                        async {
+                            val channelId: String?
+                            try {
+                                channelId = Webhooks.getWebhookChannelId(webhookUrl)
+                            } catch (error: Exception) {
+                                plugin.logger.warning("Failed to get webhook info of $webhookUrl")
+                                plugin.logger.warning(error.message)
+                                return@async null
+                            }
+                            if (channelId == null) {
+                                plugin.logger.warning("Failed to get channel id from webhook $webhookUrl")
+                                return@async null
+                            }
+                            channelId
+                        }
+                    }.awaitAll().filterNotNull()
+                }.toHashSet()
+
+                val newEntries = (minecraftToDiscordIds union discordToMinecraftIds).map { id ->
+                    val discordToMinecraft = discordToMinecraftIds.contains(id)
+                    val minecraftToDiscord = minecraftToDiscordIds.contains(id)
+                    fun getEmbedValue(key: String) = when {
+                        !minecraftToDiscord -> "disable"
+                        !it.requireBoolean(Route.from("chat", key, "enabled")) -> "disable"
+                        key == "crash-embed" -> "embed"
+                        it.requireBoolean(Route.from("chat", key, "as-embed")) -> "embed"
+                        else -> "message"
+                    }
+                    linkedMapOf(
+                        "channel-id" to id,
+                        "discord-to-minecraft" to if (discordToMinecraft) "enable" else "disable",
+                        "minecraft-to-discord" to if (minecraftToDiscord) "enable" else "disable",
+                        "join" to getEmbedValue("join"),
+                        "quit" to getEmbedValue("quit"),
+                        "death" to getEmbedValue("death"),
+                        "crash" to getEmbedValue("crash-embed"),
+                    )
+                }
+
+                if (newEntries.isEmpty()) return@addCustomLogic
+                @Suppress("UNCHECKED_CAST")
+                val channelList = it.getList(Route.from("chat", "message-channels")) as MutableList<Map<String, String>>
+                channelList.clear()
+                channelList.addAll(newEntries)
+            }
+        }
+    }
+
     private fun fixStringList(route: Route) {
         if (config.isList(route)) return
         config.set(route, listOf(config.getString(route)))
     }
 
-    private fun fixChannelListURL(route: Route) {
+    private fun fixMessageChannels() {
+        config.getList(Route.from("chat", "message-channels")).forEach {
+            val map = it?.tryCast<MutableMap<String, Any>>() ?: return@forEach
+            map["channel-id"]?.let { id ->
+                if (id !is String) return@let
+                channelUrlPattern.find(id)?.let { match ->
+                    map["channel-id"] = match.groupValues[1]
+                }
+            }
+            listOf("discord-to-minecraft", "minecraft-to-discord", "join", "quit", "death", "crash")
+                .forEach { key -> map.putIfAbsent(key, "disable") }
+        }
+    }
+
+    private fun fixConsoleChannelListURL() {
+        val route = Route.from("chat", "console-channels")
         config.set(route, config.getStringList(route).map {
-            val matcher = channelUrlPattern.matcher(it)
-            if (matcher.matches()) matcher.group(1) else it
+            channelUrlPattern.find(it)?.let { match ->
+                match.groupValues[1]
+            } ?: it
         })
     }
 
     override fun applyFixes() {
         super.applyFixes()
-        fixStringList(Route.from("chat", "channels"))
-        fixStringList(Route.from("chat", "webhooks"))
         fixStringList(Route.from("chat", "console-channels"))
-        fixChannelListURL(Route.from("chat", "channels"))
-        fixChannelListURL(Route.from("chat", "console-channels"))
+        fixMessageChannels()
+        fixConsoleChannelListURL()
+    }
+
+    override fun loadExtra() {
+        super.loadExtra()
+        val tokenFilename = config.requireTrimmedString(Route.from("files", "token"))
+        discordToken = ListWithComments(plugin, "config.yml", tokenFilename, "DISCORD_BOT_TOKEN_HERE")
+            .load()
+            .singleOrNull()
     }
 
     class Chat(private val section: Section) {
@@ -98,9 +201,10 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
     }
 
     class DateTime(private val section: Section) {
-        val timezone: TimeZone get() = section.getOptionalString("timezone").orNull()?.let {
-            TimeZone.getTimeZone(it)
-        } ?: TimeZone.getDefault()
+        val timezone: TimeZone
+            get() = section.getOptionalString("timezone").orNull()?.let {
+                TimeZone.getTimeZone(it)
+            } ?: TimeZone.getDefault()
         val is24h get() = section.requireBoolean("24h")
     }
 
@@ -126,7 +230,7 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
                 ?: throw Exception("debug.log-cancelled-chat-events config field only accepts values of: `disable`, `auto`, `all`")
     }
 
-    val discordToken get() = config.getTrimmedString("discord-token", "DISCORD_TOKEN_HERE")
+    var discordToken: String? = null
 
     val chat get() = Chat(config.getSection("chat"))
     val activity get() = Activity(config.getSection("activity"))
@@ -135,6 +239,6 @@ class ConfigManager(plugin: DiscordIntegration) : CustomConfig(plugin, "config.y
     val debug get() = Debug(config.getSection("debug"))
 
     companion object {
-        private val channelUrlPattern = Pattern.compile("""^https://(?:ptb\.)?discord\.com/channels/\d+/(\d+)$""")
+        private val channelUrlPattern = Regex("""^https://(?:ptb\.)?discord\.com/channels/\d+/(\d+)$""")
     }
 }

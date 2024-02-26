@@ -1,0 +1,12 @@
+# This file is used to store the token of your Discord bot
+
+# DO NOT SHARE THIS TOKEN WITH ANYONE!
+# It can be used to do ANYTHING on your Discord server,
+# including DELETING ALL MESSAGES ON YOUR SERVER!
+
+# You can find the token in the Discord Developer Portal:
+# https://discord.com/developers/applications/
+# in the "Bot" tab of application settings
+# Paste the token below:
+
+DISCORD_BOT_TOKEN_HERE
