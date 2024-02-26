@@ -62,7 +62,7 @@ chat:
     # %player% is replaced by the player username
     # %uuid% is replaced by the player UUID,
     # if offline-mode is set to true, the plugin will use
-    # the Mojang's API to get the correct UUID
+    # Mojang's API to get the correct UUID
     #
     # Use this url to show faces instead of heads:
     # https://cravatar.eu/helmavatar/%uuid%/256

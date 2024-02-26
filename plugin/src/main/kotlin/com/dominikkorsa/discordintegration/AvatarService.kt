@@ -58,11 +58,16 @@ class AvatarService(private val plugin: DiscordIntegration) {
     }
 
     suspend fun getAvatarUrl(playerId: UUID, playerName: String): String {
-        var uuid = playerId.toString()
-        if (plugin.configManager.chat.avatarOfflineMode) getNicknameUUID(playerName)?.let { uuid = it }
-        return plugin.configManager.chat.avatarUrl
+        var result = plugin.configManager.chat.avatarUrl
             .replace("%player%", playerName)
-            .replace("%uuid%", uuid)
+
+        if (result.contains("%uuid")) {
+            var uuid = playerId.toString()
+            if (plugin.configManager.chat.avatarOfflineMode) getNicknameUUID(playerName)?.let { uuid = it }
+            result = result.replace("%uuid%", uuid)
+        }
+
+        return result
     }
 
     suspend fun getAvatarUrl(player: Player) = getAvatarUrl(player.uniqueId, player.name)
